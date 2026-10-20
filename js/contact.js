@@ -53,8 +53,8 @@
       form.reset();
       requestId = null;
       showStatus(
-        "Gracias por contactar conmigo",
-        "Tu solicitud se ha enviado. Me pondré en contacto contigo para acordar la primera reunión. Si lo prefieres, puedes llamarme directamente.",
+        "Ya has dado el primer paso.",
+        "He recibido tu solicitud. Me pondré en contacto contigo para conocernos y acordar nuestra primera reunión. Si prefieres hablar ahora, puedes llamarme directamente.",
         "success",
       );
     } catch {

@@ -30,6 +30,64 @@
   border-left-color: #b65443;
 }
 
+/* Confirmación con la misma presencia visual que el resto del formulario. */
+#contact-form #contact-feedback {
+  margin-top: 28px;
+  padding: 25px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+}
+
+#contact-feedback[data-state="success"]::before {
+  content: "✓";
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 17px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+  color: var(--accent);
+  font-size: 21px;
+}
+
+#contact-status-title {
+  display: block;
+  font-size: clamp(22px, 2.3vw, 28px);
+  font-weight: 650;
+  letter-spacing: -0.7px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+#contact-form #contact-status-message {
+  margin: 14px 0 20px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+#contact-feedback .text-link {
+  padding: 10px 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#contact-feedback .text-link:hover {
+  border-color: var(--accent);
+}
+
+@media (max-width: 500px) {
+  #contact-form #contact-feedback {
+    padding: 22px 18px;
+  }
+}
+
 #contact-form input:user-invalid,
 #contact-form textarea:user-invalid {
   border-color: #b65443;
