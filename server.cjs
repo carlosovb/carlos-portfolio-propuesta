@@ -1,1 +1,36 @@
-const http=require('http'),fs=require('fs'),path=require('path');const base=__dirname;http.createServer((req,res)=>{const url=new URL(req.url,'http://localhost');const file=url.pathname==='/'?'index.html':decodeURIComponent(url.pathname).replace(/^\/+/, '');const full=path.resolve(base,file);if(!full.startsWith(base+path.sep)){res.writeHead(403);return res.end()}fs.readFile(full,(err,data)=>{if(err){res.writeHead(404);return res.end('Not found')}res.setHeader('Content-Type',full.endsWith('.png')?'image/png':full.endsWith('.html')?'text/html; charset=utf-8':'text/plain');res.end(data)})}).listen(4173,'127.0.0.1',()=>console.log('Local: http://127.0.0.1:4173'));
+const http = require("http"),
+  fs = require("fs"),
+  path = require("path");
+const base = __dirname;
+const contentTypes = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+};
+http
+  .createServer((req, res) => {
+    const url = new URL(req.url, "http://localhost");
+    const file =
+      url.pathname === "/"
+        ? "index.html"
+        : decodeURIComponent(url.pathname).replace(/^\/+/, "");
+    const full = path.resolve(base, file);
+    if (!full.startsWith(base + path.sep)) {
+      res.writeHead(403);
+      return res.end();
+    }
+    fs.readFile(full, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        return res.end("Not found");
+      }
+      res.setHeader(
+        "Content-Type",
+        contentTypes[path.extname(full)] || "text/plain",
+      );
+      res.end(data);
+    });
+  })
+  .listen(4173, "127.0.0.1", () => console.log("Local: http://127.0.0.1:4173"));

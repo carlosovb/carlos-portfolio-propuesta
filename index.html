@@ -1,23 +1,629 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f2ede3"><meta name="robots" content="noindex,nofollow"><title>Carlos Caballero Dávila · Propuesta visual</title>
-<script>try{const t=localStorage.getItem('carlos-theme');document.documentElement.dataset.theme=['light','dark'].includes(t)?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}</script><style>
-:root{color-scheme:light dark;--bg:#f2ede3;--ink:#102d3b;--muted:#536b71;--panel:#e7e5dc;--line:#c8d2cb;--accent:#087d7e;--night:#0a2230;--mint:#65d7c7}html[data-theme=dark]{--bg:#0b202d;--ink:#f1ede2;--muted:#b1c4c6;--panel:#142e3c;--line:#304955;--accent:#65d7c7}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:100px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 'Segoe UI',sans-serif}a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button,a,summary{-webkit-tap-highlight-color:transparent}button,summary{cursor:pointer}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:5px}header{position:fixed;top:0;width:100%;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}nav{max-width:1320px;margin:auto;min-height:84px;padding:12px 5%;display:flex;align-items:center;gap:28px}.brand{line-height:1.25;margin-right:auto;font-weight:650;font-size:15px}.brand span{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:6px;color:var(--muted)}nav>a{font-size:13px}.btn{display:inline-block;border:1px solid transparent;background:var(--mint);color:#0a2935;padding:13px 22px;font-weight:650;border-radius:5px;box-shadow:5px 5px 0 #25877f;transition:transform .2s,box-shadow .2s}.btn:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 #25877f}.theme{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:50%;width:38px;height:38px}.hero{background:var(--night);color:#f2eee5;overflow:hidden;margin-top:84px;position:relative}.hero-inner{max-width:1320px;margin:auto;padding:80px 5% 0;display:grid;grid-template-columns:1.12fr 1fr;gap:20px;min-height:710px}.eyebrow{text-transform:uppercase;letter-spacing:2.5px;font-size:11px;font-weight:650;color:var(--accent)}.hero .eyebrow{color:var(--mint)}h1{font-family:Georgia,serif;font-weight:400;font-size:clamp(44px,5.2vw,76px);line-height:1.09;letter-spacing:-2px;margin:25px 0}h1 em{color:var(--mint);font-weight:400}.intro{max-width:470px;color:#bdd0d2;font-size:17px}.actions{display:flex;align-items:center;gap:28px;margin:35px 0}.text-link{font-size:14px;border-bottom:1px solid #7a989c;padding-bottom:4px}.location{font-size:12px;letter-spacing:.4px;color:#b5c7c9;margin-top:38px}.portrait{position:relative;align-self:end;height:620px}.portrait:before{content:'';position:absolute;inset:45px -10px 70px 0;border:1px solid #3b6c71;border-radius:48% 48% 15px 15px;transform:rotate(7deg)}.portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;position:relative;mask-image:linear-gradient(#000 80%,transparent)}.portrait-label{position:absolute;bottom:75px;left:-10px;background:#eceddf;color:#15333e;padding:17px 23px;border-left:4px solid var(--mint);font-size:13px;line-height:1.5}.portrait-label strong{display:block;font-size:17px;font-family:Georgia,serif;font-weight:400}.strip{background:#143542;color:#bed4d3;padding:18px 5%;font-size:12px;display:flex;justify-content:center;gap:65px;letter-spacing:1px}.wrap{max-width:1200px;margin:auto;padding:95px 5%}h2{font:400 clamp(32px,4vw,48px)/1.17 Georgia,serif;letter-spacing:-1px;margin:15px 0 25px}h3{font-size:20px;line-height:1.3}.section-head{display:flex;justify-content:space-between;gap:40px;align-items:end;margin-bottom:38px}.section-head p{max-width:340px;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.service{border:1px solid var(--line);border-radius:8px;padding:24px;background:var(--panel)}.service summary{list-style:none}.service summary::-webkit-details-marker{display:none}.icon{font-size:26px;color:var(--accent);display:block;margin-bottom:20px}.service h3{margin:0 0 12px}.service p{font-size:14px;color:var(--muted);margin-bottom:12px}.more{font-size:12px;color:var(--accent)}details[open] .more{display:none}.expanded{padding-top:14px;border-top:1px solid var(--line)}.about{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px;border-top:1px solid var(--line)}.quote{font:italic 30px/1.4 Georgia,serif;color:var(--accent)}.about p{color:var(--muted)}.method{background:var(--night);color:#f2eee5}.method .eyebrow{color:var(--mint)}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:45px;margin-top:50px}.step{border-top:1px solid #48636b;padding-top:22px}.step b{color:var(--mint);font:24px Georgia,serif}.step p{font-size:14px;color:#bed0d3}.follow{margin-top:40px;padding:25px;border:1px solid #3c5d65;display:flex;gap:35px;align-items:center;border-radius:5px}.follow p{margin:0;color:#bed0d3;font-size:14px}.follow strong{color:var(--mint);white-space:nowrap}.training{border-bottom:1px solid var(--line);padding:18px 0;display:flex;justify-content:space-between;gap:25px}.training small{color:var(--muted)}.faq{display:grid;grid-template-columns:.8fr 1.2fr;gap:65px}.question{border-bottom:1px solid var(--line);padding:20px 0}.question summary{font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:20px}.question summary:after{content:'+';color:var(--accent)}.question[open] summary:after{content:'−'}.question p{font-size:14px;color:var(--muted)}.contact{background:var(--panel)}.contact-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:80px}.contact p{color:var(--muted)}.contact-links{margin-top:30px;display:grid;gap:15px;font-size:15px}.contact-links a{width:fit-content;border-bottom:1px solid var(--line)}form{display:grid;grid-template-columns:1fr 1fr;gap:18px}label{font-size:12px;font-weight:600;display:grid;gap:7px}.full{grid-column:1/-1}input,select,textarea{width:100%;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:4px;color:var(--ink);font-size:14px}fieldset{border:0;padding:0;margin:0}legend{font-size:12px;font-weight:600;margin-bottom:8px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.checks label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:400}.checks input{width:auto}.demo{font-size:12px!important;border-left:3px solid var(--accent);padding:10px 15px;background:var(--bg)}.formbutton{justify-self:start;border:0}footer{padding:30px 5%;max-width:1200px;margin:auto;display:flex;justify-content:space-between;gap:20px;font-size:12px;color:var(--muted)}.reveal{animation:appear .7s ease both}@keyframes appear{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}@media(max-width:900px){nav{gap:15px}nav>a:not(.btn){display:none}.hero-inner{padding-top:45px;min-height:0}.portrait{height:520px}.hero h1{font-size:49px}.grid{grid-template-columns:repeat(2,1fr)}.about,.faq,.contact-grid{gap:35px}.strip{gap:25px;font-size:10px}}@media(max-width:600px){nav{min-height:72px;padding:10px 5%;gap:12px}.brand{font-size:12px}.brand span{font-size:8px}nav .btn{padding:9px 11px;font-size:10px;max-width:130px}.theme{width:31px;height:31px;flex-shrink:0}.hero{margin-top:72px}.hero-inner{grid-template-columns:1fr}.hero h1{font-size:48px}.portrait{height:440px;width:85%;justify-self:center}.portrait-label{bottom:45px;left:-15px}.intro{font-size:15px}.actions{gap:20px}.actions .btn{font-size:13px}.location{margin-top:20px}.strip{flex-wrap:wrap;gap:8px 25px}.wrap{padding:65px 6%}.section-head{display:block}.grid,.steps,.about,.faq,.contact-grid{grid-template-columns:1fr}.steps{gap:20px}.follow{display:block}.follow strong{display:block;margin:15px 0 5px}.about,.faq{gap:20px}.training{display:block}.training small{display:block;margin-top:8px}form{grid-template-columns:1fr}.full{grid-column:auto}.checks{grid-template-columns:1fr}footer{display:block}.contact-grid{gap:35px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before{animation:none!important;transition:none!important}}
-</style><link rel="stylesheet" href="visual-v2.css"></head><body>
-<header class="site-header"><nav aria-label="Navegación principal"><a class="brand" href="#inicio"><span class="brand-monogram" aria-hidden="true">CC<span>·</span></span><span class="brand-name">Carlos Caballero Dávila<small>Consultor financiero</small></span></a><div class="nav-links" id="main-menu"><a href="#sobre-mi">Sobre mí</a><a href="#ayuda">En qué puedo ayudarte</a><a href="#metodo">Cómo trabajo</a><a href="#preguntas">Preguntas frecuentes</a><a class="mobile-contact" href="#contacto">Solicitar mi primera reunión ↗</a></div><div class="nav-actions"><button class="theme" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">◐</button><a class="nav-cta" href="#contacto"><span>Solicitar mi primera reunión</span><span aria-hidden="true">↗</span></a><button class="menu-toggle" aria-label="Abrir menú" aria-controls="main-menu" aria-expanded="false"><span></span><span></span></button></div></nav></header>
-<main><section class="hero" id="inicio"><div class="hero-inner"><div class="reveal"><div class="eyebrow">Finanzas que se entienden</div><h1>Te ayudo a entender<br>tus finanzas y a<br><em>decidir con confianza.</em></h1><p class="intro">Planificación financiera personalizada para tus objetivos de ahorro, inversión y protección. Con explicaciones claras y acompañamiento en cada etapa.</p><div class="actions"><a href="#contacto" class="btn">Solicitar mi primera reunión ↗</a><a class="text-link" href="https://wa.me/34638487427" target="_blank" rel="noopener">Hablamos por WhatsApp ↗</a></div><p class="location">Las Palmas de Gran Canaria · Online en toda España</p></div><div class="portrait"><img src="assets/carlos.png" alt="Carlos Caballero Dávila, consultor financiero"><div class="portrait-label">Tu punto de partida no tiene que ser perfecto.<strong>Empecemos por entenderlo.</strong></div></div></div></section>
-<section class="strip" aria-label="Las tres etapas de tu planificación"><a href="#metodo" class="stage-preview"><span class="stage-number">01</span><div><h2>Análisis</h2><p>Tu situación, tus prioridades y lo que quieres conseguir.</p></div><span class="stage-arrow" aria-hidden="true">↗</span></a><a href="#metodo" class="stage-preview"><span class="stage-number">02</span><div><h2>Asesoramiento</h2><p>Un proyecto a tu medida, explicado para que puedas decidir.</p></div><span class="stage-arrow" aria-hidden="true">↗</span></a><a href="#metodo" class="stage-preview"><span class="stage-number">03</span><div><h2>Servicio</h2><p>Acompañamiento y revisiones para seguir avanzando contigo.</p></div><span class="stage-arrow" aria-hidden="true">↗</span></a></section>
-<section class="wrap" id="ayuda"><div class="section-head"><div><div class="eyebrow">En qué puedo ayudarte</div><h2>Tu vida cambia.<br>Tu planificación también.</h2></div><p>No necesitas saber de finanzas para empezar. Exploramos juntos qué necesitas y qué opciones pueden encajar contigo.</p></div><div class="grid">
-<details class="service"><summary><span class="icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M6 13h20v13H6zM4 10l12-6 12 6M11 17v5m5-5v5m5-5v5M4 28h24"/><path d="M13 10h6"/></svg></span><h3>Ahorro con un propósito</h3><p>Organiza tus finanzas y prepara ese objetivo que tienes en mente.</p><span class="more">Explorar +</span></summary><p class="expanded">Revisamos ingresos, gastos y ahorro para entender tu punto de partida. Desde crear un colchón para imprevistos hasta preparar un proyecto personal.</p></details>
-<details class="service"><summary><span class="icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 5v22h23M9 21l6-7 5 3 7-10M21 7h6v6"/></svg></span><h3>Entender la inversión</h3><p>Comprende las opciones antes de decidir qué hacer con tu dinero.</p><span class="more">Explorar +</span></summary><p class="expanded">Te explico cómo funcionan las herramientas propuestas, sus riesgos, costes y alternativas, teniendo en cuenta tu situación y tus objetivos.</p></details>
-<details class="service"><summary><span class="icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="11"/><path d="M16 9v7l5 3M12 3h8M16 3v2"/></svg></span><h3>Planificar tu jubilación</h3><p>Piensa en cómo quieres vivir mañana y qué puedes preparar hoy.</p><span class="more">Explorar +</span></summary><p class="expanded">Hablamos de tus expectativas y de las posibilidades para complementar los ingresos de tu futura jubilación.</p></details>
-<details class="service"><summary><span class="icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 3 26 7v8c0 7-10 14-10 14S6 22 6 15V7z"/><path d="m11 16 3 3 7-7"/></svg></span><h3>Proteger lo importante</h3><p>Revisa la protección de tu familia, tu salud y tu patrimonio.</p><span class="more">Explorar +</span></summary><p class="expanded">Analizamos tus necesidades de seguros y las coberturas que ya tienes para valorar opciones adecuadas a cada caso.</p></details>
-<details class="service"><summary><span class="icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="m3 15 13-11 13 11M7 13v15h18V13M13 28v-9h6v9M22 8V4h4v7"/></svg></span><h3>Tu vivienda y financiación</h3><p>Entiende qué necesitas para dar el paso hacia tu propia casa.</p><span class="more">Explorar +</span></summary><p class="expanded">Revisamos tu preparación económica para comprar una vivienda y las posibilidades de financiación hipotecaria según tu situación.</p></details>
-<details class="service"><summary><span class="icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="10" width="24" height="18" rx="3"/><path d="M11 10V5h10v5M4 17c7 4 17 4 24 0M13 18h6v4h-6z"/></svg></span><h3>Negocios y autónomos</h3><p>Una planificación que también tenga en cuenta tu actividad.</p><span class="more">Explorar +</span></summary><p class="expanded">Exploramos objetivos de ahorro, protección y financiación relacionados con tu actividad y con tu economía personal.</p></details></div></section>
-<section class="wrap about" id="sobre-mi"><div><div class="eyebrow">Sobre mí</div><h2>Primero comprender.<br>Después decidir.</h2><div class="quote">«Quiero que salgas con más claridad de la que tenías al entrar.»</div></div><div><h3>Soy Carlos. Mi interés empezó por las inversiones; mi propósito es acercarlas a las personas.</h3><p>Antes de cobrar mi primer sueldo ya estaba buscando cómo planificarlo. Ese interés me llevó a conocer la consultoría financiera como cliente y, después, a formarme para dedicarme a ella.</p><p>Hoy ayudo a personas y empresas a entender su situación económica. Me importa que puedas preguntar, comprender las opciones y tomar decisiones con información, aunque empieces desde cero.</p><a class="text-link" href="https://www.linkedin.com/in/carlos-cd/" target="_blank" rel="noopener">Conóceme en LinkedIn ↗</a></div></section>
-<section class="method" id="metodo"><div class="wrap"><div class="eyebrow">Cómo trabajo</div><h2>Un proceso claro.<br>Una relación que continúa.</h2><div class="steps"><article class="step"><b>01 /</b><h3>Análisis</h3><p>Conocemos tu situación, lo que tienes y lo que quieres conseguir. Ponemos orden en tus objetivos y resolvemos tus primeras dudas.</p></article><article class="step"><b>02 /</b><h3>Asesoramiento</h3><p>Revisamos tu proyecto y explicamos las herramientas propuestas: funcionamiento, opciones, costes, riesgos y simulaciones. Si decides contratar, tramitamos la documentación.</p></article><article class="step"><b>03 /</b><h3>Servicio</h3><p>Te explico cómo acceder a tus productos y cómo será nuestro acompañamiento. Si tu situación cambia, lo hablamos y revisamos las posibilidades.</p></article></div><div class="follow"><div><h3>El seguimiento forma parte del camino.</h3><p>Además de las revisiones, puedes llamarme o escribirme por WhatsApp.</p></div><strong>Particulares · Cada 6 meses<br>Empresas · Cada 3 meses</strong></div></div></section>
-<section class="wrap" id="formacion"><div class="eyebrow">Formación</div><h2>Una base para acompañarte.</h2><div class="training"><span>Curso inicial para distribuidores de seguros · Nivel 2</span><small>Enero 2026</small></div><div class="training"><span>PBC y LOPD · 25 horas</span><small>Diciembre 2025</small></div><div class="training"><span>Formación continua 2026 · 25 horas</span><small>Mayo 2026</small></div></section>
-<section class="wrap faq" id="preguntas"><div><div class="eyebrow">Preguntas frecuentes</div><h2>Empecemos por<br>tus dudas.</h2></div><div><details class="question"><summary>¿Tienen coste las reuniones?</summary><p>No te cobro honorarios por las reuniones ni por la planificación financiera. La primera reunión es una oportunidad para conocernos, analizar tu situación y resolver tus dudas, sin compromiso de contratar.</p></details><details class="question"><summary>¿Necesito tener ahorros para empezar?</summary><p>No. La primera reunión no exige ahorros ni compromiso de aportar o contratar. Algunos productos permiten aportaciones desde 50 € al mes.</p></details><details class="question"><summary>¿Y si no sé nada de finanzas?</summary><p>No necesitas conocimientos previos. Te explicaré los conceptos y las opciones con un lenguaje sencillo, y podrás preguntar lo que necesites.</p></details><details class="question"><summary>¿Podemos reunirnos a distancia?</summary><p>Sí. Ofrezco atención online en toda España y presencial en Las Palmas de Gran Canaria.</p></details></div></section>
-<section class="contact" id="contacto"><div class="wrap"><div class="contact-heading"><div><div class="eyebrow">Demos el primer paso</div><h2>Una conversación.<br><span>Un nuevo punto de partida.</span></h2></div><p>Cuéntame qué necesitas. Me pondré en contacto contigo para acordar nuestra primera reunión de análisis.</p></div><div class="contact-grid"><aside class="contact-direct"><span class="contact-kicker">Hablemos de tus objetivos</span><h3>No necesitas tener<br>todas las respuestas<br>para empezar.</h3><p>Ni ahorros previos ni compromiso de contratar. El primer paso es conocer tu situación.</p><div class="contact-links"><div class="contact-info"><span class="contact-symbol" aria-hidden="true">↗</span><span><small>Escríbeme por WhatsApp</small><strong>638 487 427</strong></span></div><div class="contact-info"><span class="contact-symbol" aria-hidden="true">↗</span><span><small>Prefieres una llamada</small><strong>+34 638 487 427</strong></span></div></div><div class="contact-location"><span aria-hidden="true">◎</span><p>Presencial en Las Palmas de Gran Canaria<br>Atención online en toda España</p></div></aside><form id="demo-form"><div class="form-intro"><span class="eyebrow">Solicita tu primera reunión</span><h3>Empecemos por ti.</h3><p>Rellena estos datos y dime cuándo te viene mejor que te llame.</p></div><p class="demo full">Vista de demostración: no se envía ni se guarda información. No introduzcas datos personales reales.</p><fieldset class="form-section full"><legend><span>01</span> Tus datos de contacto</legend><div class="input-grid"><label class="full">Nombre y apellidos <span class="required-mark">Obligatorio</span><input disabled placeholder="¿Cómo te llamas?" autocomplete="off"></label><label>Teléfono <span class="required-mark">Obligatorio</span><input disabled placeholder="Tu número de contacto" autocomplete="off"></label><label>Correo electrónico <span class="required-mark">Obligatorio</span><input disabled placeholder="Tu dirección de correo" autocomplete="off"></label></div></fieldset><fieldset class="form-section full"><legend><span>02</span> ¿En qué te gustaría que te ayudara?</legend><p class="field-help">Puedes elegir más de una opción.</p><div class="checks"><label><input type="checkbox"><span>Organizar mis finanzas</span></label><label><input type="checkbox"><span>Ahorro e inversión</span></label><label><input type="checkbox"><span>Jubilación</span></label><label><input type="checkbox"><span>Vivienda o hipoteca</span></label><label><input type="checkbox"><span>Seguros y protección</span></label><label><input type="checkbox"><span>Mi negocio</span></label><label><input type="checkbox"><span>Conocer el servicio</span></label><label><input type="checkbox"><span>Otro motivo</span></label></div></fieldset><fieldset class="form-section full"><legend><span>03</span> El mejor momento para hablar</legend><div class="time-options"><label><input type="radio" name="time" value="mañana"><span>Mañana</span></label><label><input type="radio" name="time" value="tarde"><span>Tarde</span></label><label><input type="radio" name="time" value="indiferente"><span>Indiferente</span></label></div><label class="comment-label">¿Hay algo que quieras contarme? <span class="required-mark">Opcional</span><textarea disabled rows="3" placeholder="Si lo prefieres, lo hablamos cuando te llame."></textarea></label></fieldset><div class="form-end full"><button class="btn formbutton" type="button" id="demo-submit">Solicitar mi primera reunión <span aria-hidden="true">↗</span></button><span class="form-note">Primero hablamos.<br>Tú decides el siguiente paso.</span></div><div class="demo full" id="demo-feedback" role="status" hidden><strong>Demostración de la confirmación</strong><p>Cuando conectemos el formulario, aquí confirmaremos la recepción de tu solicitud. Ahora no se ha enviado ningún dato.</p><a class="text-link" href="tel:+34638487427">Llamar a Carlos ↗</a></div></form></div></div></section></main>
-<footer><span>Carlos Caballero Dávila · Consultor financiero</span><span>Propuesta visual · Textos sujetos a revisión</span><a href="#inicio">Volver arriba ↑</a></footer>
-<script>const root=document.documentElement;const preference=matchMedia('(prefers-color-scheme: dark)');let chosen=null;try{chosen=localStorage.getItem('carlos-theme')}catch{}if(!['light','dark'].includes(chosen))chosen=null;const themeButton=document.querySelector('.theme');function theme(){const dark=(chosen|| (preference.matches?'dark':'light'))==='dark';root.dataset.theme=dark?'dark':'light';themeButton.textContent=dark?'☀':'☾';themeButton.setAttribute('aria-label',dark?'Activar modo claro':'Activar modo oscuro');themeButton.title=dark?'Activar modo claro':'Activar modo oscuro';themeButton.setAttribute('aria-pressed',String(dark));document.querySelector('meta[name=theme-color]')?.setAttribute('content',dark?'#101c2c':'#f6f1e8')}theme();preference.addEventListener('change',theme);themeButton.addEventListener('click',()=>{chosen=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('carlos-theme',chosen)}catch{}theme()});addEventListener('storage',e=>{if(e.key==='carlos-theme'){chosen=['light','dark'].includes(e.newValue)?e.newValue:null;theme()}});document.getElementById('demo-submit').addEventListener('click',()=>{document.getElementById('demo-feedback').hidden=false});</script>
-<script src="visual-v2.js" defer></script><a class="back-to-top" href="#inicio" aria-label="Volver al inicio de la página" hidden><span aria-hidden="true">↑</span><span>Arriba</span></a><div class="floating-navigation" hidden><button class="floating-cc" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="floating-menu"><span aria-hidden="true">CC<i>·</i></span></button><nav id="floating-menu" class="floating-links" aria-label="Menú flotante" hidden><a href="#inicio">Inicio</a><a href="#sobre-mi">Sobre mí</a><a href="#ayuda">En qué puedo ayudarte</a><a href="#metodo">Cómo trabajo</a><a href="#formacion">Formación</a><a href="#preguntas">Preguntas frecuentes</a><a href="#contacto">Solicitar mi primera reunión ↗</a></nav></div></body></html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f2ede3" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Carlos Caballero Dávila · Propuesta visual</title>
+    <script src="js/theme-init.js"></script>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav aria-label="Navegación principal">
+        <a class="brand" href="#inicio">
+          <span class="brand-monogram" aria-hidden="true">
+            CC
+            <span>·</span>
+          </span>
+          <span class="brand-name">
+            Carlos Caballero Dávila
+            <small>Consultor financiero</small>
+          </span>
+        </a>
+        <div class="nav-links" id="main-menu">
+          <a href="#sobre-mi">Sobre mí</a>
+          <a href="#ayuda">En qué puedo ayudarte</a>
+          <a href="#metodo">Cómo trabajo</a>
+          <a href="#preguntas">Preguntas frecuentes</a>
+          <a class="mobile-contact" href="#contacto">Solicitar mi primera reunión ↗</a>
+        </div>
+        <div class="nav-actions">
+          <button
+            class="theme"
+            aria-label="Cambiar entre tema claro y oscuro"
+            title="Cambiar tema"
+          >
+            ◐
+          </button>
+          <a class="nav-cta" href="#contacto">
+            <span>Solicitar mi primera reunión</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <button
+            class="menu-toggle"
+            aria-label="Abrir menú"
+            aria-controls="main-menu"
+            aria-expanded="false"
+          >
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <!-- SECCIÓN: INICIO -->
+      <section class="hero" id="inicio">
+        <div class="hero-inner">
+          <div class="reveal">
+            <div class="eyebrow">Finanzas que se entienden</div>
+            <h1>
+              Te ayudo a entender
+              <br />
+              tus finanzas y a
+              <br />
+              <em>decidir con confianza.</em>
+            </h1>
+            <p class="intro">
+              Planificación financiera personalizada para tus objetivos de ahorro,
+              inversión y protección. Con explicaciones claras y acompañamiento en cada
+              etapa.
+            </p>
+            <div class="actions">
+              <a href="#contacto" class="btn">Solicitar mi primera reunión ↗</a>
+              <a
+                class="text-link"
+                href="https://wa.me/34638487427"
+                target="_blank"
+                rel="noopener"
+              >
+                Hablamos por WhatsApp ↗
+              </a>
+            </div>
+            <p class="location">Las Palmas de Gran Canaria · Online en toda España</p>
+          </div>
+          <div class="portrait">
+            <img
+              src="assets/carlos.png"
+              alt="Carlos Caballero Dávila, consultor financiero"
+            />
+            <div class="portrait-label">
+              Tu punto de partida no tiene que ser perfecto.
+              <strong>Empecemos por entenderlo.</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="strip" aria-label="Las tres etapas de tu planificación">
+        <a href="#metodo" class="stage-preview">
+          <span class="stage-number">01</span>
+          <div>
+            <h2>Análisis</h2>
+            <p>Tu situación, tus prioridades y lo que quieres conseguir.</p>
+          </div>
+          <span class="stage-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="#metodo" class="stage-preview">
+          <span class="stage-number">02</span>
+          <div>
+            <h2>Asesoramiento</h2>
+            <p>Un proyecto a tu medida, explicado para que puedas decidir.</p>
+          </div>
+          <span class="stage-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="#metodo" class="stage-preview">
+          <span class="stage-number">03</span>
+          <div>
+            <h2>Servicio</h2>
+            <p>Acompañamiento y revisiones para seguir avanzando contigo.</p>
+          </div>
+          <span class="stage-arrow" aria-hidden="true">↗</span>
+        </a>
+      </section>
+
+      <!-- SECCIÓN: AYUDA -->
+      <section class="wrap" id="ayuda">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">En qué puedo ayudarte</div>
+            <h2>
+              Tu vida cambia.
+              <br />
+              Tu planificación también.
+            </h2>
+          </div>
+          <p>
+            No necesitas saber de finanzas para empezar. Exploramos juntos qué necesitas y
+            qué opciones pueden encajar contigo.
+          </p>
+        </div>
+        <div class="grid">
+          <details class="service">
+            <summary>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                  <path d="M6 13h20v13H6zM4 10l12-6 12 6M11 17v5m5-5v5m5-5v5M4 28h24" />
+                  <path d="M13 10h6" />
+                </svg>
+              </span>
+              <h3>Ahorro con un propósito</h3>
+              <p>Organiza tus finanzas y prepara ese objetivo que tienes en mente.</p>
+              <span class="more">Explorar +</span>
+            </summary>
+            <p class="expanded">
+              Revisamos ingresos, gastos y ahorro para entender tu punto de partida. Desde
+              crear un colchón para imprevistos hasta preparar un proyecto personal.
+            </p>
+          </details>
+          <details class="service">
+            <summary>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                  <path d="M5 5v22h23M9 21l6-7 5 3 7-10M21 7h6v6" />
+                </svg>
+              </span>
+              <h3>Entender la inversión</h3>
+              <p>Comprende las opciones antes de decidir qué hacer con tu dinero.</p>
+              <span class="more">Explorar +</span>
+            </summary>
+            <p class="expanded">
+              Te explico cómo funcionan las herramientas propuestas, sus riesgos, costes y
+              alternativas, teniendo en cuenta tu situación y tus objetivos.
+            </p>
+          </details>
+          <details class="service">
+            <summary>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="16" r="11" />
+                  <path d="M16 9v7l5 3M12 3h8M16 3v2" />
+                </svg>
+              </span>
+              <h3>Planificar tu jubilación</h3>
+              <p>Piensa en cómo quieres vivir mañana y qué puedes preparar hoy.</p>
+              <span class="more">Explorar +</span>
+            </summary>
+            <p class="expanded">
+              Hablamos de tus expectativas y de las posibilidades para complementar los
+              ingresos de tu futura jubilación.
+            </p>
+          </details>
+          <details class="service">
+            <summary>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                  <path d="M16 3 26 7v8c0 7-10 14-10 14S6 22 6 15V7z" />
+                  <path d="m11 16 3 3 7-7" />
+                </svg>
+              </span>
+              <h3>Proteger lo importante</h3>
+              <p>Revisa la protección de tu familia, tu salud y tu patrimonio.</p>
+              <span class="more">Explorar +</span>
+            </summary>
+            <p class="expanded">
+              Analizamos tus necesidades de seguros y las coberturas que ya tienes para
+              valorar opciones adecuadas a cada caso.
+            </p>
+          </details>
+          <details class="service">
+            <summary>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                  <path d="m3 15 13-11 13 11M7 13v15h18V13M13 28v-9h6v9M22 8V4h4v7" />
+                </svg>
+              </span>
+              <h3>Tu vivienda y financiación</h3>
+              <p>Entiende qué necesitas para dar el paso hacia tu propia casa.</p>
+              <span class="more">Explorar +</span>
+            </summary>
+            <p class="expanded">
+              Revisamos tu preparación económica para comprar una vivienda y las
+              posibilidades de financiación hipotecaria según tu situación.
+            </p>
+          </details>
+          <details class="service">
+            <summary>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                  <rect x="4" y="10" width="24" height="18" rx="3" />
+                  <path d="M11 10V5h10v5M4 17c7 4 17 4 24 0M13 18h6v4h-6z" />
+                </svg>
+              </span>
+              <h3>Negocios y autónomos</h3>
+              <p>Una planificación que también tenga en cuenta tu actividad.</p>
+              <span class="more">Explorar +</span>
+            </summary>
+            <p class="expanded">
+              Exploramos objetivos de ahorro, protección y financiación relacionados con
+              tu actividad y con tu economía personal.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: SOBRE-MI -->
+      <section class="wrap about" id="sobre-mi">
+        <div>
+          <div class="eyebrow">Sobre mí</div>
+          <h2>
+            Primero comprender.
+            <br />
+            Después decidir.
+          </h2>
+          <div class="quote">
+            «Quiero que salgas con más claridad de la que tenías al entrar.»
+          </div>
+        </div>
+        <div>
+          <h3>
+            Soy Carlos. Mi interés empezó por las inversiones; mi propósito es acercarlas
+            a las personas.
+          </h3>
+          <p>
+            Antes de cobrar mi primer sueldo ya estaba buscando cómo planificarlo. Ese
+            interés me llevó a conocer la consultoría financiera como cliente y, después,
+            a formarme para dedicarme a ella.
+          </p>
+          <p>
+            Hoy ayudo a personas y empresas a entender su situación económica. Me importa
+            que puedas preguntar, comprender las opciones y tomar decisiones con
+            información, aunque empieces desde cero.
+          </p>
+          <a
+            class="text-link"
+            href="https://www.linkedin.com/in/carlos-cd/"
+            target="_blank"
+            rel="noopener"
+          >
+            Conóceme en LinkedIn ↗
+          </a>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: METODO -->
+      <section class="method" id="metodo">
+        <div class="wrap">
+          <div class="eyebrow">Cómo trabajo</div>
+          <h2>
+            Un proceso claro.
+            <br />
+            Una relación que continúa.
+          </h2>
+          <div class="steps">
+            <article class="step">
+              <b>01 /</b>
+              <h3>Análisis</h3>
+              <p>
+                Conocemos tu situación, lo que tienes y lo que quieres conseguir. Ponemos
+                orden en tus objetivos y resolvemos tus primeras dudas.
+              </p>
+            </article>
+            <article class="step">
+              <b>02 /</b>
+              <h3>Asesoramiento</h3>
+              <p>
+                Revisamos tu proyecto y explicamos las herramientas propuestas:
+                funcionamiento, opciones, costes, riesgos y simulaciones. Si decides
+                contratar, tramitamos la documentación.
+              </p>
+            </article>
+            <article class="step">
+              <b>03 /</b>
+              <h3>Servicio</h3>
+              <p>
+                Te explico cómo acceder a tus productos y cómo será nuestro
+                acompañamiento. Si tu situación cambia, lo hablamos y revisamos las
+                posibilidades.
+              </p>
+            </article>
+          </div>
+          <div class="follow">
+            <div>
+              <h3>El seguimiento forma parte del camino.</h3>
+              <p>Además de las revisiones, puedes llamarme o escribirme por WhatsApp.</p>
+            </div>
+            <strong>
+              Particulares · Cada 6 meses
+              <br />
+              Empresas · Cada 3 meses
+            </strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: FORMACION -->
+      <section class="wrap" id="formacion">
+        <div class="eyebrow">Formación</div>
+        <h2>Una base para acompañarte.</h2>
+        <div class="training">
+          <span>Curso inicial para distribuidores de seguros · Nivel 2</span>
+          <small>Enero 2026</small>
+        </div>
+        <div class="training">
+          <span>PBC y LOPD · 25 horas</span>
+          <small>Diciembre 2025</small>
+        </div>
+        <div class="training">
+          <span>Formación continua 2026 · 25 horas</span>
+          <small>Mayo 2026</small>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: PREGUNTAS -->
+      <section class="wrap faq" id="preguntas">
+        <div>
+          <div class="eyebrow">Preguntas frecuentes</div>
+          <h2>
+            Empecemos por
+            <br />
+            tus dudas.
+          </h2>
+        </div>
+        <div>
+          <details class="question">
+            <summary>¿Tienen coste las reuniones?</summary>
+            <p>
+              No te cobro honorarios por las reuniones ni por la planificación financiera.
+              La primera reunión es una oportunidad para conocernos, analizar tu situación
+              y resolver tus dudas, sin compromiso de contratar.
+            </p>
+          </details>
+          <details class="question">
+            <summary>¿Necesito tener ahorros para empezar?</summary>
+            <p>
+              No. La primera reunión no exige ahorros ni compromiso de aportar o
+              contratar. Algunos productos permiten aportaciones desde 50 € al mes.
+            </p>
+          </details>
+          <details class="question">
+            <summary>¿Y si no sé nada de finanzas?</summary>
+            <p>
+              No necesitas conocimientos previos. Te explicaré los conceptos y las
+              opciones con un lenguaje sencillo, y podrás preguntar lo que necesites.
+            </p>
+          </details>
+          <details class="question">
+            <summary>¿Podemos reunirnos a distancia?</summary>
+            <p>
+              Sí. Ofrezco atención online en toda España y presencial en Las Palmas de
+              Gran Canaria.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: CONTACTO -->
+      <section class="contact" id="contacto">
+        <div class="wrap">
+          <div class="contact-heading">
+            <div>
+              <div class="eyebrow">Demos el primer paso</div>
+              <h2>
+                Una conversación.
+                <br />
+                <span>Un nuevo punto de partida.</span>
+              </h2>
+            </div>
+            <p>
+              Cuéntame qué necesitas. Me pondré en contacto contigo para acordar nuestra
+              primera reunión de análisis.
+            </p>
+          </div>
+          <div class="contact-grid">
+            <aside class="contact-direct">
+              <span class="contact-kicker">Hablemos de tus objetivos</span>
+              <h3>
+                No necesitas tener
+                <br />
+                todas las respuestas
+                <br />
+                para empezar.
+              </h3>
+              <p>
+                Ni ahorros previos ni compromiso de contratar. El primer paso es conocer
+                tu situación.
+              </p>
+              <div class="contact-links">
+                <div class="contact-info">
+                  <span class="contact-symbol" aria-hidden="true">↗</span>
+                  <span>
+                    <small>Escríbeme por WhatsApp</small>
+                    <strong>638 487 427</strong>
+                  </span>
+                </div>
+                <div class="contact-info">
+                  <span class="contact-symbol" aria-hidden="true">↗</span>
+                  <span>
+                    <small>Prefieres una llamada</small>
+                    <strong>+34 638 487 427</strong>
+                  </span>
+                </div>
+              </div>
+              <div class="contact-location">
+                <span aria-hidden="true">◎</span>
+                <p>
+                  Presencial en Las Palmas de Gran Canaria
+                  <br />
+                  Atención online en toda España
+                </p>
+              </div>
+            </aside>
+            <form id="demo-form">
+              <div class="form-intro">
+                <span class="eyebrow">Solicita tu primera reunión</span>
+                <h3>Empecemos por ti.</h3>
+                <p>Rellena estos datos y dime cuándo te viene mejor que te llame.</p>
+              </div>
+              <p class="demo full">
+                Vista de demostración: no se envía ni se guarda información. No
+                introduzcas datos personales reales.
+              </p>
+              <fieldset class="form-section full">
+                <legend>
+                  <span>01</span>
+                  Tus datos de contacto
+                </legend>
+                <div class="input-grid">
+                  <label class="full">
+                    Nombre y apellidos
+                    <span class="required-mark">Obligatorio</span>
+                    <input disabled placeholder="¿Cómo te llamas?" autocomplete="off" />
+                  </label>
+                  <label>
+                    Teléfono
+                    <span class="required-mark">Obligatorio</span>
+                    <input
+                      disabled
+                      placeholder="Tu número de contacto"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label>
+                    Correo electrónico
+                    <span class="required-mark">Obligatorio</span>
+                    <input
+                      disabled
+                      placeholder="Tu dirección de correo"
+                      autocomplete="off"
+                    />
+                  </label>
+                </div>
+              </fieldset>
+              <fieldset class="form-section full">
+                <legend>
+                  <span>02</span>
+                  ¿En qué te gustaría que te ayudara?
+                </legend>
+                <p class="field-help">Puedes elegir más de una opción.</p>
+                <div class="checks">
+                  <label>
+                    <input type="checkbox" />
+                    <span>Organizar mis finanzas</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Ahorro e inversión</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Jubilación</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Vivienda o hipoteca</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Seguros y protección</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Mi negocio</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Conocer el servicio</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    <span>Otro motivo</span>
+                  </label>
+                </div>
+              </fieldset>
+              <fieldset class="form-section full">
+                <legend>
+                  <span>03</span>
+                  El mejor momento para hablar
+                </legend>
+                <div class="time-options">
+                  <label>
+                    <input type="radio" name="time" value="mañana" />
+                    <span>Mañana</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="time" value="tarde" />
+                    <span>Tarde</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="time" value="indiferente" />
+                    <span>Indiferente</span>
+                  </label>
+                </div>
+                <label class="comment-label">
+                  ¿Hay algo que quieras contarme?
+                  <span class="required-mark">Opcional</span>
+                  <textarea
+                    disabled
+                    rows="3"
+                    placeholder="Si lo prefieres, lo hablamos cuando te llame."
+                  ></textarea>
+                </label>
+              </fieldset>
+              <div class="form-end full">
+                <button class="btn formbutton" type="button" id="demo-submit">
+                  Solicitar mi primera reunión
+                  <span aria-hidden="true">↗</span>
+                </button>
+                <span class="form-note">
+                  Primero hablamos.
+                  <br />
+                  Tú decides el siguiente paso.
+                </span>
+              </div>
+              <div class="demo full" id="demo-feedback" role="status" hidden>
+                <strong>Demostración de la confirmación</strong>
+                <p>
+                  Cuando conectemos el formulario, aquí confirmaremos la recepción de tu
+                  solicitud. Ahora no se ha enviado ningún dato.
+                </p>
+                <a class="text-link" href="tel:+34638487427">Llamar a Carlos ↗</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span>Carlos Caballero Dávila · Consultor financiero</span>
+      <span>Propuesta visual · Textos sujetos a revisión</span>
+      <a href="#inicio">Volver arriba ↑</a>
+    </footer>
+    <script src="js/theme.js"></script>
+    <script src="js/interactions.js" defer></script>
+    <a
+      class="back-to-top"
+      href="#inicio"
+      aria-label="Volver al inicio de la página"
+      hidden
+    >
+      <span aria-hidden="true">↑</span>
+      <span>Arriba</span>
+    </a>
+    <div class="floating-navigation" hidden>
+      <button
+        class="floating-cc"
+        aria-label="Abrir menú de navegación"
+        aria-expanded="false"
+        aria-controls="floating-menu"
+      >
+        <span aria-hidden="true">
+          CC
+          <i>·</i>
+        </span>
+      </button>
+      <nav id="floating-menu" class="floating-links" aria-label="Menú flotante" hidden>
+        <a href="#inicio">Inicio</a>
+        <a href="#sobre-mi">Sobre mí</a>
+        <a href="#ayuda">En qué puedo ayudarte</a>
+        <a href="#metodo">Cómo trabajo</a>
+        <a href="#formacion">Formación</a>
+        <a href="#preguntas">Preguntas frecuentes</a>
+        <a href="#contacto">Solicitar mi primera reunión ↗</a>
+      </nav>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,185 @@
+/* Adaptación final: móviles pequeños, tabletas, pantallas amplias y uso táctil. */
+
+/* Permitir que los elementos de las rejillas reduzcan su ancho sin recortarse. */
+.hero-inner > *,
+.section-head > *,
+.stage-preview > div,
+.grid > *,
+.steps > *,
+.contact-grid > *,
+.input-grid > *,
+.faq > *,
+.about > * {
+  min-width: 0;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p,
+label,
+.stage-preview,
+.training {
+  overflow-wrap: break-word;
+}
+
+.stage-preview h2 {
+  hyphens: auto;
+}
+
+/* Menús largos siguen siendo accesibles en móviles en orientación horizontal. */
+.site-header .nav-links {
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
+}
+
+/* Pantallas intermedias: dar espacio al texto antes de pasar a dos columnas. */
+@media (min-width: 601px) and (max-width: 850px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+    padding-top: 45px;
+  }
+
+  .hero-inner > .reveal {
+    padding-bottom: 10px;
+  }
+
+  .hero h1 {
+    font-size: clamp(48px, 7vw, 64px);
+  }
+
+  .hero .intro {
+    max-width: 600px;
+  }
+
+  .portrait {
+    width: min(75%, 470px);
+    height: 550px;
+    justify-self: center;
+  }
+
+  #sobre-mi,
+  #preguntas {
+    grid-template-columns: 1fr;
+  }
+
+  #preguntas > div:first-child::after {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  input,
+  select,
+  textarea {
+    /* Evitar el zoom automático del formulario en navegadores móviles. */
+    font-size: 16px !important;
+  }
+
+  .site-header .theme,
+  .menu-toggle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .stage-preview,
+  .stage-preview:first-child,
+  .stage-preview:last-child {
+    gap: 16px;
+  }
+
+  .stage-preview h2 {
+    font-size: clamp(21px, 5.8vw, 27px);
+  }
+
+  .stage-number {
+    font-size: clamp(52px, 16vw, 76px);
+    letter-spacing: -3px;
+  }
+
+  .stage-arrow {
+    flex-shrink: 0;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 10vw, 49px);
+    letter-spacing: -1.8px;
+  }
+
+  #contacto .contact-heading h2 {
+    font-size: clamp(32px, 9vw, 42px);
+  }
+
+  .portrait {
+    height: clamp(360px, 110vw, 470px);
+  }
+
+  .portrait-label {
+    max-width: calc(100% + 10px);
+  }
+}
+
+/* Móviles estrechos y ventanas reducidas por zoom. */
+@media (max-width: 380px) {
+  .site-header .brand-name {
+    font-size: 12px;
+    max-width: 115px;
+  }
+
+  .site-header .brand-monogram {
+    display: none;
+  }
+
+  .stage-preview,
+  .stage-preview:first-child,
+  .stage-preview:last-child {
+    padding: 24px 12px;
+    gap: 12px;
+  }
+
+  .stage-arrow {
+    display: none;
+  }
+
+  #demo-form .checks {
+    grid-template-columns: 1fr;
+  }
+
+  .time-options {
+    grid-template-columns: 1fr;
+  }
+
+  #demo-form {
+    padding: 24px 16px;
+  }
+
+  .form-end .btn {
+    width: 100%;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+/* No depender de pasar el ratón para entender controles o selecciones. */
+@media (hover: none), (pointer: coarse) {
+  .nav-links > a,
+  .floating-links a,
+  .time-options label,
+  #demo-form .checks label {
+    min-height: 44px;
+  }
+
+  .service .more,
+  .stage-arrow {
+    opacity: 1;
+  }
+}
