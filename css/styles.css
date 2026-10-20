@@ -1870,7 +1870,7 @@ body.scrolled nav {
   margin: 0;
   line-height: 1.9;
 }
-#demo-form {
+#contact-form {
   display: block;
   padding: 38px;
   background: var(--bg);
@@ -1948,8 +1948,8 @@ body.scrolled nav {
   right: 0;
   top: 2px;
 }
-#demo-form input:not([type="checkbox"]):not([type="radio"]),
-#demo-form textarea {
+#contact-form input:not([type="checkbox"]):not([type="radio"]),
+#contact-form textarea {
   padding: 15px 14px;
   background: var(--panel);
   border: 1px solid transparent;
@@ -1959,17 +1959,17 @@ body.scrolled nav {
     box-shadow 0.2s,
     background 0.2s;
 }
-#demo-form input:disabled,
-#demo-form textarea:disabled {
+#contact-form input:disabled,
+#contact-form textarea:disabled {
   opacity: 0.85;
   cursor: not-allowed;
 }
-#demo-form input:hover,
-#demo-form textarea:hover {
+#contact-form input:hover,
+#contact-form textarea:hover {
   border-color: var(--accent);
 }
-#demo-form input:focus-visible,
-#demo-form textarea:focus-visible {
+#contact-form input:focus-visible,
+#contact-form textarea:focus-visible {
   outline: 0;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -1980,10 +1980,10 @@ body.scrolled nav {
   margin: 0 0 13px;
   color: var(--muted);
 }
-#demo-form .checks {
+#contact-form .checks {
   gap: 10px;
 }
-#demo-form .checks label {
+#contact-form .checks label {
   position: relative;
   padding: 14px 12px;
   min-height: 52px;
@@ -1997,22 +1997,22 @@ body.scrolled nav {
     background 0.2s,
     box-shadow 0.2s;
 }
-#demo-form .checks label:hover {
+#contact-form .checks label:hover {
   transform: translateY(-3px);
   border-color: var(--accent);
   box-shadow: 0 7px 15px #0827350c;
 }
-#demo-form .checks label:has(input:checked) {
+#contact-form .checks label:has(input:checked) {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 14%, var(--bg));
 }
-#demo-form .checks input {
+#contact-form .checks input {
   width: 16px;
   height: 16px;
   margin: 0;
   flex-shrink: 0;
 }
-#demo-form .checks label:focus-within,
+#contact-form .checks label:focus-within,
 .time-options label:focus-within {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -2079,16 +2079,16 @@ body.scrolled nav {
   line-height: 1.8;
   color: var(--muted);
 }
-#demo-form .demo {
+#contact-form .demo {
   font-size: 11px !important;
   border-radius: 6px;
   background: var(--panel);
   margin: 20px 0 0;
 }
-#demo-feedback p {
+#contact-feedback p {
   font-size: 13px;
 }
-#demo-feedback .text-link {
+#contact-feedback .text-link {
   display: inline-block;
   margin-top: 10px;
 }
@@ -2100,7 +2100,7 @@ body.scrolled nav {
   .contact-direct {
     padding: 32px 23px;
   }
-  #demo-form {
+  #contact-form {
     padding: 30px;
   }
   .contact-heading {
@@ -2165,7 +2165,7 @@ body.scrolled nav {
   .contact-direct h3 {
     font-size: 34px;
   }
-  #demo-form {
+  #contact-form {
     padding: 28px 20px;
   }
   .form-intro h3 {
@@ -2177,11 +2177,11 @@ body.scrolled nav {
   .input-grid .full {
     grid-column: auto;
   }
-  #demo-form .checks {
+  #contact-form .checks {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
-  #demo-form .checks label {
+  #contact-form .checks label {
     padding: 12px 9px;
     font-size: 11px;
     gap: 7px;
@@ -2213,7 +2213,7 @@ body.scrolled nav {
   #contacto .contact-links a:hover,
   .contact-links a:hover .contact-symbol,
   .contact-links a:hover .link-arrow,
-  #demo-form .checks label:hover,
+  #contact-form .checks label:hover,
   .time-options label:hover {
     transform: none;
   }
@@ -2300,7 +2300,7 @@ body.scrolled nav {
   transform: rotate(-7deg);
 }
 /* Botones de selección con campos nativos accesibles, sin casillas visibles. */
-#demo-form .checks label {
+#contact-form .checks label {
   padding: 15px 38px 15px 16px;
   min-height: 56px;
   display: flex;
@@ -2311,7 +2311,7 @@ body.scrolled nav {
   position: relative;
   overflow: hidden;
 }
-#demo-form .checks input,
+#contact-form .checks input,
 .time-options input {
   position: absolute;
   width: 1px;
@@ -2320,7 +2320,7 @@ body.scrolled nav {
   margin: 0;
   clip-path: inset(50%);
 }
-#demo-form .checks label:after {
+#contact-form .checks label:after {
   content: "+";
   position: absolute;
   right: 14px;
@@ -2331,12 +2331,12 @@ body.scrolled nav {
   color: var(--muted);
   transition: color 0.2s;
 }
-#demo-form .checks label:has(input:checked) {
+#contact-form .checks label:has(input:checked) {
   background: color-mix(in srgb, var(--accent) 15%, var(--bg));
   border-color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
-#demo-form .checks label:has(input:checked):after {
+#contact-form .checks label:has(input:checked):after {
   content: "✓";
   font-size: 16px;
   color: var(--accent);
@@ -2353,11 +2353,11 @@ body.scrolled nav {
   color: var(--accent);
 }
 @media (max-width: 500px) {
-  #demo-form .checks label {
+  #contact-form .checks label {
     padding: 14px 28px 14px 12px;
     font-size: 11px;
   }
-  #demo-form .checks label:after {
+  #contact-form .checks label:after {
     right: 10px;
   }
   .contact-info strong {

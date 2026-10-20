@@ -2,6 +2,7 @@ const http = require("http"),
   fs = require("fs"),
   path = require("path");
 const base = __dirname;
+const port = Number(process.env.PORT || 4173);
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -12,10 +13,10 @@ const contentTypes = {
 http
   .createServer((req, res) => {
     const url = new URL(req.url, "http://localhost");
-    const file =
-      url.pathname === "/"
-        ? "index.html"
-        : decodeURIComponent(url.pathname).replace(/^\/+/, "");
+    const pathname = decodeURIComponent(url.pathname);
+    const file = pathname.endsWith("/")
+      ? pathname.replace(/^\/+/, "") + "index.html"
+      : pathname.replace(/^\/+/, "");
     const full = path.resolve(base, file);
     if (!full.startsWith(base + path.sep)) {
       res.writeHead(403);
@@ -33,4 +34,4 @@ http
       res.end(data);
     });
   })
-  .listen(4173, "127.0.0.1", () => console.log("Local: http://127.0.0.1:4173"));
+  .listen(port, "127.0.0.1", () => console.log(`Local: http://127.0.0.1:${port}`));

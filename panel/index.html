@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Mi panel · Carlos Caballero Dávila</title>
+    <script src="../js/theme-init.js?v=panel1"></script>
+    <link rel="stylesheet" href="../css/base.css?v=panel1" />
+    <link rel="stylesheet" href="../css/styles.css?v=panel1" />
+    <link rel="stylesheet" href="../css/panel.css?v=panel1" />
+  </head>
+  <body class="panel-page">
+    <section class="panel-login" id="login-screen" aria-labelledby="login-title">
+      <a href="../" class="panel-mark" aria-label="Volver al portfolio">
+        CC
+        <span>·</span>
+      </a>
+      <p class="eyebrow">Tu espacio de trabajo</p>
+      <h1 id="login-title">
+        Todo empieza
+        <br />
+        con una conversación.
+      </h1>
+      <p class="panel-subtitle">Accede a las solicitudes de primera reunión.</p>
+      <form id="login-form">
+        <label>
+          Correo de acceso
+          <input
+            type="email"
+            name="email"
+            autocomplete="username"
+            maxlength="254"
+            required
+          />
+        </label>
+        <label>
+          Contraseña
+          <input
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <button type="submit" class="btn" id="login-button" disabled>
+          Entrar en mi panel ↗
+        </button>
+      </form>
+      <p id="login-notice" class="panel-notice" role="status">Conectando…</p>
+      <a href="../" class="panel-back">← Volver al portfolio</a>
+    </section>
+
+    <div class="panel-shell" id="panel-screen" hidden>
+      <aside class="panel-sidebar">
+        <a href="../" class="panel-mark" aria-label="Abrir portfolio">
+          CC
+          <span>·</span>
+        </a>
+        <p>
+          Carlos Caballero Dávila
+          <small>Mi panel privado</small>
+        </p>
+        <button
+          class="panel-menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="panel-navigation"
+        >
+          Menú ☰
+        </button>
+        <nav id="panel-navigation" aria-label="Secciones del panel">
+          <button type="button" data-view="home" aria-current="page">
+            Inicio
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="requests">
+            Solicitudes
+            <span>↗</span>
+          </button>
+        </nav>
+        <button type="button" class="panel-logout" id="logout-button">
+          Cerrar sesión ↗
+        </button>
+        <small class="session-note">
+          La sesión se cierra tras 15 minutos sin actividad.
+        </small>
+      </aside>
+      <main class="panel-main">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Tu actividad</p>
+            <h1 id="panel-title">Bienvenido, Carlos.</h1>
+          </div>
+          <div class="panel-controls">
+            <button class="theme" aria-label="Cambiar tema" title="Cambiar tema">
+              ◐
+            </button>
+            <button type="button" id="refresh-button" class="panel-secondary">
+              Actualizar ↻
+            </button>
+          </div>
+        </div>
+        <p id="panel-notice" class="panel-notice" role="status" hidden></p>
+        <section id="home-view" aria-label="Resumen de solicitudes">
+          <div class="panel-metrics">
+            <article>
+              <span>Pendientes de contactar</span>
+              <strong id="pending-count">—</strong>
+            </article>
+            <article>
+              <span>Contactados</span>
+              <strong id="contacted-count">—</strong>
+            </article>
+            <article>
+              <span>Citas acordadas</span>
+              <strong id="scheduled-count">—</strong>
+            </article>
+          </div>
+          <div class="panel-section-heading">
+            <h2>Solicitudes recientes</h2>
+            <button type="button" data-view="requests" class="panel-text-button">
+              Ver todas ↗
+            </button>
+          </div>
+          <div id="recent-requests" class="panel-request-list"></div>
+        </section>
+        <section id="requests-view" aria-label="Listado de solicitudes" hidden>
+          <label class="panel-search">
+            Buscar por nombre
+            <input
+              type="search"
+              id="request-search"
+              placeholder="Nombre del cliente"
+              autocomplete="off"
+              maxlength="120"
+            />
+          </label>
+          <p id="request-total" class="panel-muted"></p>
+          <div id="request-list" class="panel-request-list"></div>
+          <div class="panel-pagination">
+            <button type="button" id="previous-page" class="panel-secondary">
+              ← Anterior
+            </button>
+            <span id="page-label"></span>
+            <button type="button" id="next-page" class="panel-secondary">
+              Siguiente →
+            </button>
+          </div>
+        </section>
+        <p class="panel-retention">
+          Las solicitudes caducan a los 60 días de su envío. También puedes eliminarlas
+          antes.
+        </p>
+      </main>
+    </div>
+
+    <dialog id="request-dialog" aria-labelledby="request-title">
+      <div class="dialog-heading">
+        <p class="eyebrow">Primera reunión</p>
+        <button type="button" id="close-dialog" aria-label="Cerrar ficha">✕</button>
+      </div>
+      <h2 id="request-title"></h2>
+      <dl id="request-details"></dl>
+      <label>
+        Estado de la solicitud
+        <select id="request-status">
+          <option value="pending">Pendiente de contactar</option>
+          <option value="contacted">Contactado</option>
+          <option value="scheduled">Cita acordada</option>
+        </select>
+      </label>
+      <p id="dialog-notice" role="status" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn" id="save-status">Guardar estado</button>
+        <button type="button" class="panel-delete" id="delete-request">
+          Eliminar solicitud
+        </button>
+      </div>
+    </dialog>
+
+    <script src="../js/backend-config.js?v=panel1" defer></script>
+    <script src="../js/backend.js?v=panel1" defer></script>
+    <script src="../js/panel.js?v=panel1" defer></script>
+  </body>
+</html>

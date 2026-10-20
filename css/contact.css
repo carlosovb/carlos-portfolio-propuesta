@@ -1,0 +1,36 @@
+/* Validación y estados de envío del formulario de contacto. */
+.contact-honeypot {
+  display: none;
+}
+
+.contact-privacy {
+  margin: 26px 0 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.contact-privacy a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+#contact-form .formbutton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+#contact-feedback[hidden] {
+  display: none;
+}
+
+#contact-feedback[data-state="error"] {
+  border-left-color: #b65443;
+}
+
+#contact-form input:user-invalid,
+#contact-form textarea:user-invalid {
+  border-color: #b65443;
+}

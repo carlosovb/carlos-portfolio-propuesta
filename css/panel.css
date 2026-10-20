@@ -1,0 +1,430 @@
+/* Panel de solicitudes: interfaz independiente del portfolio público. */
+.panel-page {
+  min-height: 100dvh;
+}
+.panel-page [hidden] {
+  display: none !important;
+}
+.panel-page h1 {
+  font-family: "Aptos Display", "Segoe UI", sans-serif;
+  font-weight: 650;
+}
+.panel-page input,
+.panel-page select {
+  font-size: 16px;
+}
+.panel-page button {
+  touch-action: manipulation;
+}
+.panel-login {
+  max-width: 540px;
+  margin: 7vh auto;
+  padding: 35px;
+}
+.panel-mark {
+  display: inline-block;
+  font-size: 32px;
+  font-weight: 750;
+  letter-spacing: -2px;
+  padding: 10px 15px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  margin-bottom: 30px;
+}
+.panel-mark span {
+  color: var(--accent);
+}
+.panel-login h1 {
+  font-size: clamp(34px, 5vw, 51px);
+  letter-spacing: -1.8px;
+  line-height: 1.1;
+}
+.panel-subtitle,
+.panel-muted,
+.session-note {
+  color: var(--muted);
+}
+#login-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 21px;
+  margin-top: 30px;
+}
+.panel-page input,
+.panel-page select {
+  background: var(--panel);
+  padding: 14px;
+}
+.panel-login .btn {
+  justify-self: start;
+  margin: 8px 0;
+}
+.panel-page button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.panel-notice {
+  padding: 14px 18px;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  border-radius: 6px;
+  font-size: 14px;
+}
+.panel-back {
+  font-size: 13px;
+  color: var(--muted);
+}
+.panel-shell {
+  display: grid;
+  grid-template-columns: 255px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+.panel-sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 35px 25px;
+}
+.panel-sidebar p {
+  font-size: 14px;
+  font-weight: 600;
+}
+.panel-sidebar small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 7px;
+}
+.panel-sidebar nav {
+  display: grid;
+  gap: 9px;
+  margin: 35px 0;
+}
+.panel-sidebar nav button {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+}
+.panel-sidebar nav button:hover,
+.panel-sidebar nav button[aria-current] {
+  background: var(--bg);
+  border-color: var(--line);
+  color: var(--accent);
+}
+.panel-logout,
+.panel-text-button {
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  text-align: left;
+}
+.panel-menu-toggle {
+  display: none;
+}
+.panel-main {
+  padding: 48px clamp(20px, 4vw, 65px);
+  max-width: 1500px;
+  width: 100%;
+  margin: auto;
+  min-width: 0;
+  align-self: start;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.panel-heading h1 {
+  font-size: clamp(30px, 3.6vw, 46px);
+  letter-spacing: -1.5px;
+  margin: 10px 0;
+}
+.panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.panel-secondary {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 10px 15px;
+  border-radius: 9px;
+}
+.panel-secondary:hover {
+  border-color: var(--accent);
+}
+.panel-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+}
+.panel-metrics article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 25px;
+}
+.panel-metrics span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+.panel-metrics strong {
+  font-size: 64px;
+  font-weight: 650;
+  letter-spacing: -3px;
+  color: var(--accent);
+  line-height: 1.4;
+}
+.panel-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 35px;
+}
+.panel-section-heading h2 {
+  font:
+    600 24px/1.3 "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.7px;
+}
+.panel-request-list {
+  display: grid;
+  gap: 12px;
+}
+.request-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  text-align: left;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--panel);
+  color: var(--ink);
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.request-row:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.request-row strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.request-row small {
+  display: block;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.request-status {
+  font-size: 11px;
+  padding: 7px 11px;
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.panel-empty {
+  padding: 35px 25px;
+  border: 1px dashed var(--line);
+  border-radius: 13px;
+  color: var(--muted);
+}
+.panel-search {
+  max-width: 500px;
+  margin-bottom: 25px;
+}
+.panel-pagination {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 25px;
+  font-size: 13px;
+}
+.panel-retention {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 45px;
+}
+#request-dialog {
+  width: min(640px, calc(100% - 30px));
+  max-height: calc(100dvh - 40px);
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--ink);
+}
+#request-dialog::backdrop {
+  background: #07111dbb;
+  backdrop-filter: blur(4px);
+}
+.dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+#close-dialog {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+}
+#request-title {
+  font:
+    600 32px/1.2 "Segoe UI",
+    sans-serif;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+#request-details {
+  margin: 25px 0;
+}
+#request-details dt {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 16px;
+}
+#request-details dd {
+  margin: 5px 0 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  margin-top: 30px;
+}
+.panel-delete {
+  color: #bf6451;
+  background: transparent;
+  border: 0;
+  padding: 12px 0;
+}
+@media (max-width: 850px) {
+  .panel-shell {
+    grid-template-columns: 1fr;
+  }
+  .panel-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    padding: 15px 5%;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel-sidebar .panel-mark {
+    margin: 0;
+    font-size: 23px;
+    padding: 5px 10px;
+  }
+  .panel-sidebar p {
+    flex: 1;
+    margin: 0;
+    font-size: 12px;
+  }
+  .panel-menu-toggle {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .panel-sidebar nav {
+    display: none;
+    width: 100%;
+    margin: 0;
+  }
+  .panel-sidebar.menu-open nav {
+    display: grid;
+  }
+  .panel-sidebar .session-note {
+    width: 100%;
+    margin: 0;
+  }
+  .panel-logout {
+    font-size: 12px;
+  }
+  .panel-main {
+    padding: 30px 5%;
+  }
+}
+@media (max-width: 550px) {
+  .panel-login {
+    padding: 25px;
+    margin-top: 3vh;
+  }
+  .panel-heading {
+    display: block;
+  }
+  .panel-controls {
+    margin-top: 20px;
+  }
+  .panel-metrics {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .panel-metrics article {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 22px;
+    gap: 15px;
+  }
+  .panel-metrics strong {
+    font-size: 45px;
+  }
+  .panel-section-heading h2 {
+    font-size: 21px;
+  }
+  .request-row {
+    display: grid;
+    gap: 14px;
+    padding: 19px;
+  }
+  .request-status {
+    justify-self: start;
+  }
+  #request-dialog {
+    padding: 25px 20px;
+  }
+  .panel-pagination {
+    gap: 10px;
+  }
+  .panel-pagination button {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .request-row:hover {
+    transform: none;
+  }
+}

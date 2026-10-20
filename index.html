@@ -6,10 +6,11 @@
     <meta name="theme-color" content="#f2ede3" />
     <meta name="robots" content="noindex,nofollow" />
     <title>Carlos Caballero Dávila · Propuesta visual</title>
-    <script src="js/theme-init.js?v=20261021-menu2"></script>
-    <link rel="stylesheet" href="css/base.css?v=20261021-menu2" />
-    <link rel="stylesheet" href="css/styles.css?v=20261021-menu2" />
-    <link rel="stylesheet" href="css/responsive.css?v=20261021-menu2" />
+    <script src="js/theme-init.js?v=20261021-panel1"></script>
+    <link rel="stylesheet" href="css/base.css?v=20261021-panel1" />
+    <link rel="stylesheet" href="css/styles.css?v=20261021-panel1" />
+    <link rel="stylesheet" href="css/responsive.css?v=20261021-panel1" />
+    <link rel="stylesheet" href="css/contact.css?v=20261021-panel1" />
   </head>
   <body>
     <header class="site-header">
@@ -452,16 +453,18 @@
                 </p>
               </div>
             </aside>
-            <form id="demo-form">
+            <form id="contact-form" method="POST" aria-describedby="contact-privacy">
               <div class="form-intro">
                 <span class="eyebrow">Solicita tu primera reunión</span>
                 <h3>Empecemos por ti.</h3>
                 <p>Rellena estos datos y dime cuándo te viene mejor que te llame.</p>
               </div>
-              <p class="demo full">
-                Vista de demostración: no se envía ni se guarda información. No
-                introduzcas datos personales reales.
-              </p>
+              <div class="contact-honeypot" aria-hidden="true" inert>
+                <label>
+                  Deja este campo vacío
+                  <input name="_honey" type="text" tabindex="-1" autocomplete="off" />
+                </label>
+              </div>
               <fieldset class="form-section full">
                 <legend>
                   <span>01</span>
@@ -471,24 +474,37 @@
                   <label class="full">
                     Nombre y apellidos
                     <span class="required-mark">Obligatorio</span>
-                    <input disabled placeholder="¿Cómo te llamas?" autocomplete="off" />
+                    <input
+                      name="name"
+                      type="text"
+                      required
+                      maxlength="120"
+                      placeholder="¿Cómo te llamas?"
+                      autocomplete="name"
+                    />
                   </label>
                   <label>
                     Teléfono
                     <span class="required-mark">Obligatorio</span>
                     <input
-                      disabled
+                      name="telefono"
+                      type="tel"
+                      required
+                      maxlength="30"
                       placeholder="Tu número de contacto"
-                      autocomplete="off"
+                      autocomplete="tel"
                     />
                   </label>
                   <label>
                     Correo electrónico
                     <span class="required-mark">Obligatorio</span>
                     <input
-                      disabled
+                      name="email"
+                      type="email"
+                      required
+                      maxlength="254"
                       placeholder="Tu dirección de correo"
-                      autocomplete="off"
+                      autocomplete="email"
                     />
                   </label>
                 </div>
@@ -501,35 +517,39 @@
                 <p class="field-help">Puedes elegir más de una opción.</p>
                 <div class="checks">
                   <label>
-                    <input type="checkbox" />
+                    <input
+                      type="checkbox"
+                      name="motivos"
+                      value="Organizar mis finanzas"
+                    />
                     <span>Organizar mis finanzas</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Ahorro e inversión" />
                     <span>Ahorro e inversión</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Jubilación" />
                     <span>Jubilación</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Vivienda o hipoteca" />
                     <span>Vivienda o hipoteca</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Seguros y protección" />
                     <span>Seguros y protección</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Mi negocio" />
                     <span>Mi negocio</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Conocer el servicio" />
                     <span>Conocer el servicio</span>
                   </label>
                   <label>
-                    <input type="checkbox" />
+                    <input type="checkbox" name="motivos" value="Otro motivo" />
                     <span>Otro motivo</span>
                   </label>
                 </div>
@@ -557,14 +577,22 @@
                   ¿Hay algo que quieras contarme?
                   <span class="required-mark">Opcional</span>
                   <textarea
-                    disabled
+                    name="comentario"
+                    maxlength="2000"
                     rows="3"
                     placeholder="Si lo prefieres, lo hablamos cuando te llame."
                   ></textarea>
                 </label>
               </fieldset>
+              <p class="contact-privacy" id="contact-privacy">
+                Carlos Caballero Dávila utilizará tus datos para responder a tu solicitud
+                y acordar una reunión. Las solicitudes se consultan en un panel privado,
+                sin enviarse por correo electrónico. No incluyas información financiera ni
+                documentación en este formulario. Puedes solicitar la eliminación de tu
+                solicitud llamando al +34 638 487 427.
+              </p>
               <div class="form-end full">
-                <button class="btn formbutton" type="button" id="demo-submit">
+                <button class="btn formbutton" type="submit" id="contact-submit" disabled>
                   Solicitar mi primera reunión
                   <span aria-hidden="true">↗</span>
                 </button>
@@ -574,12 +602,15 @@
                   Tú decides el siguiente paso.
                 </span>
               </div>
-              <div class="demo full" id="demo-feedback" role="status" hidden>
-                <strong>Demostración de la confirmación</strong>
-                <p>
-                  Cuando conectemos el formulario, aquí confirmaremos la recepción de tu
-                  solicitud. Ahora no se ha enviado ningún dato.
-                </p>
+              <div
+                class="demo full"
+                id="contact-feedback"
+                role="status"
+                tabindex="-1"
+                hidden
+              >
+                <strong id="contact-status-title"></strong>
+                <p id="contact-status-message"></p>
                 <a class="text-link" href="tel:+34638487427">Llamar a Carlos ↗</a>
               </div>
             </form>
@@ -592,8 +623,11 @@
       <span>Propuesta visual · Textos sujetos a revisión</span>
       <a href="#inicio">Volver arriba ↑</a>
     </footer>
-    <script src="js/theme.js?v=20261021-menu2"></script>
-    <script src="js/interactions.js?v=20261021-menu2" defer></script>
+    <script src="js/theme.js?v=20261021-panel1"></script>
+    <script src="js/interactions.js?v=20261021-panel1" defer></script>
+    <script src="js/backend-config.js?v=20261021-panel1" defer></script>
+    <script src="js/backend.js?v=20261021-panel1" defer></script>
+    <script src="js/contact.js?v=20261021-panel1" defer></script>
     <a
       class="back-to-top"
       href="#inicio"

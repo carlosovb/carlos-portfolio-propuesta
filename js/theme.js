@@ -1,4 +1,4 @@
-// Selector de tema y confirmación del formulario de demostración.
+// Selector de tema y persistencia de la preferencia del visitante.
 const root = document.documentElement;
 const preference = matchMedia("(prefers-color-scheme: dark)");
 let chosen = null;
@@ -35,7 +35,4 @@ addEventListener("storage", (e) => {
     chosen = ["light", "dark"].includes(e.newValue) ? e.newValue : null;
     theme();
   }
-});
-document.getElementById("demo-submit").addEventListener("click", () => {
-  document.getElementById("demo-feedback").hidden = false;
 });
