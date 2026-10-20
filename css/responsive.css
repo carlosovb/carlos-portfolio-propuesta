@@ -1,5 +1,27 @@
 /* Adaptación final: móviles pequeños, tabletas, pantallas amplias y uso táctil. */
 
+/* El menú CC tiene su propia disposición; no hereda la de la cabecera. */
+.floating-navigation .floating-links {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 0;
+  margin: 0;
+  gap: 4px;
+}
+
+.floating-navigation .floating-links[hidden] {
+  display: none;
+}
+
+.floating-navigation .floating-links > a {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  min-height: 44px;
+  white-space: normal;
+}
+
 /* Permitir que los elementos de las rejillas reduzcan su ancho sin recortarse. */
 .hero-inner > *,
 .section-head > *,

@@ -67,7 +67,7 @@ header {
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
-nav {
+.site-header nav {
   max-width: 1320px;
   margin: auto;
   min-height: 84px;
@@ -90,7 +90,7 @@ nav {
   margin-top: 6px;
   color: var(--muted);
 }
-nav > a {
+.site-header nav > a {
   font-size: 13px;
 }
 .btn {
@@ -498,11 +498,8 @@ footer {
   }
 }
 @media (max-width: 900px) {
-  nav {
+  .site-header nav {
     gap: 15px;
-  }
-  .site-header nav > a:not(.btn) {
-    display: none;
   }
   .hero-inner {
     padding-top: 45px;
@@ -528,7 +525,7 @@ footer {
   }
 }
 @media (max-width: 600px) {
-  nav {
+  .site-header nav {
     min-height: 72px;
     padding: 10px 5%;
     gap: 12px;
