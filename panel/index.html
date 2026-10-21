@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="../css/clients.css?v=client-button3" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
     <link rel="stylesheet" href="../css/premeeting.css?v=previo1" />
+    <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
+    <link rel="stylesheet" href="../css/workspace.css?v=hub1" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -86,8 +88,10 @@
             Solicitudes
             <span>↗</span>
           </button>
-          <button type="button" data-view="premeeting" data-admin-only>
-            Formulario previo
+          <button type="button" data-view="premeeting">Formularios recibidos</button>
+          <button type="button" data-view="resources">
+            Herramientas y recursos
+            <span>↗</span>
           </button>
           <button type="button" data-view="clients">
             Clientes
@@ -130,21 +134,81 @@
         </div>
         <p id="panel-notice" class="panel-notice" role="status" hidden></p>
         <section id="home-view" aria-label="Resumen de solicitudes">
-          <div class="profile-card" data-admin-only>
-            <p class="eyebrow">Antes de la reunión</p>
-            <h2>Preparar el siguiente paso.</h2>
-            <p>
-              Comparte el formulario previo con tu cliente. Sus respuestas solo las podrás
-              consultar tú.
-            </p>
-            <button type="button" class="panel-secondary" data-copy-premeeting>
-              Copiar enlace del formulario previo ↗
-            </button>
-            <button type="button" class="panel-text-button" data-view="premeeting">
-              Ver formularios recibidos ↗
-            </button>
-            <div id="premeeting-recent"></div>
+          <div class="dashboard-hero">
+            <div>
+              <p class="eyebrow" id="dashboard-date">Tu día de trabajo</p>
+              <h2 id="dashboard-name">Tu día, con perspectiva.</h2>
+              <p>
+                Tus clientes, tus conversaciones y las herramientas que te ayudan a
+                avanzar.
+              </p>
+              <div class="dashboard-hero-actions">
+                <button type="button" class="btn" data-view="resources">
+                  Abrir mis herramientas ↗
+                </button>
+                <button type="button" class="panel-secondary" data-view="clients">
+                  Mi cartera ↗
+                </button>
+              </div>
+            </div>
+            <div class="dashboard-position">
+              <span>Tu lugar en el equipo</span>
+              <strong id="dashboard-position">—</strong>
+              <b id="dashboard-factor">—</b>
+              <button type="button" class="panel-text-button" data-view="team">
+                Explorar el equipo ↗
+              </button>
+            </div>
           </div>
+          <p id="dashboard-load-note" class="panel-notice" hidden>
+            Hay apartados que no se han podido actualizar. Pulsa Actualizar para
+            reintentarlo.
+          </p>
+          <div class="dashboard-metrics">
+            <button type="button" data-view="clients">
+              <span>Mi cartera</span>
+              <strong id="dashboard-clients">—</strong>
+              <small>Clientes ↗</small>
+            </button>
+            <button type="button" data-view="clients">
+              <span>Próximas conversaciones</span>
+              <strong id="dashboard-interested">—</strong>
+              <small>Interesados ↗</small>
+            </button>
+            <button type="button" data-view="premeeting">
+              <span>Antes de la reunión</span>
+              <strong id="dashboard-forms">—</strong>
+              <small>Mis formularios ↗</small>
+            </button>
+            <button type="button" data-view="resources">
+              <span>Biblioteca del equipo</span>
+              <strong id="dashboard-documents">—</strong>
+              <small>Documentos y enlaces ↗</small>
+            </button>
+          </div>
+          <div class="dashboard-grid">
+            <article class="dashboard-block">
+              <div class="panel-section-heading">
+                <h2>Formularios recientes</h2>
+                <button type="button" class="panel-text-button" data-view="premeeting">
+                  Ver todos ↗
+                </button>
+              </div>
+              <p>Respuestas de tus propios clientes.</p>
+              <div id="dashboard-form-recent"></div>
+            </article>
+            <article class="dashboard-block">
+              <div class="panel-section-heading">
+                <h2>En la biblioteca</h2>
+                <button type="button" class="panel-text-button" data-view="resources">
+                  Explorar ↗
+                </button>
+              </div>
+              <p>Las últimas incorporaciones del equipo.</p>
+              <div id="dashboard-doc-recent"></div>
+            </article>
+          </div>
+          <div id="premeeting-recent" hidden></div>
           <div class="panel-metrics" data-admin-only>
             <article>
               <span>Pendientes de contactar</span>
@@ -189,17 +253,7 @@
             <small>Solo las solicitudes mostradas</small>
           </div>
           <div id="recent-requests" class="panel-request-list" data-admin-only></div>
-          <div id="consultant-home" class="profile-card" hidden>
-            <p class="eyebrow">Tu cuenta</p>
-            <h2>Tu espacio de consultor.</h2>
-            <p>
-              Consulta y actualiza tus datos personales y gestiona tu contraseña desde Mi
-              perfil.
-            </p>
-            <button type="button" data-view="profile" class="panel-secondary">
-              Abrir mi perfil ↗
-            </button>
-          </div>
+          <div id="consultant-home" hidden></div>
         </section>
         <section id="requests-view" aria-label="Listado de solicitudes" hidden>
           <div class="requests-overview">
@@ -283,20 +337,114 @@
             </button>
           </div>
         </section>
+        <section id="resources-view" aria-label="Herramientas y recursos" hidden>
+          <div class="resource-personal">
+            <div>
+              <p class="eyebrow">Tu herramienta personal</p>
+              <h2>Una reunión con contexto.</h2>
+              <p>
+                Comparte el formulario previo con tu nombre. Las respuestas llegarán solo
+                a tu panel.
+              </p>
+              <strong id="resource-consultant-name"></strong>
+            </div>
+            <div class="resource-link-controls">
+              <label>
+                Tu enlace personal
+                <input id="resource-personal-link" readonly />
+              </label>
+              <button type="button" class="btn" id="resource-copy-link">
+                Copiar mi enlace ↗
+              </button>
+              <a
+                id="resource-open-link"
+                class="panel-text-button"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              >
+                Abrir mi formulario ↗
+              </a>
+              <button type="button" class="panel-text-button" data-view="premeeting">
+                Ver mis respuestas ↗
+              </button>
+            </div>
+          </div>
+          <div class="panel-section-heading">
+            <div>
+              <p class="eyebrow">Biblioteca RED</p>
+              <h2>El conocimiento, a mano.</h2>
+              <p>Compañía → producto → documento. Acceso privado para el equipo.</p>
+            </div>
+          </div>
+          <p id="resources-notice" class="panel-notice" role="status" hidden></p>
+          <details id="resource-admin" class="dashboard-block" data-admin-only>
+            <summary>Añadir documentación o enlace +</summary>
+            <form id="resource-form" class="resource-form">
+              <label>
+                Compañía
+                <input name="company" required maxlength="120" />
+              </label>
+              <label>
+                Producto
+                <input name="product" required maxlength="120" />
+              </label>
+              <label>
+                Título del documento o recurso
+                <input name="title" required maxlength="160" />
+              </label>
+              <label>
+                Tipo de recurso
+                <select id="resource-kind" name="kind">
+                  <option value="file">Documento PDF</option>
+                  <option value="link">Enlace externo</option>
+                </select>
+              </label>
+              <label id="resource-file-label">
+                PDF · máximo 10 MB
+                <input
+                  type="file"
+                  id="resource-file"
+                  accept="application/pdf,.pdf"
+                  required
+                />
+              </label>
+              <label id="resource-url-label" hidden>
+                Enlace https://
+                <input type="url" id="resource-url" name="url" maxlength="2048" />
+              </label>
+              <button type="submit" class="btn" id="resource-save">
+                Publicar para el equipo ↗
+              </button>
+            </form>
+          </details>
+          <div class="bulk-toolbar" id="resource-bulk" hidden>
+            <label>
+              <input type="checkbox" id="resource-select-all" />
+              Seleccionar todos los mostrados
+            </label>
+            <button
+              type="button"
+              class="invitation-delete"
+              id="resource-delete-selected"
+              disabled
+            >
+              Eliminar seleccionados
+            </button>
+          </div>
+          <div id="resources-browser"></div>
+        </section>
         <section id="premeeting-view" aria-label="Formularios previos privados" hidden>
           <div class="profile-card">
             <p class="eyebrow">Llegar con contexto</p>
             <h2>Antes de vuestra reunión.</h2>
             <p>
-              Un enlace para todos los clientes. Sin registro. Las respuestas son privadas
-              y se eliminan automáticamente a los 30 días.
+              Aquí encontrarás únicamente las respuestas recibidas desde tu enlace
+              personal. Se eliminan automáticamente a los 30 días.
             </p>
-            <button type="button" class="panel-secondary" data-copy-premeeting>
-              Copiar enlace del formulario previo ↗
+            <button type="button" class="panel-secondary" data-view="resources">
+              Abrir herramientas y recursos ↗
             </button>
-            <a class="panel-text-button" href="../previo/" target="_blank" rel="noopener">
-              Ver formulario ↗
-            </a>
           </div>
           <div class="panel-section-heading">
             <h2>
@@ -990,7 +1138,7 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=previo1" defer></script>
+    <script src="../js/backend.js?v=hub1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/clients.js?v=client-close4" defer></script>
@@ -998,8 +1146,10 @@
     <script src="../js/photo-crop.js?v=team2" defer></script>
     <script src="../js/team.js?v=clients2" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
-    <script src="../js/premeeting-summary.js?v=previo1" defer></script>
-    <script src="../js/premeeting-panel.js?v=previo1" defer></script>
-    <script src="../js/panel.js?v=previo1" defer></script>
+    <script src="../js/premeeting-summary.js?v=hub1" defer></script>
+    <script src="../js/premeeting-panel.js?v=hub1" defer></script>
+    <script src="../js/resources.js?v=hub1" defer></script>
+    <script src="../js/dashboard.js?v=hub1" defer></script>
+    <script src="../js/panel.js?v=hub1" defer></script>
   </body>
 </html>

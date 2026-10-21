@@ -63,6 +63,10 @@ async function mock(context, state) {
       return state.invalidLink ? json({}, 403) : json(session);
     }
     if (url.pathname === "/auth/v1/logout") return json({});
+    if (url.pathname.includes("/team_resources")) return json([]);
+    if (url.pathname.endsWith("/rpc/list_my_clients"))
+      return json({ rows: [], total: 0, stats: { clients: 0, interested: 0 } });
+
     if (url.pathname.includes("premeeting_responses")) return json([]);
     if (url.pathname === "/auth/v1/recover") {
       state.recoveries++;

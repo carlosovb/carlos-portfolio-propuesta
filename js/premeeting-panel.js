@@ -1,8 +1,7 @@
 (() => {
   const get = (id) => document.getElementById(id),
     backend = window.PortfolioBackend;
-  const applicationRoot = new URL("../", document.currentScript.src);
-  const formLink = new URL("previo/", applicationRoot).href;
+  let currentAccount = null;
   let epoch = 0,
     active = false,
     page = 0,
@@ -21,6 +20,7 @@
   const dialog = get("premeeting-detail");
   function reset() {
     epoch++;
+    currentAccount = null;
     active = false;
     page = 0;
     selected.clear();
@@ -40,7 +40,8 @@
     reset();
   }
   async function load(account) {
-    if (account?.role !== "admin") return reset();
+    if (!account || account.profile_complete === false) return reset();
+    currentAccount = account;
     active = true;
     const ticket = ++epoch;
     selected.clear();
@@ -147,7 +148,7 @@
     selection();
     try {
       await backend.deletePremeetings([...selected]);
-      if (active && version === epoch) await load({ role: "admin" });
+      if (active && version === epoch) await load(currentAccount);
     } catch {
       if (active && version === epoch)
         notice("No se ha podido confirmar la eliminación. Actualiza el listado.");
@@ -159,12 +160,12 @@
   get("premeeting-previous").addEventListener("click", () => {
     if (page > 0) {
       page--;
-      load({ role: "admin" });
+      load(currentAccount);
     }
   });
   get("premeeting-following").addEventListener("click", () => {
     page++;
-    load({ role: "admin" });
+    load(currentAccount);
   });
   get("premeeting-detail-close").addEventListener("click", () => dialog.close());
   let outside = false;
@@ -189,44 +190,5 @@
     get("premeeting-private-summary").replaceChildren();
     get("premeeting-detail-name").textContent = "";
   });
-  document.querySelectorAll("[data-copy-premeeting]").forEach((b) =>
-    b.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(formLink);
-        b.textContent = "Enlace copiado ✓";
-        setTimeout(
-          () => (b.textContent = "Copiar enlace del formulario previo ↗"),
-          2500,
-        );
-      } catch {
-        prompt("Copia este enlace del formulario previo:", formLink);
-      }
-    }),
-  );
-  async function loadRecent(account) {
-    if (account?.role !== "admin") return;
-    const version = epoch;
-    try {
-      const result = await backend.listPremeetings(0);
-      if (version !== epoch) return;
-      const host = get("premeeting-recent");
-      host.replaceChildren();
-      host.append(node("h3", "Formularios recibidos recientemente"));
-      if (!result.rows.length)
-        host.append(node("p", "Todavía no hay formularios previos recibidos."));
-      result.rows.slice(0, 3).forEach((row) => {
-        const line = node("p");
-        line.append(
-          node("strong", row.full_name),
-          node("span", ` · ${new Date(row.created_at).toLocaleDateString("es-ES")}`),
-        );
-        host.append(line);
-      });
-    } catch {
-      if (version === epoch)
-        get("premeeting-recent").textContent =
-          "Consulta los formularios recibidos en el apartado Formulario previo.";
-    }
-  }
-  window.PremeetingPanel = { load, reset, hide, loadRecent };
+  window.PremeetingPanel = { load, reset, hide };
 })();

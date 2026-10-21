@@ -6,6 +6,7 @@
     reached = 0,
     sending = false,
     submitted = false;
+  let consultant = null;
   const id = crypto.randomUUID();
   const steps = [
     "Vuestros datos",
@@ -523,7 +524,7 @@
         check,
         el(
           "span",
-          "He leído la información de privacidad y autorizo a Carlos a tratar estas respuestas para preparar nuestra reunión. Si lo rellenamos en pareja, ambas personas conocemos y aceptamos este envío. Las respuestas se eliminarán a los 30 días.",
+          `He leído la información de privacidad y autorizo a ${consultant?.name || "mi consultor"} a tratar estas respuestas para preparar nuestra reunión. Si lo rellenamos en pareja, ambas personas conocemos y aceptamos este envío. Las respuestas se eliminarán a los 30 días.`,
         ),
       );
       content.append(label);
@@ -563,7 +564,7 @@
   get("premeeting-back").addEventListener("click", () => go(step - 1));
   get("premeeting-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (sending || submitted || !validate()) return;
+    if (sending || submitted || !consultant || !validate()) return;
     if (step < 5) {
       go(step + 1);
       return;
@@ -584,7 +585,7 @@
       const response = await fetch(`${config.url}/rest/v1/rpc/submit_premeeting`, {
         method: "POST",
         headers: { apikey: config.publishableKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ p_id: id, p_payload: data }),
+        body: JSON.stringify({ p_id: id, p_payload: data, p_consultant: consultant.id }),
         signal: AbortSignal.timeout(25000),
         cache: "no-store",
       });
@@ -612,5 +613,50 @@
       event.returnValue = "";
     }
   });
+  async function start() {
+    get("premeeting-next").disabled = true;
+    const value = new URLSearchParams(location.search).get("consultor");
+    try {
+      if (
+        value &&
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+      )
+        throw Error("invalid");
+      const config = window.PORTFOLIO_BACKEND;
+      const response = await fetch(`${config.url}/rest/v1/rpc/premeeting_consultant`, {
+        method: "POST",
+        headers: { apikey: config.publishableKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_consultant: value || null }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!response.ok) throw Error("unavailable");
+      consultant = await response.json();
+      if (!consultant?.id || !consultant?.name) throw Error("unavailable");
+      const brand = document.querySelector(".premeeting-top>span");
+      brand.replaceChildren(
+        document.createTextNode(consultant.name),
+        document.createElement("br"),
+        document.createTextNode("Consultor financiero"),
+      );
+      document.title = `Antes de nuestra reunión · ${consultant.name}`;
+      const privacy = get("premeeting-privacy");
+      privacy.textContent = `Responsable: ${consultant.name}. Tus respuestas se utilizan para preparar y realizar vuestra reunión, se guardan de forma privada en Supabase y solo ese consultor puede consultarlas. Se eliminan automáticamente de la base de datos del servicio a los 30 días. Puedes pedir que se eliminen antes por el mismo medio por el que recibiste este enlace. No se publican en GitHub ni se envían por correo.`;
+      const phone = get("premeeting-success").querySelector('a[href^="tel:"]');
+      phone.hidden = !consultant.is_root;
+      render();
+      get("premeeting-next").disabled = false;
+    } catch {
+      consultant = null;
+      get("premeeting-workspace").hidden = true;
+      const error = document.createElement("p");
+      error.className = "premeeting-warning";
+      error.setAttribute("role", "alert");
+      error.textContent =
+        "No se puede abrir el formulario de este consultor. Comprueba tu conexión o pide que te envíe de nuevo su enlace.";
+      get("premeeting-intro").append(error);
+    }
+  }
   render();
+  start();
 })();

@@ -1,6 +1,6 @@
 # Formulario previo a la reunión
 
-La página `previo/` no se enlaza desde la portada y no requiere una cuenta. El administrador puede copiar el mismo enlace desde Inicio o desde «Formulario previo» en su panel. Tener el enlace permite rellenar el formulario; no permite consultar respuestas.
+La página `previo/` no se enlaza desde la portada y no requiere una cuenta. Cada consultor puede copiar su enlace personal desde «Herramientas y recursos». El enlace incluye su identificador y muestra su nombre. Tener el enlace permite rellenar el formulario; no permite consultar respuestas.
 
 ## Recorrido
 
@@ -16,14 +16,16 @@ Las cantidades aceptan importe conocido (incluido 0), «No lo sé» o «Prefiero
 ## Privacidad y permisos
 
 - Las respuestas solo se mantienen en memoria durante la visita. No hay borrador persistente ni envío de correos.
-- La tabla `public.premeeting_responses` tiene RLS. El visitante no puede leerla ni insertar directamente en ella. El consultor tampoco puede leer ni borrar respuestas de este formulario.
-- Solo `is_panel_owner()` permite lectura y eliminación, y únicamente mientras no estén caducadas.
+- La tabla `public.premeeting_responses` tiene RLS. El visitante no puede leerla ni insertar directamente en ella. Cada consultor solo puede leer o borrar las respuestas de su enlace.
+- La política vigente exige `owner_id = auth.uid()`, cuenta autorizada y perfil completo, y permite lectura y eliminación únicamente mientras no estén caducadas. Ni el administrador puede consultar respuestas ajenas.
 - La función pública `submit_premeeting` es el único punto de inserción. Usa `SECURITY DEFINER` deliberadamente, con esquema de búsqueda vacío, validadores internos, estructura y tamaño limitados, fechas fijadas por el servidor y límites de frecuencia. No acepta propietario, fechas ni un resumen calculado por el visitante.
 - Los resúmenes se calculan de nuevo en el panel a partir de las respuestas, usando el mismo modelo de cálculo. Los textos se representan mediante `textContent`.
 - El identificador aleatorio del envío permite reintentos sin duplicar registros. La respuesta nunca contiene los datos guardados.
 - La tabla no se exporta a GitHub. No se guardan archivos bancarios, IBAN, claves ni números de contrato.
 
 ## Instalación y conservación
+
+La configuración actual se completa con `resources-setup.sql`, que conserva los envíos anteriores y los asigna al responsable principal. Ver `RECURSOS.md`.
 
 `premeeting-setup.sql` requiere la configuración anterior del panel y `pg_cron` ya activo. Es idempotente. Crea una tarea independiente `portfolio-expired-premeeting` que elimina cada minuto las respuestas con `expires_at <= now()`. La caducidad se fija en el servidor a los 30 días exactos del envío; el borrado físico se produce en la siguiente ejecución del programador. Las respuestas caducadas dejan de ser visibles inmediatamente por RLS. No modifica los 60 días de las solicitudes de primera reunión ni la cartera de clientes.
 

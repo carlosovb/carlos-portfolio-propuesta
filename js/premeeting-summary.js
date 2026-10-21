@@ -52,7 +52,12 @@
       ["Gastos indicados", total.expenses],
       ["Disponible estimado", total.available],
     ].forEach(([label, value], i) => {
-      const card = node("article");
+      const card = node("article", undefined, "premeeting-metric");
+      card.dataset.kind = ["income", "expense", "available"][i];
+      if (i === 2 && value < 0) card.dataset.negative = "true";
+      card.append(
+        node("small", ["ENTRA", "SALE", "TU MARGEN"][i], "premeeting-metric-kicker"),
+      );
       card.append(node("span", label), node("strong", euro(value)));
       if (i < 2) {
         const bar = node(
@@ -66,6 +71,60 @@
       metrics.append(card);
     });
     host.append(metrics);
+    const breakdown = node("div", undefined, "premeeting-breakdown");
+    data.people.forEach((person, i) => {
+      const result = total.people[i];
+      const card = node("article", undefined, "premeeting-person-total");
+      const heading = node("div", undefined, "premeeting-person-total-heading");
+      heading.append(
+        node("span", person.first_name.slice(0, 1).toUpperCase(), "premeeting-initial"),
+        node("h4", result.name),
+      );
+      card.append(heading);
+      const list = node("dl");
+      [
+        ["Ingresos", result.income, "income"],
+        ["Gastos personales", result.expenses, "expense"],
+        [
+          data.mode === "couple"
+            ? "Margen antes de gastos comunes"
+            : "Disponible estimado",
+          result.available,
+          "available",
+        ],
+      ].forEach(([label, value, kind]) => {
+        const row = node("div");
+        row.dataset.kind = kind;
+        if (value < 0) row.dataset.negative = "true";
+        row.append(node("dt", label), node("dd", euro(value)));
+        list.append(row);
+      });
+      card.append(list);
+      breakdown.append(card);
+    });
+    host.append(node("h3", "El desglose, sin duplicar gastos"), breakdown);
+    if (data.mode === "couple") {
+      const shared = node("article", undefined, "premeeting-shared-total");
+      shared.append(
+        node("small", "UNA SOLA VEZ"),
+        node("h4", "Gastos compartidos"),
+        node("strong", euro(total.shared)),
+        node(
+          "p",
+          "Se descuentan del total conjunto. No están incluidos en los gastos personales de ninguno de los dos.",
+        ),
+      );
+      host.append(shared);
+    }
+    host.append(
+      node(
+        "p",
+        data.mode === "couple"
+          ? "Disponible conjunto = ingresos de ambos − gastos personales de ambos − gastos compartidos."
+          : "Disponible estimado = ingresos indicados − gastos indicados.",
+        "premeeting-calculation-note",
+      ),
+    );
     function section(title, values, step) {
       const details = node("details");
       details.open = true;

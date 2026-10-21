@@ -68,6 +68,16 @@ const root = path.resolve(__dirname, ".."),
         user: { id: "11111111-1111-4111-8111-111111111111" },
       });
     if (url.pathname === "/auth/v1/logout") return json({});
+    if (url.pathname.includes("/team_resources")) return json([]);
+    if (url.pathname.endsWith("/rpc/list_my_clients"))
+      return json({ rows: [], total: 0, stats: { clients: 0, interested: 0 } });
+    if (url.pathname.endsWith("/rpc/premeeting_consultant"))
+      return json({
+        id: body.p_consultant || "11111111-1111-4111-8111-111111111111",
+        name: "Consultor Prueba",
+        is_root: true,
+      });
+
     if (url.pathname.endsWith("/rpc/panel_access"))
       return json({
         role,
@@ -285,6 +295,20 @@ const root = path.resolve(__dirname, ".."),
       await page.locator(".premeeting-totals strong").nth(1).textContent(),
       "900,00 €",
     );
+    assert.equal(await page.locator(".premeeting-person-total").count(), 2);
+    assert.match(
+      await page.locator(".premeeting-shared-total strong").textContent(),
+      /700/,
+    );
+    assert.equal(
+      new Set(
+        await page
+          .locator(".premeeting-totals strong")
+          .evaluateAll((nodes) => nodes.map((n) => getComputedStyle(n).color)),
+      ).size,
+      3,
+      "Ingresos, gastos y disponible tienen colores distintos",
+    );
     await page
       .locator(".premeeting-summary details")
       .first()
@@ -342,7 +366,7 @@ const root = path.resolve(__dirname, ".."),
     await login();
     assert.equal(
       await page.locator('#panel-navigation [data-view="premeeting"]').isVisible(),
-      false,
+      true,
     );
     assert.deepEqual(errors, []);
     console.log(

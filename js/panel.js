@@ -165,13 +165,7 @@
     get("panel-screen").hidden = false;
     resetInactivity();
     renderIdentity();
-    setView(
-      account?.profile_complete === false
-        ? "profile"
-        : account?.role === "consultant"
-          ? "team"
-          : "home",
-    );
+    setView(account?.profile_complete === false ? "profile" : "home");
   }
 
   function renderIdentity() {
@@ -234,6 +228,8 @@
     window.TeamPanel?.reset();
     window.ClientsPanel?.reset();
     window.PremeetingPanel?.reset();
+    window.ResourcesPanel?.reset();
+    window.DashboardPanel?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
     get("request-initials").textContent = "";
@@ -409,7 +405,9 @@
     get("refresh-button").disabled = true;
     notice("panel-notice", "Actualizando…");
     try {
-      if (view === "premeeting") {
+      if (view === "resources") {
+        await window.ResourcesPanel.load(account);
+      } else if (view === "premeeting") {
         await window.PremeetingPanel.load(account);
       } else if (view === "clients") {
         await window.ClientsPanel.load(account);
@@ -508,11 +506,14 @@
         renderIdentity();
         renderProfile();
         await window.TeamPanel.loadProfile(account);
-      } else if (view === "home" && account?.role !== "admin") {
-        if (!valid()) return;
-        renderIdentity();
       } else if (view === "home") {
-        window.PremeetingPanel?.loadRecent(account);
+        await window.DashboardPanel.load(account);
+        if (!valid()) return;
+        if (account?.role !== "admin") {
+          renderIdentity();
+          notice("panel-notice", "");
+          return;
+        }
         const [counts, latest] = await Promise.all([
           backend.counts(),
           backend.listRequests({ pageSize: 5 }),
@@ -578,14 +579,12 @@
         "team",
         "clients",
         "premeeting",
+        "resources",
       ].includes(next)
     )
       return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
-    if (
-      ["requests", "consultants", "premeeting"].includes(next) &&
-      account?.role !== "admin"
-    )
+    if (["requests", "consultants"].includes(next) && account?.role !== "admin")
       next = "home";
     if (next !== "consultants") clearInvitation();
     view = next;
@@ -594,6 +593,9 @@
     document.body.classList.toggle("team-workspace", view === "team");
     window.ClientsPanel?.hide();
     window.PremeetingPanel?.hide();
+    window.ResourcesPanel?.hide();
+    window.DashboardPanel?.reset();
+    get("resources-view").hidden = view !== "resources";
     get("premeeting-view").hidden = view !== "premeeting";
     get("clients-view").hidden = view !== "clients";
     get("home-view").hidden = view !== "home";
@@ -602,21 +604,21 @@
     get("team-view").hidden = view !== "team";
     get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "premeeting"
-        ? "Antes de la reunión."
-        : view === "clients"
-          ? "Tus clientes."
-          : view === "team"
-            ? "Nuestro equipo."
-            : view === "consultants"
-              ? "Tu equipo."
-              : view === "profile"
-                ? "Mi perfil."
-                : view === "requests"
-                  ? "Tus solicitudes."
-                  : account?.profile?.first_name
-                    ? `Hola, ${account.profile.first_name}.`
-                    : "Tu espacio de trabajo.";
+      view === "resources"
+        ? "Herramientas y recursos."
+        : view === "premeeting"
+          ? "Antes de la reunión."
+          : view === "clients"
+            ? "Tus clientes."
+            : view === "team"
+              ? "Nuestro equipo."
+              : view === "consultants"
+                ? "Tu equipo."
+                : view === "profile"
+                  ? "Mi perfil."
+                  : view === "requests"
+                    ? "Tus solicitudes."
+                    : "Tu panel.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");

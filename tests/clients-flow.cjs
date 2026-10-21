@@ -108,6 +108,8 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           user: { id: uid },
         });
       if (url.pathname === "/auth/v1/logout") return json({});
+      if (url.pathname.includes("/team_resources")) return json([]);
+
       if (url.pathname.includes("premeeting_responses")) return json([]);
       if (url.pathname.endsWith("/rpc/panel_access"))
         return json({
@@ -280,9 +282,15 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         true,
       );
       await page.locator("#client-detail-name").click();
-      assert.equal(await page.locator("#client-detail-dialog").evaluate(d=>d.open),true,"Pulsar dentro no debe cerrar la ficha");
-      await page.mouse.click(2,2);
-      await page.waitForFunction(()=>!document.querySelector("#client-detail-dialog").open);
+      assert.equal(
+        await page.locator("#client-detail-dialog").evaluate((d) => d.open),
+        true,
+        "Pulsar dentro no debe cerrar la ficha",
+      );
+      await page.mouse.click(2, 2);
+      await page.waitForFunction(
+        () => !document.querySelector("#client-detail-dialog").open,
+      );
       assert.ok(
         Math.abs((await page.evaluate(() => window.scrollY)) - before) < 2,
         "Cerrar la ficha debe conservar la posición",

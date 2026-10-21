@@ -124,6 +124,94 @@
       return accessDetails ? structuredClone(accessDetails) : null;
     },
     getPanelAccess: readAccess,
+    async listResources() {
+      const response = await authenticated(
+        "/rest/v1/team_resources?select=id,company,product,title,kind,url,storage_path,archived,created_at&order=archived.asc,company.asc,product.asc,created_at.desc&limit=1000",
+      );
+      return response.json();
+    },
+    async addResource(fields, file) {
+      const identity = await token(),
+        current = session;
+      const scoped = (route, options) => {
+        if (session !== current) throw Error("La sesión ha finalizado.");
+        return request(route, options, identity);
+      };
+      const id = crypto.randomUUID();
+      let path = null;
+      if (fields.kind === "file") {
+        if (
+          !file ||
+          file.size > 10485760 ||
+          file.size < 5 ||
+          new TextDecoder().decode(await file.slice(0, 5).arrayBuffer()) !== "%PDF-"
+        )
+          throw Error("Selecciona un PDF válido de hasta 10 MB.");
+        path = id + ".pdf";
+        await scoped("/storage/v1/object/team-resources/" + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/pdf" },
+          body: file,
+        });
+      }
+      try {
+        await scoped("/rest/v1/team_resources", {
+          method: "POST",
+          body: JSON.stringify({
+            id,
+            company: fields.company,
+            product: fields.product,
+            title: fields.title,
+            kind: fields.kind,
+            url: fields.kind === "link" ? fields.url : null,
+            storage_path: path,
+          }),
+        });
+      } catch (error) {
+        if (path) {
+          try {
+            await scoped("/storage/v1/object/team-resources", {
+              method: "DELETE",
+              body: JSON.stringify({ prefixes: [path] }),
+            });
+          } catch {}
+        }
+        throw error;
+      }
+    },
+    async resourcePdf(path) {
+      if (!/^[0-9a-f-]{36}\.pdf$/i.test(path)) throw Error("Documento no válido.");
+      const response = await authenticated(
+        "/storage/v1/object/authenticated/team-resources/" + path,
+      );
+      return new Blob([await response.arrayBuffer()], { type: "application/pdf" });
+    },
+    async archiveResource(id, archived) {
+      if (!/^[0-9a-f-]{36}$/i.test(id)) throw Error("Recurso no válido.");
+      await authenticated("/rest/v1/team_resources?id=eq." + id, {
+        method: "PATCH",
+        body: JSON.stringify({ archived }),
+      });
+    },
+    async deleteResource(row) {
+      const identity = await token(),
+        current = session;
+      const scoped = (route, options) => {
+        if (session !== current) throw Error("La sesión ha finalizado.");
+        return request(route, options, identity);
+      };
+      if (!/^[0-9a-f-]{36}$/i.test(row.id)) throw Error("Recurso no válido.");
+      if (row.kind === "file")
+        await scoped("/storage/v1/object/team-resources", {
+          method: "DELETE",
+          body: JSON.stringify({ prefixes: [row.id + ".pdf"] }),
+        });
+      const response = await scoped(
+        "/rest/v1/team_resources?id=eq." + row.id + "&select=id",
+        { method: "DELETE", headers: { Prefer: "return=representation" } },
+      );
+      return (await response.json()).length === 1;
+    },
     async listPremeetings(page = 0) {
       const query = new URLSearchParams({
         select: "id,full_name,email,created_at,expires_at",

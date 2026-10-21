@@ -1,0 +1,162 @@
+/* Colores semánticos del resumen: se comparten entre el cliente y su consultor. */
+.premeeting-summary {
+  --summary-income: #80d6bf;
+  --summary-expense: #f0a1a4;
+  --summary-available: #9cc7f5;
+}
+html[data-theme="light"] .premeeting-summary {
+  --summary-income: #14664c;
+  --summary-expense: #a32d43;
+  --summary-available: #2359a0;
+}
+.premeeting-totals .premeeting-metric {
+  --metric-color: var(--summary-income);
+  position: relative;
+  padding: 24px 20px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--metric-color) 38%, var(--line));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--metric-color) 13%, var(--bg)),
+    var(--bg)
+  );
+}
+.premeeting-metric[data-kind="expense"] {
+  --metric-color: var(--summary-expense);
+}
+.premeeting-metric[data-kind="available"] {
+  --metric-color: var(--summary-available);
+}
+.premeeting-metric[data-negative="true"] {
+  --metric-color: var(--summary-expense);
+}
+.premeeting-metric .premeeting-metric-kicker {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1.7px;
+  color: var(--metric-color);
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.premeeting-metric > span:not(.premeeting-bar) {
+  display: block;
+  font-size: 12px;
+  min-height: 40px;
+}
+.premeeting-metric strong {
+  color: var(--metric-color);
+  font-size: clamp(23px, 3vw, 36px);
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+.premeeting-metric .premeeting-bar {
+  background: var(--metric-color);
+  height: 5px;
+}
+.premeeting-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.premeeting-person-total {
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  min-width: 0;
+}
+.premeeting-person-total-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.premeeting-person-total-heading h4 {
+  margin: 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.premeeting-initial {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 14px;
+  flex: none;
+}
+.premeeting-person-total dl div {
+  padding: 13px 0;
+}
+.premeeting-person-total dl dd {
+  font-weight: 650;
+  white-space: nowrap;
+}
+.premeeting-person-total [data-kind="income"] dd {
+  color: var(--summary-income);
+}
+.premeeting-person-total [data-kind="expense"] dd {
+  color: var(--summary-expense);
+}
+.premeeting-person-total [data-kind="available"] dd {
+  color: var(--summary-available);
+}
+.premeeting-person-total [data-negative="true"] dd {
+  color: var(--summary-expense);
+}
+.premeeting-shared-total {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 24px;
+  padding: 26px;
+  border: 1px dashed color-mix(in srgb, var(--summary-expense) 60%, var(--line));
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--summary-expense) 7%, var(--bg));
+}
+.premeeting-shared-total small {
+  font-size: 9px;
+  letter-spacing: 1.6px;
+  color: var(--summary-expense);
+}
+.premeeting-shared-total h4 {
+  margin: 0;
+  grid-column: 1;
+  font-size: 20px;
+}
+.premeeting-shared-total strong {
+  grid-column: 2;
+  grid-row: 1/3;
+  align-self: center;
+  font-size: 28px;
+  color: var(--summary-expense);
+}
+.premeeting-shared-total p {
+  grid-column: 1/-1;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  line-height: 1.8;
+}
+.premeeting-calculation-note {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--summary-available) 8%, transparent);
+  font-size: 12px;
+  color: var(--muted);
+}
+@media (max-width: 800px) {
+  .premeeting-breakdown {
+    grid-template-columns: 1fr;
+  }
+  .premeeting-shared-total {
+    grid-template-columns: 1fr;
+  }
+  .premeeting-shared-total strong {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .premeeting-totals {
+    grid-template-columns: 1fr;
+  }
+}
