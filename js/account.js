@@ -15,6 +15,7 @@
   }
   function configureForm() {
     const recovery = link.type === "recovery";
+    get("account-step").textContent = recovery ? "Nueva contraseña" : "02 · Perfil y contraseña";
     get("account-title").textContent = recovery
       ? "Elige una contraseña nueva."
       : "Bienvenido a tu espacio.";
@@ -33,16 +34,24 @@
   if (!backend.ready)
     message("El acceso todavía no está disponible. Contacta con el administrador.");
   else if (link.recovery_request) {
+    get("account-step").textContent = "Recuperación de cuenta";
     get("account-title").textContent = "Recupera tu acceso.";
     get("account-description").textContent =
       "Introduce el correo con el que te dieron de alta.";
     get("recovery-form").hidden = false;
-  } else if (["invite", "recovery"].includes(link.type) && !link.error)
+  } else if (["invite", "recovery"].includes(link.type) && !link.error) {
+    get("account-title").textContent = link.type === 'recovery' ? 'Recupera tu acceso.' : 'Activa tu cuenta.';
+    get("account-description").textContent = 'Tu enlace está listo para comprobarse. Pulsa el botón para continuar de forma segura.';
     get("verify-account-link").hidden = false;
-  else
+  } else {
+    get("account-step").textContent = 'Necesitas tu invitación';
+    get("account-title").textContent = 'Abre tu enlace personal.';
+    get("account-description").textContent = 'Utiliza el enlace completo que te ha enviado el administrador para preparar tu cuenta.';
     message(
       "Necesitas un enlace válido de invitación o recuperación. Si ha caducado, solicita uno nuevo al administrador.",
     );
+
+  }
 
   get("verify-account-link").addEventListener("click", async () => {
     if (pending) return;

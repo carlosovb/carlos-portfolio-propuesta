@@ -174,6 +174,7 @@ async function login(page, base) {
       );
       if (width <= 850) await page.locator(".panel-menu-toggle").click();
       await page.locator('#panel-navigation [data-view="profile"]').click();
+      await page.waitForFunction(() => !document.querySelector("#refresh-button").disabled);
       assert.equal(await page.locator('#invitation-url').inputValue(), '');
       await page.locator('#profile-form [name="first_name"]').fill("Nombre actualizado");
       await page.locator('#profile-form [name="last_name"]').fill("Apellidos de prueba");
@@ -225,6 +226,15 @@ async function login(page, base) {
     assert.equal(data.verifications, 0, "El enlace debe validarse solo al pulsar");
     await page.locator("#verify-account-link").click();
     await page.locator("#account-form").waitFor();
+    if (process.env.ACCOUNT_SCREENSHOT) await page.screenshot({ path: process.env.ACCOUNT_SCREENSHOT, fullPage: true });
+    for (const width of [320, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const theme of ['light', 'dark']) {
+        await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.locator('[name="first_name"]').fill("Consultor");
     await page.locator('[name="last_name"]').fill("De prueba");
     await page.locator('[name="phone"]').fill("000000000");

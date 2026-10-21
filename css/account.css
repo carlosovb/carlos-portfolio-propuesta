@@ -1,56 +1,100 @@
-/* Primer acceso y recuperación: ninguna credencial se guarda en el navegador. */
+/* Activación y recuperación: todos los estados comparten una tarjeta adaptable. */
+.account-page {
+  min-height: 100dvh;
+  padding: clamp(20px, 5vw, 64px) 16px;
+  background-color: var(--bg);
+}
 .account-card {
-  max-width: 560px;
-  padding: 35px;
-  margin: 4vh auto;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 48px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--panel);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .12);
+  min-width: 0;
+}
+.account-card .panel-mark { margin: 0 0 28px; }
+.account-card > .eyebrow { margin: 0 0 14px; color: var(--accent); }
+.account-step {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: .03em;
 }
 .account-card h1 {
-  font-size: clamp(34px, 6vw, 48px);
-  line-height: 1.1;
-  letter-spacing: -1.5px;
+  margin: 0 0 20px;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -1.3px;
+  overflow-wrap: break-word;
 }
-.account-card > p {
+#account-description {
+  margin: 0 0 28px;
+  max-width: 55ch;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.75;
 }
-.account-card form,
-.account-card fieldset {
+.account-card form, .account-card fieldset {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 21px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
 }
-.account-card form {
-  margin: 30px 0;
-}
+.account-card form { margin: 28px 0 0; }
 .account-card fieldset {
   min-width: 0;
-  padding: 0 0 25px;
+  margin: 0 0 4px;
+  padding: 0 0 26px;
   border: 0;
   border-bottom: 1px solid var(--line);
 }
-.account-card legend {
-  margin-bottom: 20px;
-  font-weight: 600;
-  font-size: 16px;
-}
-.account-card .btn {
-  justify-self: start;
-  font-size: 14px;
-}
+.account-card legend { margin-bottom: 22px; font-size: 18px; font-weight: 600; }
+.account-card label { display: grid; gap: 10px; margin: 0; font-size: 14px; }
 .account-card input {
-  font-size: 16px;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 50px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.4 "Segoe UI", sans-serif;
 }
-.account-card .panel-muted {
-  font-size: 12px;
-  margin: 0;
+.account-card input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.account-card input[readonly] { color: var(--muted); }
+.account-card .btn {
+  display: inline-flex;
+  justify-content: center;
+  justify-self: start;
+  min-height: 50px;
+  max-width: 100%;
+  white-space: normal;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
 }
-.account-card .panel-back {
-  display: inline-block;
-  margin-top: 25px;
+.account-card .panel-muted { margin: 0; font-size: 13px; line-height: 1.7; }
+.account-card #account-notice:not([hidden]) { margin: 0 0 24px; font-size: 14px; line-height: 1.7; }
+.account-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
 }
+.account-footer .panel-back { display: inline-block; margin: 0; padding: 8px 0; color: var(--ink); }
 @media (max-width: 500px) {
-  .account-card {
-    padding: 25px;
-    margin-top: 15px;
-  }
+  .account-page { padding: 16px 12px; }
+  .account-card { border-radius: 18px; padding: 24px 20px; }
+  .account-card .btn { width: 100%; justify-self: stretch; }
+  .account-footer { align-items: flex-start; flex-direction: column; gap: 2px; }
 }
