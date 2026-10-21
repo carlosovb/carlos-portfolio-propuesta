@@ -258,7 +258,7 @@
               } catch {
                 if (!active || epoch !== snapshot) return;
                 clearInvitation();
-                notice('invite-notice', 'No se ha confirmado la eliminación. Actualiza el listado; si ya ha iniciado la activación, esta opción no está disponible. Comprueba también la configuración de Supabase.');
+                notice('invite-notice', 'No se ha confirmado la eliminación. Actualiza el listado: si ya ha creado su contraseña, la cuenta deja de ser una invitación pendiente. Si sigue pendiente, comprueba que has ejecutado el SQL actualizado.');
                 await load();
               } finally { mutationPending = false; remove.disabled = false; }
             });
