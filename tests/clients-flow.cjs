@@ -168,6 +168,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           multiplier: 3.5,
           manager_id: null,
         });
+      if (url.pathname.endsWith("/rpc/get_career_progress")) return json({user_id:uid,counts:{},units_available:false});
       if (url.pathname.endsWith("/rpc/get_team_directory"))
         return json([
           {

@@ -16,159 +16,202 @@
     b.addEventListener("click", action);
     return b;
   };
-  function card(level) {
-    const b = button("", () => show(level), "career-level");
+  let transition;
+  function animate(target) {
+    transition?.cancel();
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
+      transition = target.animate(
+        [
+          { opacity: 0, transform: "translateY(10px)" },
+          { opacity: 1, transform: "none" },
+        ],
+        { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" },
+      );
+  }
+  function step(level) {
+    const b = button("", () => show(level), "career-level career-step");
     b.dataset.career = level.code;
     b.append(
-      node("small", level.path),
+      node("span", level.short, "career-step-code"),
       node("strong", level.name),
-      node("span", "×" + number(level.factor), "career-factor"),
-      node("span", "Ver requisitos ↗", "career-action"),
+      node("b", "×" + number(level.factor), "career-step-rate"),
+      node("span", "Explorar ↗", "career-step-link"),
     );
     return b;
   }
-  let transition;
   function show(level) {
     content.replaceChildren();
-    const heading = node("h2", level ? level.name : "Tu plan de carrera.");
-    heading.id = "career-title";
-    heading.tabIndex = -1;
-    if (level)
+    if (!level) {
+      const intro = node("header", undefined, "career-map-intro");
+      intro.append(node("p", "TU DESARROLLO PROFESIONAL", "eyebrow"));
+      const title = node("h2", "Cada paso, una nueva posibilidad.");
+      title.id = "career-title";
+      title.tabIndex = -1;
+      intro.append(
+        title,
+        node(
+          "p",
+          "Elige tu camino. Pulsa un escalón y descubre qué necesitas para llegar.",
+        ),
+      );
+      content.append(intro);
+      const lanes = node("div", undefined, "career-lanes");
+      for (const [path, caption] of [
+        ["Inicio", "Construye tu base"],
+        ["Especialización", "Profundiza en tu profesión"],
+        ["Dirección de equipo", "Crece con tu equipo"],
+      ]) {
+        const lane = node("section", undefined, "career-lane");
+        lane.dataset.path = path;
+        lane.append(node("small", caption), node("h3", path));
+        levels.filter((l) => l.path === path).forEach((l) => lane.append(step(l)));
+        lanes.append(lane);
+      }
+      content.append(lanes);
+    } else {
       content.append(
         button("← Todos los puestos", () => show(null), "panel-text-button"),
       );
-    content.append(
-      node("p", level ? level.path : "Crecimiento profesional", "eyebrow"),
-      heading,
-    );
-    if (!level) {
-      content.append(
-        node(
-          "p",
-          "Consulta cada puesto para ver su multiplicador, producción y equipo requerido.",
-        ),
+      const layout = node("div", undefined, "career-detail-layout"),
+        rail = node("nav", undefined, "career-detail-rail");
+      rail.setAttribute("aria-label", "Escalones del plan");
+      levels.forEach((l) => {
+        const b = button("", () => show(l), "career-rail-button");
+        b.dataset.active = String(l.code === level.code);
+        b.append(node("b", l.short), node("span", l.name));
+        rail.append(b);
+      });
+      layout.append(rail);
+      const main = node("div", undefined, "career-detail-main"),
+        hero = node("header", undefined, "career-detail-hero");
+      hero.append(node("span", level.short, "career-hero-code"));
+      const names = node("div");
+      const title = node("h2", level.name);
+      title.id = "career-title";
+      title.tabIndex = -1;
+      names.append(node("p", level.path, "eyebrow"), title);
+      hero.append(names);
+      const rate = node("div", undefined, "career-hero-rate");
+      rate.append(
+        node("strong", "×" + number(level.factor)),
+        node("span", number(level.factor) + " €/unidad"),
       );
-      const grid = node("div", undefined, "career-grid");
-      levels.forEach((l) => grid.append(card(l)));
-      content.append(grid);
-    } else {
-      content.append(
-        node(
-          "p",
-          "×" +
-            number(level.factor) +
-            " · " +
-            number(level.factor) +
-            " €/unidad según el documento",
-          "career-detail-factor",
-        ),
-      );
-      content.append(
-        node(
-          "p",
-          "Se requieren todas las cifras de producción indicadas y una de las alternativas de colaboradores, cuando se especifiquen.",
-        ),
-      );
-      const columns = node("div", undefined, "career-requirements");
-      for (const [label, rule] of [
-        ["Regla 100 %", level.base],
-        ["Regla 125 %", level.extra],
-      ]) {
-        const box = node("section", undefined, "career-rule");
-        box.append(node("h3", label));
+      hero.append(rate);
+      main.append(hero);
+      const modes = node("div", undefined, "career-rule-switch"),
+        sheet = node("div", undefined, "career-rule-sheet");
+      modes.setAttribute("aria-label", "Regla de promoción");
+      main.append(modes, sheet);
+      function renderRule(extra, active) {
+        modes
+          .querySelectorAll("button")
+          .forEach((b) => b.setAttribute("aria-pressed", String(b === active)));
+        sheet.replaceChildren();
+        const rule = extra ? level.extra : level.base;
+        sheet.append(
+          node(
+            "p",
+            extra ? "Más producción, un equipo menor." : "El recorrido de referencia.",
+            "career-rule-caption",
+          ),
+        );
         if (!rule) {
-          box.append(
+          sheet.append(
             node(
               "p",
               "El documento no especifica una alternativa del 125 % para este puesto.",
+              "career-rule-unavailable",
             ),
           );
-          columns.append(box);
-          continue;
+          return;
         }
-        if (rule.start) box.append(node("p", "Inicio de la actividad.", "career-start"));
-        for (const [key, title] of [
+        const production = node("section", undefined, "career-production");
+        production.append(node("h3", "01 · Tu producción"));
+        if (rule.start)
+          production.append(node("p", "Inicio de la actividad.", "career-start"));
+        for (const [key, label] of [
           ["quarter", "Unidades trimestrales"],
           ["totalQuarter", "Producción total trimestral"],
           ["historical", "Producción propia histórica"],
-        ]) {
+        ])
           if (rule[key] !== undefined) {
-            const metric = node("div", undefined, "career-metric");
-            metric.append(node("strong", number(rule[key]) + " U"), node("span", title));
-            box.append(metric);
-          }
-        }
-        if (rule.team) {
-          box.append(node("h4", "Colaboradores requeridos"));
-          rule.team.forEach((requirement, index) => {
-            if (index) box.append(node("p", "O bien", "career-or"));
-            const other = levels.find((l) => l.short === requirement.role),
-              people = node("div", undefined, "career-people");
-            people.append(
-              node("b", String(requirement.count)),
-              node(
-                "span",
-                other.name +
-                  (requirement.count > 1
-                    ? " · " + requirement.count + " colaboradores"
-                    : ""),
-              ),
+            const metric = node("div", undefined, "career-volume");
+            metric.append(
+              node("strong", number(rule[key])),
+              node("b", "U"),
+              node("span", label),
             );
-            const icons = node("div", undefined, "career-people-icons");
-            icons.setAttribute("aria-hidden", "true");
-            for (let i = 0; i < requirement.count; i++)
-              icons.append(node("span", requirement.role));
-            people.append(icons);
-            box.append(people);
-          });
-        } else if (!rule.start)
-          box.append(
+            production.append(metric);
+          }
+        sheet.append(production);
+        const team = node("section", undefined, "career-team");
+        team.append(node("h3", "02 · Tu equipo"));
+        if (rule.team) {
+          team.append(
             node(
               "p",
-              "Sin un mínimo de colaboradores indicado en el documento.",
-              "career-no-team",
+              rule.team.length > 1
+                ? "Una de estas dos alternativas:"
+                : "Colaboradores requeridos:",
             ),
           );
-        columns.append(box);
+          rule.team.forEach((r, index) => {
+            if (index) team.append(node("span", "O BIEN", "career-alternative"));
+            const other = levels.find((l) => l.short === r.role),
+              option = node("div", undefined, "career-team-option");
+            option.append(node("strong", String(r.count)), node("span", other.name));
+            const icons = node("div", undefined, "career-people-icons");
+            icons.setAttribute("aria-hidden", "true");
+            for (let i = 0; i < r.count; i++) icons.append(node("span", r.role));
+            option.append(icons);
+            team.append(option);
+          });
+        } else
+          team.append(
+            node(
+              "p",
+              "Sin mínimo de colaboradores indicado para este puesto.",
+              "career-team-none",
+            ),
+          );
+        sheet.append(team);
+        animate(sheet);
       }
-      content.append(columns);
+      for (const [label, extra] of [
+        ["100 %", false],
+        ["125 %", true],
+      ]) {
+        const b = button(label, () => renderRule(extra, b), "career-rule-tab");
+        b.disabled = extra && !level.extra;
+        if (b.disabled) b.title = "El documento no detalla esta alternativa";
+        modes.append(b);
+      }
+      renderRule(false, modes.firstElementChild);
+      const conditions = node("details", undefined, "career-conditions");
+      conditions.append(node("summary", "Condiciones y criterios del plan"));
+      const list = node("ul");
+      for (const text of [
+        "Se cumplen conjuntamente la producción indicada y una de las alternativas de equipo.",
+        "Los colaboradores deben estar en Estado Activo y cumplir los criterios de calidad.",
+        "El 125 % aumenta la producción exigida en un 25 %; la producción propia histórica se mantiene.",
+        "Plan basado en méritos, producción, equipo y profesionalidad.",
+      ])
+        list.append(node("li", text));
+      conditions.append(
+        list,
+        node(
+          "p",
+          "Fuente: documento facilitado por Carlos. La asignación la realiza el administrador.",
+        ),
+      );
+      main.append(conditions);
+      layout.append(main);
+      content.append(layout);
     }
-    const notes = node("aside", undefined, "career-notes");
-    notes.append(
-      node("h3", "Condiciones del plan"),
-      node(
-        "p",
-        "Plan basado en el principio de méritos, con criterios de producción, equipo y profesionalidad.",
-      ),
-    );
-    const list = node("ul");
-    for (const text of [
-      "Los colaboradores deben estar en Estado Activo.",
-      "Deben cumplirse los criterios de calidad.",
-      "La regla del 125 % permite un equipo menor al superar la producción exigida en un 25 %, en los puestos que muestran esta alternativa.",
-      "Los requisitos de producción propia histórica se mantienen en ambas reglas.",
-    ])
-      list.append(node("li", text));
-    notes.append(
-      list,
-      node(
-        "p",
-        "Fuente: plan de carrera facilitado por Carlos. Consulta informativa; la asignación de puestos la realiza el administrador.",
-      ),
-    );
-    content.append(notes);
     if (!dialog.open) dialog.showModal();
     dialog.scrollTop = 0;
-    heading.focus({ preventScroll: true });
-    transition?.cancel();
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
-      transition = content.animate(
-        [
-          { opacity: 0, transform: "translateY(12px) scale(.985)" },
-          { opacity: 1, transform: "none" },
-        ],
-        { duration: 240, easing: "cubic-bezier(.2,.8,.2,1)" },
-      );
+    document.getElementById("career-title").focus({ preventScroll: true });
+    animate(content);
   }
   const legend = document.getElementById("career-levels");
   levels.forEach((level) => {
@@ -213,14 +256,14 @@
     if (outside && e.target === dialog && isOutside(e)) dialog.close();
     outside = false;
   });
-  function renderProgress(member, directory) {
+  function renderProgress(member, directory, counts) {
     const host = document.getElementById("team-member-progress");
     host.replaceChildren();
     host.append(
       node("p", "Tu siguiente paso", "eyebrow"),
       node("h3", "Lo que falta para avanzar."),
     );
-    const goals = window.CareerProgress.calculate(member, directory);
+    const goals = window.CareerProgress.calculate(member, [], counts);
     if (!goals.length) {
       host.append(
         node(

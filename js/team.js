@@ -276,7 +276,38 @@
     get("team-member-clients").textContent = totals?.clients ?? "—";
     get("team-member-interested").textContent = totals?.interested ?? "—";
     avatar(get("team-member-photo"), member, true);
-    window.CareerPlan.renderProgress(member, members);
+    const progressHost = get("team-member-progress");
+    progressHost.replaceChildren();
+    const canView =
+      member.user_id === me?.user_id ||
+      window.CareerProgress.branch(me?.user_id, members).some(
+        (person) => person.user_id === member.user_id,
+      );
+    if (canView) {
+      progressHost.textContent = "Preparando su siguiente paso…";
+      const ticket = revision,
+        target = member.user_id;
+      backend
+        .getCareerProgress(target)
+        .then((result) => {
+          if (
+            ticket === revision &&
+            selected?.user_id === target &&
+            get("team-member-dialog").open
+          ) {
+            if (result?.user_id !== target || !result.counts)
+              throw Error("Progress unavailable");
+            window.CareerPlan.renderProgress(member, [], result.counts);
+          }
+        })
+        .catch(() => {
+          if (ticket === revision && selected?.user_id === target)
+            progressHost.textContent =
+              "No se ha podido consultar el progreso. Solo está disponible para el propio consultor y los responsables de su rama.";
+        });
+    } else
+      progressHost.textContent =
+        "El progreso de promoción es privado para este consultor y los responsables de su rama.";
     const form = get("team-assignment-form");
     form.hidden = account?.role !== "admin";
     form.elements.position.value = member.position_code || "";

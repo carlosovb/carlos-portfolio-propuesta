@@ -42,9 +42,13 @@
     if (route.startsWith("/auth/v1/token")) return false;
     if (
       route.startsWith("/rest/v1/rpc/") &&
-      [...cachedRpcs, "panel_access", "is_panel_owner", "premeeting_consultant"].includes(
-        route.split("/").pop(),
-      )
+      [
+        ...cachedRpcs,
+        "get_career_progress",
+        "panel_access",
+        "is_panel_owner",
+        "premeeting_consultant",
+      ].includes(route.split("/").pop())
     )
       return false;
     return true;
@@ -457,6 +461,15 @@
         await authenticated("/rest/v1/rpc/get_my_team_profile", {
           method: "POST",
           body: "{}",
+        })
+      ).json();
+    },
+    async getCareerProgress(userId) {
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) throw Error("Consultor no válido.");
+      return (
+        await authenticated("/rest/v1/rpc/get_career_progress", {
+          method: "POST",
+          body: JSON.stringify({ p_user_id: userId }),
         })
       ).json();
     },

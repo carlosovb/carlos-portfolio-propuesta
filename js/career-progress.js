@@ -28,7 +28,7 @@
     }
     return result;
   }
-  function calculate(member, directory) {
+  function calculate(member, directory, authorizedCounts = null) {
     const people = branch(member.user_id, directory);
     const ruleProgress = (rule) =>
       rule
@@ -43,7 +43,9 @@
               })),
             team: (rule.team || []).map((requirement) => {
               const code = levels.find((l) => l.short === requirement.role).code;
-              const observed = people.filter((p) => p.position_code === code).length;
+              const observed = authorizedCounts
+                ? Number(authorizedCounts[code] || 0)
+                : people.filter((p) => p.position_code === code).length;
               return {
                 ...requirement,
                 observed,

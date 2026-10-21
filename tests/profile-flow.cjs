@@ -114,6 +114,20 @@ async function mock(context, state) {
           : null,
       });
     }
+    if (url.pathname.endsWith("/rpc/get_career_progress")) {
+      const P = require("../js/career-progress.js"),
+        viewer = state.teamUserId || "22222222-2222-4222-8222-222222222222";
+      if (
+        body.p_user_id !== viewer &&
+        !P.branch(viewer, state.team || []).some((p) => p.user_id === body.p_user_id)
+      )
+        return route.fulfill({ status: 403, body: "{}" });
+      const counts = {};
+      P.branch(body.p_user_id, state.team || []).forEach((p) => {
+        if (p.position_code) counts[p.position_code] = (counts[p.position_code] || 0) + 1;
+      });
+      return json({ user_id: body.p_user_id, counts, units_available: false });
+    }
     if (url.pathname.endsWith("/rpc/get_team_directory")) return json(state.team || []);
     if (url.pathname.endsWith("/rpc/save_team_assignment")) {
       assert.equal(state.role, "admin");
@@ -628,6 +642,7 @@ async function login(page, base) {
     if (process.env.TEAM_SCREENSHOT)
       await treePage.screenshot({ path: process.env.TEAM_SCREENSHOT });
     await treePage.locator(".team-node-self").click();
+    await treePage.locator(".career-goal-tabs button").first().waitFor();
     assert.equal(await treePage.locator(".career-goal-tabs button").count(), 2);
     await treePage
       .locator(".career-goal-tabs")
@@ -784,51 +799,49 @@ async function login(page, base) {
     );
     await treePage.locator('#panel-navigation [data-view="team"]').click();
     await treePage.locator(".team-node").first().click();
-    await treePage.locator("#team-member-progress").waitFor();
     assert.match(
       await treePage.locator("#team-member-progress").textContent(),
-      /pendiente de registrar unidades/,
+      /privado/,
     );
-    assert.match(
-      await treePage.locator("#team-member-progress").textContent(),
-      /toda su rama/,
+    assert.equal(
+      await treePage.locator("#team-member-progress .career-goal-tabs").count(),
+      0,
     );
     await treePage.locator("#team-member-close").click();
     await treePage.locator("#career-open").click();
     assert.equal(await treePage.locator(".career-level").count(), 9);
+    await treePage.waitForTimeout(300);
+    await treePage.screenshot({
+      path: path.join(process.env.TEMP, "career-map-new.png"),
+      fullPage: true,
+    });
     await treePage.locator('.career-level[data-career="agency_director"]').click();
-    assert.match(await treePage.locator("#career-content").textContent(), /31.250/);
-    assert.match(
-      await treePage.locator("#career-content").textContent(),
-      /Director de Agencia/,
-    );
-    assert.equal(await treePage.locator(".career-rule").count(), 2);
+    assert.match(await treePage.locator("#career-content").textContent(), /25.000/);
     assert.equal(
-      await treePage
-        .locator(".career-rule")
-        .first()
-        .locator(".career-people-icons span")
-        .count(),
+      await treePage.locator(".career-rule-sheet .career-people-icons span").count(),
       18,
     );
+    await treePage.getByRole("button", { name: "125 %", exact: true }).click();
+    assert.match(await treePage.locator("#career-content").textContent(), /31.250/);
     assert.equal(
-      await treePage
-        .locator(".career-rule")
-        .last()
-        .locator(".career-people-icons span")
-        .count(),
+      await treePage.locator(".career-rule-sheet .career-people-icons span").count(),
       14,
     );
+    await treePage.waitForTimeout(300);
+    await treePage.screenshot({
+      path: path.join(process.env.TEMP, "career-detail-new.png"),
+      fullPage: true,
+    });
     await treePage
       .getByRole("button", { name: "← Todos los puestos", exact: true })
       .click();
     await treePage
       .locator('.career-level[data-career="financial_consultant_senior_ii"]')
       .click();
-    assert.match(await treePage.locator(".career-rule").first().textContent(), /25.000/);
-    assert.match(
-      await treePage.locator(".career-rule").last().textContent(),
-      /no especifica/,
+    assert.match(await treePage.locator(".career-rule-sheet").textContent(), /25.000/);
+    assert.equal(
+      await treePage.getByRole("button", { name: "125 %", exact: true }).isDisabled(),
+      true,
     );
     for (const width of [320, 768, 1440]) {
       await treePage.setViewportSize({ width, height: 1000 });
