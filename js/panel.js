@@ -176,6 +176,13 @@
 
   function renderIdentity() {
     const profile = account?.profile;
+    get("my-profile-name").textContent =
+      [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
+      "Tu perfil profesional.";
+    get("my-position-help").textContent =
+      account?.role === "admin"
+        ? "Gestiona tu puesto y consulta tu lugar en el equipo."
+        : "Tu puesto y responsable los asigna el administrador.";
     get("consultant-display-name").textContent = profile
       ? `${profile.first_name} ${profile.last_name}`
       : "Mi cuenta";

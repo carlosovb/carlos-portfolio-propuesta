@@ -88,6 +88,7 @@
     get("team-assignment-form").reset();
     get("team-photo-input").value = "";
     get("my-team-photo").replaceChildren();
+    get("my-profile-name").textContent = "Tu perfil profesional.";
     get("team-member-photo").replaceChildren();
     ["my-team-multiplier", "my-team-manager"].forEach((id) => (get(id).value = ""));
     get("my-team-position").value = "";

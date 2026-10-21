@@ -1056,3 +1056,160 @@
   object-fit: contain;
   object-position: center bottom;
 }
+
+/* Mi perfil: retrato protagonista, información profesional y ajustes separados. */
+#profile-view {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+#profile-view .team-profile-card {
+  padding: 36px 40px;
+  border: 0;
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--panel) 70%, var(--bg)),
+    var(--bg)
+  );
+}
+#profile-view .team-profile-content {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 48px;
+  margin: 0;
+}
+#profile-view .team-photo-editor {
+  gap: 12px;
+  align-items: center;
+}
+#profile-view #my-team-photo {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 300px);
+  height: 340px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  font-size: 72px;
+}
+#my-team-photo::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 50px 0 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 48% 48% 14% 14%;
+  transform: rotate(-8deg);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    transparent
+  );
+}
+#profile-view #my-team-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  border-radius: 0;
+  mask-image: linear-gradient(#000 80%, transparent);
+}
+#profile-view #my-profile-name {
+  font-size: clamp(28px, 3.2vw, 42px);
+  letter-spacing: -1.1px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  margin: 18px 0;
+}
+.profile-position-help {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+#profile-view .team-position-fields {
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 20px;
+}
+#profile-view .team-position-fields > label:last-child,
+#profile-view #team-save-own-position {
+  grid-column: 1 / -1;
+}
+#profile-view #my-team-multiplier {
+  color: var(--accent);
+  font-size: 28px;
+  font-weight: 600;
+  height: 56px;
+}
+#profile-view .profile-grid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 28px;
+}
+#profile-view .profile-grid .profile-card {
+  padding: 32px;
+  border-color: color-mix(in srgb, var(--accent) 16%, var(--line));
+  border-radius: 24px;
+  background: linear-gradient(
+    145deg,
+    var(--panel),
+    color-mix(in srgb, var(--panel) 55%, var(--bg))
+  );
+}
+#profile-view .profile-card h2 {
+  margin: 12px 0 28px;
+}
+#profile-view #profile-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 18px;
+}
+#profile-form > .panel-muted,
+#profile-form > [role="status"],
+#profile-form > button {
+  grid-column: 1 / -1;
+}
+#profile-view form label {
+  min-width: 0;
+}
+#profile-view form input {
+  min-width: 0;
+  width: 100%;
+}
+#profile-view .team-upload-label {
+  border-radius: 12px;
+}
+@media (max-width: 1100px) {
+  #profile-view .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  #profile-view .team-profile-content {
+    gap: 30px;
+  }
+  #profile-view .team-position-fields {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 700px) {
+  #profile-view .team-profile-card {
+    padding: 26px 20px;
+  }
+  #profile-view .team-profile-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  #profile-view #my-team-photo {
+    height: 300px;
+    width: min(100%, 260px);
+  }
+  #profile-view .profile-grid .profile-card {
+    padding: 26px 20px;
+  }
+  #profile-view #profile-form {
+    grid-template-columns: 1fr;
+  }
+  #profile-view #my-profile-name {
+    font-size: 29px;
+  }
+}
