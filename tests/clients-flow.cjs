@@ -278,7 +278,10 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           .evaluate((d) => d.scrollWidth <= d.clientWidth),
         true,
       );
-      await page.locator("#client-detail-close").click();
+      await page.locator("#client-detail-name").click();
+      assert.equal(await page.locator("#client-detail-dialog").evaluate(d=>d.open),true,"Pulsar dentro no debe cerrar la ficha");
+      await page.mouse.click(2,2);
+      await page.waitForFunction(()=>!document.querySelector("#client-detail-dialog").open);
       assert.ok(
         Math.abs((await page.evaluate(() => window.scrollY)) - before) < 2,
         "Cerrar la ficha debe conservar la posición",

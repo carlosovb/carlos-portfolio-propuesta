@@ -340,6 +340,21 @@
   get("client-detail-close").addEventListener("click", () =>
     get("client-detail-dialog").close(),
   );
+  // Cierra solo si el gesto empieza y termina en el fondo exterior.
+  const clientDialog = get("client-detail-dialog");
+  let backdropPressed = false;
+  const outsideClientDialog = event => {
+    const rect = clientDialog.getBoundingClientRect();
+    return event.clientX < rect.left || event.clientX > rect.right ||
+      event.clientY < rect.top || event.clientY > rect.bottom;
+  };
+  clientDialog.addEventListener("pointerdown", event => {
+    backdropPressed = event.target === clientDialog && outsideClientDialog(event);
+  });
+  clientDialog.addEventListener("click", event => {
+    if (backdropPressed && event.target === clientDialog && outsideClientDialog(event)) clientDialog.close();
+    backdropPressed = false;
+  });
   get("client-detail-dialog").addEventListener("close", () => {
     const saved = dialogScroll;
     dialogScroll = null;
