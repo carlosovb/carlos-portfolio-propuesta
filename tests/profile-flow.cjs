@@ -563,7 +563,7 @@ async function login(page, base) {
 
     const treeContext = await browser.newContext({
       viewport: { width: 390, height: 844 },
-      reducedMotion: "reduce",
+      reducedMotion: process.env.TEAM_MOTION || "reduce",
     });
     const treeData = state("consultant");
     treeData.team = [
@@ -628,6 +628,20 @@ async function login(page, base) {
     if (process.env.TEAM_SCREENSHOT)
       await treePage.screenshot({ path: process.env.TEAM_SCREENSHOT });
     await treePage.locator(".team-node-self").click();
+    assert.equal(await treePage.locator(".career-goal-tabs button").count(), 2);
+    await treePage
+      .locator(".career-goal-tabs")
+      .getByRole("button", { name: "Gestor de Equipo", exact: true })
+      .click();
+    assert.match(
+      await treePage.locator("#team-member-progress").textContent(),
+      /Faltan 3 FC/,
+    );
+    await treePage.screenshot({
+      path: path.join(process.env.TEMP, "career-progress-mobile.png"),
+      fullPage: true,
+    });
+
     await treePage.locator("#team-member-dialog").waitFor();
     assert.equal(await treePage.locator("#team-assignment-form").isVisible(), false);
     assert.equal(await treePage.locator("#team-member-multiplier").textContent(), "×2,5");
@@ -735,6 +749,22 @@ async function login(page, base) {
     await treePage.locator(".team-node-self").click();
     await treePage.locator("#team-assignment-form").waitFor();
     await treePage
+      .locator("#team-assignment-form")
+      .getByRole("combobox", { name: "Puesto", exact: true })
+      .click();
+    await treePage.screenshot({
+      path: path.join(process.env.TEMP, "career-select.png"),
+      fullPage: false,
+    });
+    await treePage
+      .locator(".panel-select-options:not([hidden])")
+      .getByRole("option", { name: /Director Regional/ })
+      .click();
+    assert.equal(
+      await treePage.locator("#team-assignment-form [name=position]").inputValue(),
+      "regional_director",
+    );
+    await treePage
       .locator('#team-assignment-form [name="position"]')
       .selectOption("team_manager");
     await treePage.locator("#team-save-assignment").click();
@@ -753,6 +783,17 @@ async function login(page, base) {
       "El perfil de Carlos debe usar el mismo retrato sin fondo que el equipo",
     );
     await treePage.locator('#panel-navigation [data-view="team"]').click();
+    await treePage.locator(".team-node").first().click();
+    await treePage.locator("#team-member-progress").waitFor();
+    assert.match(
+      await treePage.locator("#team-member-progress").textContent(),
+      /pendiente de registrar unidades/,
+    );
+    assert.match(
+      await treePage.locator("#team-member-progress").textContent(),
+      /toda su rama/,
+    );
+    await treePage.locator("#team-member-close").click();
     await treePage.locator("#career-open").click();
     assert.equal(await treePage.locator(".career-level").count(), 9);
     await treePage.locator('.career-level[data-career="agency_director"]').click();
@@ -805,7 +846,22 @@ async function login(page, base) {
     await treePage.locator("#career-close").click();
     await treePage.locator('#panel-navigation [data-view="profile"]').click();
     assert.equal(await treePage.locator("#my-team-position option").count(), 10);
-    await treePage.locator("#my-team-position").selectOption("national_director");
+    await treePage
+      .locator("#profile-view")
+      .getByRole("combobox", { name: "Puesto", exact: true })
+      .click();
+    await treePage
+      .locator("#profile-view")
+      .getByRole("combobox", { name: "Puesto", exact: true })
+      .press("End");
+    await treePage
+      .locator("#profile-view")
+      .getByRole("combobox", { name: "Puesto", exact: true })
+      .press("Enter");
+    assert.equal(
+      await treePage.locator("#my-team-position").inputValue(),
+      "national_director",
+    );
     assert.equal(await treePage.locator("#my-team-multiplier").inputValue(), "×6");
     await treeContext.close();
     console.log(

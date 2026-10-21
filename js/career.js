@@ -27,6 +27,7 @@
     );
     return b;
   }
+  let transition;
   function show(level) {
     content.replaceChildren();
     const heading = node("h2", level ? level.name : "Tu plan de carrera.");
@@ -159,6 +160,15 @@
     if (!dialog.open) dialog.showModal();
     dialog.scrollTop = 0;
     heading.focus({ preventScroll: true });
+    transition?.cancel();
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
+      transition = content.animate(
+        [
+          { opacity: 0, transform: "translateY(12px) scale(.985)" },
+          { opacity: 1, transform: "none" },
+        ],
+        { duration: 240, easing: "cubic-bezier(.2,.8,.2,1)" },
+      );
   }
   const legend = document.getElementById("career-levels");
   levels.forEach((level) => {
@@ -203,7 +213,132 @@
     if (outside && e.target === dialog && isOutside(e)) dialog.close();
     outside = false;
   });
+  function renderProgress(member, directory) {
+    const host = document.getElementById("team-member-progress");
+    host.replaceChildren();
+    host.append(
+      node("p", "Tu siguiente paso", "eyebrow"),
+      node("h3", "Lo que falta para avanzar."),
+    );
+    const goals = window.CareerProgress.calculate(member, directory);
+    if (!goals.length) {
+      host.append(
+        node(
+          "p",
+          member.position_code
+            ? "El documento no define otro puesto posterior en esta vía."
+            : "Asigna un puesto para consultar los siguientes objetivos.",
+        ),
+      );
+      return;
+    }
+    const tabs = node("div", undefined, "career-goal-tabs");
+    const body = node("div", undefined, "career-goal-body");
+    host.append(tabs, body);
+    function select(goal, active) {
+      tabs
+        .querySelectorAll("button")
+        .forEach((b) => b.setAttribute("aria-pressed", String(b === active)));
+      body.replaceChildren();
+      const title = node("div", undefined, "career-goal-title");
+      title.append(
+        node("h4", goal.level.name),
+        node("strong", "×" + number(goal.level.factor)),
+      );
+      body.append(title);
+      for (const [label, rule] of [
+        ["100 %", goal.base],
+        ["125 %", goal.extra],
+      ]) {
+        if (!rule) continue;
+        const box = node("section", undefined, "career-progress-rule");
+        box.append(node("h4", "Objetivo " + label));
+        for (const units of rule.units) {
+          const names = {
+            quarter: "Unidades trimestrales",
+            totalQuarter: "Producción total trimestral",
+            historical: "Producción propia histórica",
+          };
+          const item = node("div", undefined, "career-unit-pending");
+          item.append(
+            node("strong", number(units.required) + " U"),
+            node("span", names[units.kind]),
+            node("small", "Cuánto falta: pendiente de registrar unidades"),
+          );
+          box.append(item);
+        }
+        if (rule.team.length) {
+          box.append(node("p", "Colaboradores de toda su rama", "career-progress-label"));
+          rule.team.forEach((team, index) => {
+            if (index) box.append(node("p", "O bien", "career-or"));
+            const line = node("div", undefined, "career-team-progress");
+            line.dataset.missing = team.missing;
+            const role = levels.find((l) => l.short === team.role);
+            line.append(
+              node(
+                "strong",
+                team.missing
+                  ? "Faltan " + team.missing + " " + team.role
+                  : "Cantidad cubierta · " + team.role,
+              ),
+              node(
+                "span",
+                role.name +
+                  " · " +
+                  team.observed +
+                  " registrados / " +
+                  team.count +
+                  " requeridos",
+              ),
+            );
+            const progress = node("progress");
+            progress.max = team.count;
+            progress.value = Math.min(team.observed, team.count);
+            progress.setAttribute(
+              "aria-label",
+              team.role + ": " + team.observed + " de " + team.count,
+            );
+            line.append(progress);
+            box.append(line);
+          });
+        } else
+          box.append(
+            node("p", "El puesto no exige un mínimo de colaboradores en el documento."),
+          );
+        body.append(box);
+      }
+      body.append(
+        button(
+          "Ver requisitos completos ↗",
+          () => show(goal.level),
+          "panel-text-button",
+        ),
+      );
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
+        body.animate(
+          [
+            { opacity: 0, transform: "translateY(8px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 200, easing: "ease-out" },
+        );
+    }
+    goals.forEach((goal) => {
+      const b = button(goal.level.name, () => select(goal, b), "panel-secondary");
+      b.setAttribute("aria-pressed", "false");
+      tabs.append(b);
+    });
+    select(goals[0], tabs.firstElementChild);
+    host.append(
+      node(
+        "p",
+        "Las unidades todavía no se han incorporado a las estadísticas. Los recuentos usan el puesto exacto registrado de cada persona en su rama; Estado Activo y criterios de calidad pendientes de validar.",
+        "career-progress-footnote",
+      ),
+    );
+  }
   window.CareerPlan = {
+    renderProgress,
     close: () => dialog.close(),
     markCurrent: (code) =>
       legend

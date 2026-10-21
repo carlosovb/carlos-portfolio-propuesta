@@ -82,6 +82,8 @@
     members = [];
     clientCounts = null;
     selected = null;
+    get("team-member-progress").replaceChildren();
+    window.PanelSelects.close();
     clearPhotos();
     places.clear();
     get("team-member-dialog").close();
@@ -274,6 +276,7 @@
     get("team-member-clients").textContent = totals?.clients ?? "—";
     get("team-member-interested").textContent = totals?.interested ?? "—";
     avatar(get("team-member-photo"), member, true);
+    window.CareerPlan.renderProgress(member, members);
     const form = get("team-assignment-form");
     form.hidden = account?.role !== "admin";
     form.elements.position.value = member.position_code || "";
@@ -294,6 +297,7 @@
     }
     notice("team-member-notice", "");
     const dialog = get("team-member-dialog");
+    window.PanelSelects.sync();
     dialog.showModal();
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const rect = dialog.getBoundingClientRect();
@@ -371,6 +375,7 @@
       if (snapshot !== revision) return;
       me = mine;
       get("my-team-position").value = mine?.position_code || "";
+      window.PanelSelects.sync();
       get("my-team-position").disabled = details.role !== "admin";
       get("team-save-own-position").hidden = details.role !== "admin";
       get("my-team-multiplier").value = multiplier(mine?.multiplier);
