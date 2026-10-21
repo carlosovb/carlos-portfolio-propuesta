@@ -419,3 +419,14 @@ html[data-theme="dark"] .resource-company-identity img {
     transform: none;
   }
 }
+
+.resource-document {
+  cursor: pointer;
+}
+.resource-document input,
+.resource-document button {
+  cursor: pointer;
+}
+.contract-bulk {
+  margin: 0;
+}

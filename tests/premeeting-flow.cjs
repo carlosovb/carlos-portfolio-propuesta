@@ -354,6 +354,8 @@ const root = path.resolve(__dirname, ".."),
     await page.waitForFunction(
       () => document.getElementById("premeeting-private-summary").textContent === "",
     );
+    assert.equal(await page.locator("#premeeting-bulk").isVisible(), false);
+    await page.locator("[data-response-id]").first().check();
     await page.locator("#premeeting-select-all").check();
     await page.locator("#premeeting-delete-selected").click();
     await page

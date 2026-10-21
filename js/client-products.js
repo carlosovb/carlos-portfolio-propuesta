@@ -162,7 +162,10 @@
       "invitation-delete",
     );
     remove.disabled = true;
-    controls.append(remove);
+    const bulk = node("div", undefined, "contract-actions contract-bulk");
+    bulk.hidden = true;
+    bulk.append(remove);
+    controls.append(bulk);
     if (rows.length) {
       const all = node("label", "Seleccionar todos");
       const check = node("input");
@@ -174,7 +177,7 @@
         });
       });
       all.prepend(check);
-      controls.append(all);
+      bulk.append(all);
     }
     host.append(controls);
     const list = node("div", undefined, "contract-list");
@@ -186,6 +189,7 @@
       check.addEventListener("change", () => {
         check.checked ? selected.add(row.id) : selected.delete(row.id);
         remove.disabled = !selected.size || busy;
+        bulk.hidden = !selected.size;
       });
       const copy = node("div", undefined, "contract-copy");
       copy.append(node("small", row.company), node("h4", row.product));

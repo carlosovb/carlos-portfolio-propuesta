@@ -502,6 +502,11 @@ async function login(page, base) {
     await statusPage.waitForFunction(
       () => !document.querySelector("#refresh-button").disabled,
     );
+    assert.equal(
+      await statusPage.locator('[data-bulk-toolbar="recent-requests"]').isVisible(),
+      false,
+    );
+    await statusPage.locator("#recent-requests .bulk-checkbox").first().check();
     await statusPage.locator('[data-bulk-all="recent-requests"]').check();
     statusPage.once("dialog", (dialog) => dialog.dismiss());
     await statusPage.locator('[data-bulk-delete="recent-requests"]').click();
@@ -540,6 +545,11 @@ async function login(page, base) {
     await statusPage.locator('#panel-navigation [data-view="consultants"]').click();
     await statusPage.locator("#consultant-list .bulk-checkbox").waitFor();
     assert.equal(await statusPage.locator("#consultant-list .bulk-checkbox").count(), 1);
+    assert.equal(
+      await statusPage.locator('[data-bulk-toolbar="consultant-list"]').isVisible(),
+      false,
+    );
+    await statusPage.locator("#consultant-list .bulk-checkbox").first().check();
     await statusPage.locator('[data-bulk-all="consultant-list"]').check();
     statusPage.once("dialog", (dialog) => dialog.accept());
     await statusPage.locator('[data-bulk-delete="consultant-list"]').click();
@@ -734,6 +744,7 @@ async function login(page, base) {
     assert.equal(treeData.assignmentSaved.p_position_code, "team_manager");
     treeData.teamUserId = "ee1355b0-7a6c-4559-87a6-fa72a7d8f73b";
     treeData.photoUploaded = true;
+    await treePage.evaluate(() => window.PortfolioBackend.invalidateCache());
     await treePage.locator('#panel-navigation [data-view="profile"]').click();
     await treePage.locator('#my-team-photo img[src="../assets/carlos.png"]').waitFor();
     assert.equal(

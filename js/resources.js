@@ -29,6 +29,7 @@
     get("resources-notice").hidden = !text;
   };
   function hide() {
+    get("resource-bulk").hidden = true;
     version++;
     active = false;
     rows = [];
@@ -158,7 +159,7 @@
       heading.append(identity);
     }
     const list = rows.filter((r) => !company || r.company === company);
-    get("resource-bulk").hidden = account?.role !== "admin" || !company || !list.length;
+    get("resource-bulk").hidden = true;
     if (!company) {
       const grid = node("div", undefined, "resource-grid"),
         key = company ? "product" : "company";
@@ -270,6 +271,10 @@
             () => openResource(row, open),
           );
           card.append(open);
+          card.addEventListener("click", (event) => {
+            if (!event.target.closest("button,input,label,a") && !open.disabled)
+              openResource(row, open);
+          });
           if (account.role === "admin")
             card.append(
               button(
@@ -292,6 +297,7 @@
     });
   }
   function updateSelection() {
+    get("resource-bulk").hidden = account?.role !== "admin" || !selection.size;
     get("resource-delete-selected").disabled = !selection.size || busy;
     get("resource-delete-selected").textContent = selection.size
       ? `Eliminar seleccionados (${selection.size})`

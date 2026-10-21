@@ -36,7 +36,8 @@ const server = http.createServer((req, res) => {
   let role = "admin",
     resources = [],
     uploads = 0,
-    reads = 0;
+    reads = 0,
+    resourceReads = 0;
   const errors = [],
     owner = "11111111-1111-4111-8111-111111111111",
     member = "22222222-2222-4222-8222-222222222222";
@@ -126,6 +127,7 @@ const server = http.createServer((req, res) => {
         resources = resources.filter((r) => r.id !== target);
         return json([{ id: target }]);
       }
+      resourceReads++;
       return json(resources);
     }
     if (url.pathname.startsWith("/storage/v1/object/team-resources/")) {
@@ -202,6 +204,11 @@ const server = http.createServer((req, res) => {
       ],
     );
     assert.equal(await page.locator(".resource-company").count(), 2);
+    assert.equal(
+      resourceReads,
+      1,
+      "El inicio y los recursos comparten la misma consulta",
+    );
     assert.equal(await page.locator("#resource-admin").isVisible(), false);
     assert(
       await page
@@ -236,6 +243,14 @@ const server = http.createServer((req, res) => {
       .click();
     await page.locator(".resource-personal").waitFor();
     assert.equal(await page.locator(".resource-personal").isVisible(), true);
+    const beforeRefresh = resourceReads;
+    await page.locator("#refresh-button").click();
+    await page.waitForFunction(() => !document.getElementById("refresh-button").disabled);
+    assert.equal(
+      resourceReads,
+      beforeRefresh + 1,
+      "Actualizar consulta de nuevo al servidor",
+    );
     await page.evaluate(() => {
       window.testCopy = navigator.clipboard.writeText.bind(navigator.clipboard);
       navigator.clipboard.writeText = () => Promise.reject(new Error("denied"));
@@ -295,7 +310,7 @@ const server = http.createServer((req, res) => {
     await page
       .locator(".resource-document")
       .filter({ hasText: "PDF de ejemplo" })
-      .getByRole("button", { name: "Ver PDF ↗", exact: true })
+      .locator("h4")
       .click();
     const popup = await popupPromise;
     await popup.waitForURL("blob:**");
@@ -324,13 +339,11 @@ const server = http.createServer((req, res) => {
       await page.locator("#resource-file").getAttribute("accept"),
       "text/html,.html,.htm",
     );
-    await page
-      .locator("#resource-file")
-      .setInputFiles({
-        name: "presentacion.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<!doctype html><html><body>Prueba</body></html>"),
-      });
+    await page.locator("#resource-file").setInputFiles({
+      name: "presentacion.html",
+      mimeType: "text/html",
+      buffer: Buffer.from("<!doctype html><html><body>Prueba</body></html>"),
+    });
     await page.locator("#resource-save").click();
     await page.getByRole("heading", { name: "HTML de ejemplo", exact: true }).waitFor();
     assert.equal(uploads, 2);
@@ -375,11 +388,18 @@ const server = http.createServer((req, res) => {
         "Recursos responsive",
       );
     }
-    await page.setViewportSize({width:320,height:900});
-    await page.evaluate(()=>document.documentElement.dataset.theme='light');
-    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Tarjetas en móvil y tema claro');
-    await page.screenshot({path:path.join(process.env.TEMP,'resources-mobile-light.png'),fullPage:true});
-    await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>document.documentElement.dataset.theme='dark');
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
+    assert(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      "Tarjetas en móvil y tema claro",
+    );
+    await page.screenshot({
+      path: path.join(process.env.TEMP, "resources-mobile-light.png"),
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.evaluate(() => (document.documentElement.dataset.theme = "dark"));
     await page.screenshot({
       path: path.join(process.env.TEMP, "workspace-resources.png"),
       fullPage: true,
@@ -415,6 +435,12 @@ const server = http.createServer((req, res) => {
     await page.locator('#panel-navigation [data-view="resources"]').click();
     await page.getByRole("button", { name: "AXA", exact: false }).click();
     await page.locator(".resource-document").first().waitFor();
+    assert.equal(await page.locator("#resource-bulk").isVisible(), false);
+    await page.locator("[data-resource-id]").first().check();
+    assert.equal(await page.locator("#resource-bulk").isVisible(), true);
+    await page.locator("[data-resource-id]").first().uncheck();
+    assert.equal(await page.locator("#resource-bulk").isVisible(), false);
+    await page.locator("[data-resource-id]").first().check();
     await page.locator("#resource-select-all").check();
     await page.locator("#resource-delete-selected").click();
     await page.waitForFunction(

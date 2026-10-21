@@ -101,6 +101,7 @@
       : "Ver ejemplo ↗";
   }
   function syncSelection() {
+    get("clients-bulk").hidden = !selection.size;
     get("clients-selected-count").textContent = selection.size + " seleccionados";
     get("clients-delete-selected").disabled = busy || !selection.size;
     get("clients-select-all").checked = rows.length > 0 && selection.size === rows.length;
@@ -213,7 +214,7 @@
       (get("clients-search").value ? " en esta búsqueda" : "");
     get("clients-table-wrap").hidden = !rows.length;
     get("clients-empty").hidden = !!rows.length;
-    get("clients-bulk").hidden = !rows.length;
+    get("clients-bulk").hidden = true;
     get("clients-pagination").hidden = !rows.length;
     get("clients-empty").textContent = get("clients-search").value
       ? "No hay clientes que coincidan con tu búsqueda."
@@ -276,6 +277,7 @@
     }
   }
   function hide() {
+    get("clients-bulk").hidden = true;
     window.ClientProducts.reset();
     visible = false;
     dialogScroll = null;

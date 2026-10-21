@@ -24,6 +24,7 @@
     active = false;
     page = 0;
     selected.clear();
+    get("premeeting-bulk").hidden = true;
     busy = false;
     get("premeeting-response-list").replaceChildren();
     get("premeeting-private-summary").replaceChildren();
@@ -117,6 +118,7 @@
     }
   }
   function selection() {
+    get("premeeting-bulk").hidden = !selected.size;
     get("premeeting-delete-selected").disabled = !selected.size || busy;
     get("premeeting-delete-selected").textContent = selected.size
       ? `Eliminar seleccionadas (${selected.size})`

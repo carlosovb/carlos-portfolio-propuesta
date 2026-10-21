@@ -13,6 +13,42 @@
   const accountPage = new URL("cuenta/", applicationRoot).href;
   const redirectKey = `portfolio-panel-login:${url}`;
 
+  // Caché limitada a esta sesión y a consultas de datos. Nunca persiste en disco.
+  const readCache = new Map();
+  let cacheVersion = 0;
+  const cachedRpcs = new Set([
+    "list_my_clients",
+    "get_my_team_profile",
+    "get_team_directory",
+    "get_team_client_counts",
+    "list_consultants",
+  ]);
+  function invalidateCache() {
+    cacheVersion++;
+    readCache.clear();
+  }
+  function cacheable(route, options = {}) {
+    const method = options.method || "GET";
+    if (method === "POST") return cachedRpcs.has(route.split("/").pop());
+    return (
+      ["GET", "HEAD"].includes(method) &&
+      /^\/rest\/v1\/(team_resources|premeeting_responses|contact_requests|client_products)(\?|$)/.test(
+        route,
+      )
+    );
+  }
+  function mutation(route, options = {}) {
+    if (["GET", "HEAD"].includes(options.method || "GET")) return false;
+    if (route.startsWith("/auth/v1/token")) return false;
+    if (
+      route.startsWith("/rest/v1/rpc/") &&
+      [...cachedRpcs, "panel_access", "is_panel_owner", "premeeting_consultant"].includes(
+        route.split("/").pop(),
+      )
+    )
+      return false;
+    return true;
+  }
   function clearRedirect() {
     try {
       sessionStorage.removeItem(redirectKey);
@@ -34,12 +70,15 @@
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     if (options.body && !headers["Content-Type"])
       headers["Content-Type"] = "application/json";
+    const write = mutation(route, options);
+    if (write) invalidateCache();
     const response = await fetch(`${url}${route}`, {
       ...options,
       headers,
       cache: "no-store",
       signal: options.signal || AbortSignal.timeout(20000),
     });
+    if (write || [401, 403].includes(response.status)) invalidateCache();
     if (!response.ok) {
       const error = new Error(
         response.status === 401
@@ -74,8 +113,48 @@
     return refreshing;
   }
 
-  async function authenticated(route, options) {
-    return request(route, options, await token());
+  async function authenticated(route, options = {}) {
+    const identity = await token();
+    if (!cacheable(route, options)) return request(route, options, identity);
+    const owner = session?.user?.id,
+      revision = cacheVersion;
+    const key = JSON.stringify([
+      owner,
+      route,
+      options.method || "GET",
+      options.body || "",
+      options.headers || {},
+    ]);
+    let entry = readCache.get(key);
+    if (!entry || entry.expires <= Date.now()) {
+      entry = { expires: Date.now() + 60000, promise: null };
+      entry.promise = (async () => {
+        const response = await request(route, options, identity);
+        const body =
+          options.method === "HEAD" ? null : new Uint8Array(await response.arrayBuffer());
+        return {
+          body,
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...response.headers],
+        };
+      })();
+      readCache.set(key, entry);
+      if (readCache.size > 100) readCache.delete(readCache.keys().next().value);
+    }
+    try {
+      const result = await entry.promise;
+      if (!session || session.user?.id !== owner || cacheVersion !== revision)
+        throw Error("Los datos han cambiado. Actualiza el apartado.");
+      return new Response(result.body, {
+        status: result.status,
+        statusText: result.statusText,
+        headers: result.headers,
+      });
+    } catch (error) {
+      if (readCache.get(key) === entry) readCache.delete(key);
+      throw error;
+    }
   }
 
   async function readAccess() {
@@ -120,6 +199,7 @@
 
   window.PortfolioBackend = Object.freeze({
     ready,
+    invalidateCache,
     get panelAccess() {
       return accessDetails ? structuredClone(accessDetails) : null;
     },
@@ -592,6 +672,7 @@
         throw new Error("No se confirmó el registro.");
     },
     async signIn(email, password) {
+      invalidateCache();
       const response = await request("/auth/v1/token?grant_type=password", {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -608,6 +689,7 @@
       }
     },
     async signOut() {
+      invalidateCache();
       clearRedirect();
       const previous = session;
       session = null;

@@ -23,6 +23,7 @@
   let mutationPending = false;
   let account = null;
   let bulkRunning = false;
+  let menuAnimation;
   const bulkLists = Object.fromEntries(
     ["recent-requests", "request-list", "consultant-list"].map((id) => [
       id,
@@ -33,7 +34,7 @@
   function updateBulk(id) {
     const data = bulkLists[id];
     const bar = document.querySelector('[data-bulk-toolbar="' + id + '"]');
-    bar.hidden = account?.role !== "admin" || !data.items.size;
+    bar.hidden = account?.role !== "admin" || !data.selected.size;
     const all = bar.querySelector("[data-bulk-all]");
     all.checked = data.items.size > 0 && data.selected.size === data.items.size;
     all.indeterminate = data.selected.size > 0 && data.selected.size < data.items.size;
@@ -629,6 +630,17 @@
     });
     document.querySelector(".panel-sidebar").classList.remove("menu-open");
     document.querySelector(".panel-menu-toggle").setAttribute("aria-expanded", "false");
+    menuAnimation?.cancel();
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const section = get(view + "-view");
+      menuAnimation = section.animate(
+        [
+          { opacity: 0, transform: "translateY(8px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        { duration: 180, easing: "ease-out" },
+      );
+    }
     load();
   }
 
@@ -792,7 +804,10 @@
       get("change-password").disabled = false;
     }
   });
-  get("refresh-button").addEventListener("click", load);
+  get("refresh-button").addEventListener("click", () => {
+    backend.invalidateCache();
+    load();
+  });
   get("previous-page").addEventListener("click", () => {
     page = Math.max(0, page - 1);
     load();
