@@ -12,6 +12,9 @@
     height = 0,
     saving = false,
     anchor = null;
+  const CARD_WIDTH = 280;
+  const CARD_HEIGHT = 184;
+  const LEVEL_GAP = 264;
   const photos = new Map();
   const places = new Map();
   const fullName = (person) =>
@@ -98,8 +101,8 @@
     if (!place) return;
     const viewport = get("team-viewport");
     viewport.scrollTo({
-      left: Math.max(0, (place.x + 120) * scale - viewport.clientWidth / 2),
-      top: Math.max(0, (place.y + 100) * scale - viewport.clientHeight / 2),
+      left: Math.max(0, (place.x + CARD_WIDTH / 2) * scale - viewport.clientWidth / 2),
+      top: Math.max(0, (place.y + CARD_HEIGHT / 2) * scale - viewport.clientHeight / 2),
       behavior: "auto",
     });
   }
@@ -114,6 +117,8 @@
   function draw() {
     const canvas = get("team-canvas");
     canvas.replaceChildren();
+    canvas.style.setProperty("--team-card-width", CARD_WIDTH + "px");
+    canvas.style.setProperty("--team-card-height", CARD_HEIGHT + "px");
     places.clear();
     const byId = new Map(members.map((member) => [member.user_id, member]));
     const children = (id) => members.filter((member) => member.manager_id === id);
@@ -121,8 +126,8 @@
       (member) => member.is_root || !byId.has(member.manager_id),
     );
     const viewport = get("team-viewport");
-    const paddingX = Math.max(40, viewport.clientWidth / 2 - 120);
-    const paddingY = Math.max(48, viewport.clientHeight / 2 - 103);
+    const paddingX = Math.max(40, viewport.clientWidth / 2 - CARD_WIDTH / 2);
+    const paddingY = Math.max(48, viewport.clientHeight / 2 - CARD_HEIGHT / 2);
     let cursor = paddingX,
       maxDepth = 0;
     const visited = new Set();
@@ -136,12 +141,12 @@
       let x;
       if (!reports.length) {
         x = cursor;
-        cursor += 280;
+        cursor += CARD_WIDTH + 48;
       } else {
         const positions = reports.map((child) => layout(child, depth + 1));
         x = (positions[0] + positions[positions.length - 1]) / 2;
       }
-      places.set(member.user_id, { x, y: paddingY + depth * 274 });
+      places.set(member.user_id, { x, y: paddingY + depth * LEVEL_GAP });
       return x;
     }
     roots.forEach((root) => {
@@ -152,7 +157,10 @@
       .filter((member) => !visited.has(member.user_id))
       .forEach((member) => layout(member, 0));
     width = Math.max(600, cursor + paddingX);
-    height = Math.max(500, paddingY + (maxDepth + 1) * 274 + viewport.clientHeight / 2);
+    height = Math.max(
+      500,
+      paddingY + (maxDepth + 1) * LEVEL_GAP + viewport.clientHeight / 2,
+    );
     canvas.style.width = width + "px";
     canvas.style.height = height + "px";
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -165,17 +173,17 @@
         parent = places.get(member.manager_id);
       if (!child || !parent) return;
       const path = document.createElementNS(svg.namespaceURI, "path");
-      const y = parent.y + 206;
+      const y = parent.y + CARD_HEIGHT;
       path.setAttribute(
         "d",
         "M " +
-          (parent.x + 120) +
+          (parent.x + CARD_WIDTH / 2) +
           " " +
           y +
           " V " +
           (y + 32) +
           " H " +
-          (child.x + 120) +
+          (child.x + CARD_WIDTH / 2) +
           " V " +
           child.y,
       );
@@ -202,7 +210,7 @@
           ". Abrir ficha",
       );
       const face = document.createElement("span");
-      face.className = "team-avatar";
+      face.className = "team-avatar team-node-portrait";
       avatar(face, member);
       const name = document.createElement("strong");
       name.textContent = fullName(member);
@@ -212,7 +220,13 @@
       const factor = document.createElement("span");
       factor.className = "team-node-factor";
       factor.textContent = multiplier(member.multiplier);
-      card.append(face, name, position, factor);
+      const info = document.createElement("span");
+      info.className = "team-node-info";
+      const hint = document.createElement("span");
+      hint.className = "team-node-hint";
+      hint.textContent = "Ver perfil ↗";
+      info.append(name, position, factor, hint);
+      card.append(face, info);
       if (self) {
         const tag = document.createElement("span");
         tag.className = "team-self-label";

@@ -750,3 +750,87 @@
     font-size: 23px;
   }
 }
+
+/* Retrato editorial: la foto se integra en el lienzo, junto a los datos. */
+.team-workspace .team-node {
+  width: var(--team-card-width, 280px);
+  height: var(--team-card-height, 184px);
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 16px 14px 0 0;
+  text-align: left;
+  border-radius: 18px;
+  background: linear-gradient(120deg, transparent, var(--panel) 48%);
+  isolation: isolate;
+}
+.team-workspace .team-node .team-node-portrait {
+  align-self: end;
+  width: 108px;
+  height: 164px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 36px;
+  overflow: hidden;
+}
+.team-node-portrait img {
+  object-fit: contain;
+  object-position: center bottom;
+  transition: transform 250ms ease;
+}
+.team-node:hover .team-node-portrait img {
+  transform: scale(1.04);
+}
+.team-node-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 9px;
+  padding-bottom: 16px;
+}
+.team-node .team-node-info strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+  line-height: 1.2;
+}
+.team-node-info .team-node-position {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.team-workspace .team-node-info .team-node-factor {
+  font-size: 30px;
+}
+.team-node-hint {
+  font-size: 11px;
+  color: var(--muted);
+  transition: color 200ms ease;
+}
+.team-node:hover .team-node-hint {
+  color: var(--accent);
+}
+.team-node .team-self-label {
+  top: -12px;
+  right: 14px;
+}
+#team-member-photo {
+  width: 140px;
+  height: 160px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+#team-member-photo img {
+  object-fit: contain;
+  object-position: left bottom;
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-node-portrait img {
+    transition: none;
+  }
+}
