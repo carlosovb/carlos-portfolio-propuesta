@@ -9,7 +9,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=consultants2" />
+    <link rel="stylesheet" href="../css/panel.css?v=invitation-layout1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -194,10 +194,20 @@
                 Generar enlace de invitación ↗
               </button>
             </form>
-            <div id="invitation-result" hidden>
-              <label>Enlace para <span id="invitation-email"></span><textarea id="invitation-url" rows="4" readonly spellcheck="false" autocomplete="off"></textarea></label>
-              <button type="button" class="panel-secondary" id="copy-invitation">Copiar enlace</button>
-              <p>Envíalo solo a este consultor. Es personal, de un solo uso y caduca según la configuración de Supabase. No lo abras tú para probarlo.</p>
+            <div id="invitation-result" class="invitation-result" hidden>
+              <div class="invitation-heading">
+                <div>
+                  <p class="eyebrow">Invitación preparada</p>
+                  <h3>Lista para compartir</h3>
+                </div>
+                <button type="button" class="panel-secondary" id="copy-invitation">
+                  Copiar enlace ↗
+                </button>
+              </div>
+              <p class="invitation-recipient">Destinatario <strong id="invitation-email"></strong></p>
+              <label class="invitation-link-label" for="invitation-url">Enlace personal de activación</label>
+              <textarea id="invitation-url" rows="3" readonly spellcheck="false" autocomplete="off" aria-describedby="invitation-help"></textarea>
+              <p id="invitation-help" class="invitation-help">Cópialo y envíalo desde tu correo únicamente a este consultor. El enlace es de un solo uso y caduca. Deja que sea el destinatario quien lo abra para activar su cuenta.</p>
             </div>
             <p id="invite-notice" class="panel-notice" role="status" hidden></p>
           </div>
