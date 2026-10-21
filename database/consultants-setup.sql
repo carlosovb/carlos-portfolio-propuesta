@@ -6,7 +6,7 @@ begin
   if not coalesce(public.is_panel_owner(), false) then raise exception 'Not authorized'; end if;
   return coalesce((select jsonb_agg(jsonb_build_object(
     'user_id', u.id,
-    'can_delete', u.invited_at is not null and m.password_set_at is null,
+    'can_delete', u.invited_at is not null and (m.password_set_at is null or p.user_id is null),
     'email', u.email,
     'name', nullif(trim(coalesce(p.first_name, '') || ' ' || coalesce(p.last_name, '')), ''),
     'enabled', m.enabled,
@@ -28,7 +28,10 @@ begin
   select * into candidate from auth.users where id = p_user_id for update;
   if not found or candidate.invited_at is null
     or exists (select 1 from private.panel_owners where user_id = p_user_id)
-    or not exists (select 1 from private.panel_members where user_id = p_user_id and password_set_at is null)
+    or not exists (select 1 from private.panel_members where user_id = p_user_id
+      and (password_set_at is null or not exists (
+        select 1 from public.consultant_profiles where user_id = p_user_id
+      )))
   then return false; end if;
   update private.panel_members set enabled = false where user_id = p_user_id;
   return true;

@@ -84,6 +84,17 @@ const path = require("node:path");
     await assert.rejects(() => db.query("select public.save_my_profile('Nombre','Prueba','000000000')"));
     await db.exec('reset role');
     await db.query('update private.panel_members set enabled = true where user_id = $1', [member]);
+    await db.exec('reset role');
+    const incomplete = '55555555-5555-4555-8555-555555555555';
+    await db.query("insert into auth.users (id,email,invited_at) values ($1,'incomplete@example.invalid',now())", [incomplete]);
+    await db.query("update auth.users set encrypted_password='test-password-created', last_sign_in_at=now() where id=$1", [incomplete]);
+    await asUser(owner);
+    const incompleteRow = (await db.query('select public.list_consultants() as team')).rows[0].team.find(row => row.user_id === incomplete);
+    assert.equal(incompleteRow.complete, false);
+    assert.equal(incompleteRow.can_delete, true, 'Perfil ausente: la activación sigue pendiente aunque exista contraseña');
+    assert.equal((await db.query('select public.cancel_pending_invitation($1) as ok', [incomplete])).rows[0].ok, true);
+    await asUser(incomplete);
+    assert.equal(await access(), null, 'La cuenta incompleta queda sin acceso');
     await asUser(unknown);
     assert.equal(await access(), null);
     assert.equal(

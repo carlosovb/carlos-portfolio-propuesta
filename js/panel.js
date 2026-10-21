@@ -258,7 +258,7 @@
               } catch {
                 if (!active || epoch !== snapshot) return;
                 clearInvitation();
-                notice('invite-notice', 'No se ha confirmado la eliminación. Actualiza el listado: si ya ha creado su contraseña, la cuenta deja de ser una invitación pendiente. Si sigue pendiente, comprueba que has ejecutado el SQL actualizado.');
+                notice('invite-notice', 'No se ha confirmado la eliminación. Actualiza el listado: si ya ha completado el perfil y creado su contraseña, la cuenta deja de ser una invitación pendiente. Si sigue pendiente, comprueba que has ejecutado el SQL actualizado.');
                 await load();
               } finally { mutationPending = false; remove.disabled = false; }
             });
