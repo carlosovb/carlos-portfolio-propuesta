@@ -674,3 +674,6 @@
   .request-status[data-status] { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .status-choice { transition: none; } }
+
+/* Miembros sin acceso: estado neutro diferenciado de las activaciones pendientes. */
+[data-status="disabled"] { --status-color: var(--muted); --status-tint: #7b8390; }

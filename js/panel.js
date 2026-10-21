@@ -226,6 +226,7 @@
           identity.append(name, email);
           const state = document.createElement("span");
           state.className = "request-status";
+          state.dataset.status = !member.enabled ? 'disabled' : member.complete ? 'scheduled' : 'pending';
           state.textContent = !member.enabled
             ? "Acceso desactivado"
             : member.complete
