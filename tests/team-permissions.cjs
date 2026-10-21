@@ -27,6 +27,16 @@ const assert = require("node:assert/strict");
     const sql = fs.readFileSync("database/team-setup.sql", "utf8");
     await db.exec(sql);
     await db.exec(sql);
+    await db.exec(fs.readFileSync("database/career-roles.sql", "utf8"));
+    const levels = require("../js/career-data.js");
+    const roles = (await db.query("select code,label,multiplier from public.team_roles"))
+      .rows;
+    assert.equal(roles.length, 9);
+    for (const level of levels) {
+      const row = roles.find((r) => r.code === level.code);
+      assert.equal(Number(row.multiplier), level.factor);
+      assert.equal(row.label, level.name);
+    }
     for (const [id, name] of [
       [member, "member"],
       [other, "other"],
@@ -63,6 +73,25 @@ const assert = require("node:assert/strict");
     );
     await assert.rejects(() => db.query("select * from private.team_assignments"));
     await as(owner);
+    for (const level of levels) {
+      await db.query("select public.save_team_assignment($1,$2,$3)", [
+        member,
+        level.code,
+        owner,
+      ]);
+      await as(member);
+      const mine = (await db.query("select public.get_my_team_profile() as data")).rows[0]
+        .data;
+      assert.equal(mine.position_code, level.code);
+      assert.equal(Number(mine.multiplier), level.factor);
+      await assert.rejects(() =>
+        db.query("select public.save_team_assignment($1,'national_director',$2)", [
+          member,
+          owner,
+        ]),
+      );
+      await as(owner);
+    }
     await db.query("select public.save_team_assignment($1,'team_manager',null)", [owner]);
     await db.query("select public.save_team_assignment($1,'financial_consultant',$2)", [
       member,

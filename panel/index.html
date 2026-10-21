@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
+    <link rel="stylesheet" href="../css/career.css?v=career1" />
     <link rel="stylesheet" href="../css/team.css?v=clients2" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/clients.css?v=client-button3" />
@@ -751,20 +752,14 @@
               ◎ Volver a mi puesto
             </button>
           </div>
-          <div class="team-legend" aria-label="Puestos y multiplicadores">
-            <span>
-              <abbr title="Financial Trainee">FT</abbr>
-              <b>×2</b>
-            </span>
-            <span>
-              <abbr title="Financial Consultant">FC</abbr>
-              <b>×2,5</b>
-            </span>
-            <span>
-              <abbr title="Gestor de Equipo">GE</abbr>
-              <b>×3,5</b>
-            </span>
-          </div>
+          <div
+            class="team-legend"
+            id="career-levels"
+            aria-label="Plan de carrera: pulsa un puesto para ver sus requisitos"
+          ></div>
+          <button type="button" id="career-open" class="panel-secondary">
+            Plan de carrera ↗
+          </button>
           <p id="team-notice" class="panel-notice" role="status" hidden></p>
           <button type="button" id="team-open-profile" class="panel-secondary">
             Mi puesto ↗
@@ -1173,12 +1168,25 @@
     <script src="../js/clients.js?v=selection1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/team.js?v=clients2" defer></script>
+    <script src="../js/career-data.js?v=career1" defer></script>
+    <script src="../js/career.js?v=career1" defer></script>
+    <script src="../js/team.js?v=career1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=navigation1" defer></script>
     <script src="../js/resources.js?v=selection1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=selection1" defer></script>
+    <script src="../js/panel.js?v=career1" defer></script>
+    <dialog id="career-dialog" aria-labelledby="career-title">
+      <button
+        type="button"
+        id="career-close"
+        class="panel-secondary"
+        aria-label="Cerrar plan de carrera"
+      >
+        Cerrar ×
+      </button>
+      <div id="career-content"></div>
+    </dialog>
   </body>
 </html>

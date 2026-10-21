@@ -226,6 +226,7 @@
     clearTimeout(searchTimer);
     selected = null;
     get("request-dialog").close();
+    window.CareerPlan?.close();
     window.TeamPanel?.reset();
     window.ClientsPanel?.reset();
     window.PremeetingPanel?.reset();

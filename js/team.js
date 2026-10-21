@@ -334,6 +334,7 @@
       clientCounts = counts;
       members = directory;
       me = mine;
+      window.CareerPlan.markCurrent(mine?.position_code);
       await fetchPhotos(members, snapshot);
       if (snapshot !== revision) return;
       scale = 1;
@@ -431,11 +432,9 @@
         notice("team-profile-notice", "No se ha podido abrir la foto.");
     }
   });
-  const positionFactors = {
-    financial_trainee: 2,
-    financial_consultant: 2.5,
-    team_manager: 3.5,
-  };
+  const positionFactors = Object.fromEntries(
+    window.CareerLevels.map((level) => [level.code, level.factor]),
+  );
   get("my-team-position").addEventListener("change", () => {
     get("my-team-multiplier").value = multiplier(
       positionFactors[get("my-team-position").value],

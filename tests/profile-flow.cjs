@@ -752,6 +752,61 @@ async function login(page, base) {
       1,
       "El perfil de Carlos debe usar el mismo retrato sin fondo que el equipo",
     );
+    await treePage.locator('#panel-navigation [data-view="team"]').click();
+    await treePage.locator("#career-open").click();
+    assert.equal(await treePage.locator(".career-level").count(), 9);
+    await treePage.locator('.career-level[data-career="agency_director"]').click();
+    assert.match(await treePage.locator("#career-content").textContent(), /31.250/);
+    assert.match(
+      await treePage.locator("#career-content").textContent(),
+      /Director de Agencia/,
+    );
+    assert.equal(await treePage.locator(".career-rule").count(), 2);
+    assert.equal(
+      await treePage
+        .locator(".career-rule")
+        .first()
+        .locator(".career-people-icons span")
+        .count(),
+      18,
+    );
+    assert.equal(
+      await treePage
+        .locator(".career-rule")
+        .last()
+        .locator(".career-people-icons span")
+        .count(),
+      14,
+    );
+    await treePage
+      .getByRole("button", { name: "← Todos los puestos", exact: true })
+      .click();
+    await treePage
+      .locator('.career-level[data-career="financial_consultant_senior_ii"]')
+      .click();
+    assert.match(await treePage.locator(".career-rule").first().textContent(), /25.000/);
+    assert.match(
+      await treePage.locator(".career-rule").last().textContent(),
+      /no especifica/,
+    );
+    for (const width of [320, 768, 1440]) {
+      await treePage.setViewportSize({ width, height: 1000 });
+      assert(
+        await treePage
+          .locator("#career-dialog")
+          .evaluate((d) => d.scrollWidth <= d.clientWidth),
+        "Plan de carrera responsive",
+      );
+    }
+    await treePage.screenshot({
+      path: path.join(process.env.TEMP, "career-plan.png"),
+      fullPage: true,
+    });
+    await treePage.locator("#career-close").click();
+    await treePage.locator('#panel-navigation [data-view="profile"]').click();
+    assert.equal(await treePage.locator("#my-team-position option").count(), 10);
+    await treePage.locator("#my-team-position").selectOption("national_director");
+    assert.equal(await treePage.locator("#my-team-multiplier").inputValue(), "×6");
     await treeContext.close();
     console.log(
       "Equipo: centrado propio, navegación, ficha, foto y edición exclusiva de administrador comprobados.",
