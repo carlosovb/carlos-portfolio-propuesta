@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <script src="../js/account-link-init.js?v=profile1"></script>
+    <script src="../js/theme-init.js?v=profile1"></script>
+    <title>Mi cuenta · Acceso consultor</title>
+    <link rel="stylesheet" href="../css/base.css?v=profile1" />
+    <link rel="stylesheet" href="../css/styles.css?v=profile1" />
+    <link rel="stylesheet" href="../css/panel.css?v=profile1" />
+    <link rel="stylesheet" href="../css/account.css?v=profile1" />
+  </head>
+  <body class="panel-page">
+    <main class="account-card">
+      <a href="../" class="panel-mark" aria-label="Volver al portfolio">
+        CC
+        <span>·</span>
+      </a>
+      <p class="eyebrow">Tu cuenta de consultor</p>
+      <h1 id="account-title">Prepara tu acceso.</h1>
+      <p id="account-description">
+        Abre tu invitación para completar tus datos y crear tu contraseña.
+      </p>
+      <p id="account-notice" class="panel-notice" role="status" hidden></p>
+      <button type="button" class="btn" id="verify-account-link" hidden>
+        Validar mi acceso ↗
+      </button>
+
+      <form id="account-form" hidden>
+        <fieldset id="account-personal-fields">
+          <legend>Tus datos personales</legend>
+          <label>
+            Nombre
+            <input name="first_name" autocomplete="given-name" maxlength="80" required />
+          </label>
+          <label>
+            Apellidos
+            <input name="last_name" autocomplete="family-name" maxlength="120" required />
+          </label>
+          <label>
+            Teléfono
+            <input
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              minlength="7"
+              maxlength="30"
+              required
+            />
+          </label>
+          <label>
+            Correo de acceso
+            <input name="email" type="email" readonly />
+          </label>
+        </fieldset>
+        <label>
+          Tu nueva contraseña
+          <input
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            required
+          />
+        </label>
+        <label>
+          Confirma tu contraseña
+          <input
+            name="confirm_password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            required
+          />
+        </label>
+        <p class="panel-muted">
+          Utiliza entre 12 y 128 caracteres. La contraseña es personal y no se muestra al
+          administrador.
+        </p>
+        <button type="submit" class="btn" id="complete-account">
+          Guardar y entrar ↗
+        </button>
+      </form>
+
+      <form id="recovery-form" hidden>
+        <label>
+          Correo de acceso
+          <input
+            type="email"
+            name="email"
+            autocomplete="email"
+            maxlength="254"
+            required
+          />
+        </label>
+        <button type="submit" class="btn" id="request-recovery">
+          Enviar enlace de recuperación ↗
+        </button>
+      </form>
+      <a class="panel-back" href="../panel/">Volver al acceso</a>
+    </main>
+    <script src="../js/backend-config.js?v=profile1" defer></script>
+    <script src="../js/backend.js?v=profile1" defer></script>
+    <script src="../js/account.js?v=profile1" defer></script>
+  </body>
+</html>

@@ -9,7 +9,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=panel1" />
+    <link rel="stylesheet" href="../css/panel.css?v=profile1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -24,7 +24,7 @@
         <br />
         con una conversación.
       </h1>
-      <p class="panel-subtitle">Accede a las solicitudes de primera reunión.</p>
+      <p class="panel-subtitle">Accede a tu espacio privado de consultor.</p>
       <form id="login-form">
         <label>
           Correo de acceso
@@ -49,6 +49,7 @@
           Entrar en mi panel ↗
         </button>
       </form>
+      <a href="../cuenta/?modo=recuperar" class="panel-back">He olvidado mi contraseña</a>
       <p id="login-notice" class="panel-notice" role="status">Conectando…</p>
       <a href="../" class="panel-back">← Volver al portfolio</a>
     </section>
@@ -60,8 +61,8 @@
           <span>·</span>
         </a>
         <p>
-          Carlos Caballero Dávila
-          <small>Mi panel privado</small>
+          <span id="consultant-display-name">Mi cuenta</span>
+          <small id="consultant-display-role">Mi panel privado</small>
         </p>
         <button
           class="panel-menu-toggle"
@@ -76,8 +77,12 @@
             Inicio
             <span>↗</span>
           </button>
-          <button type="button" data-view="requests">
+          <button type="button" data-view="requests" data-admin-only>
             Solicitudes
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="profile">
+            Mi perfil
             <span>↗</span>
           </button>
         </nav>
@@ -105,7 +110,7 @@
         </div>
         <p id="panel-notice" class="panel-notice" role="status" hidden></p>
         <section id="home-view" aria-label="Resumen de solicitudes">
-          <div class="panel-metrics">
+          <div class="panel-metrics" data-admin-only>
             <article>
               <span>Pendientes de contactar</span>
               <strong id="pending-count">—</strong>
@@ -119,13 +124,24 @@
               <strong id="scheduled-count">—</strong>
             </article>
           </div>
-          <div class="panel-section-heading">
+          <div class="panel-section-heading" data-admin-only>
             <h2>Solicitudes recientes</h2>
             <button type="button" data-view="requests" class="panel-text-button">
               Ver todas ↗
             </button>
           </div>
-          <div id="recent-requests" class="panel-request-list"></div>
+          <div id="recent-requests" class="panel-request-list" data-admin-only></div>
+          <div id="consultant-home" class="profile-card" hidden>
+            <p class="eyebrow">Tu cuenta</p>
+            <h2>Tu espacio de consultor.</h2>
+            <p>
+              Consulta y actualiza tus datos personales y gestiona tu contraseña desde Mi
+              perfil.
+            </p>
+            <button type="button" data-view="profile" class="panel-secondary">
+              Abrir mi perfil ↗
+            </button>
+          </div>
         </section>
         <section id="requests-view" aria-label="Listado de solicitudes" hidden>
           <label class="panel-search">
@@ -150,7 +166,107 @@
             </button>
           </div>
         </section>
-        <p class="panel-retention">
+        <section id="profile-view" aria-label="Mi perfil" hidden>
+          <p id="profile-setup-notice" class="panel-notice" hidden></p>
+          <div class="profile-grid">
+            <article class="profile-card">
+              <p class="eyebrow">Datos personales</p>
+              <h2>Tu información.</h2>
+              <form id="profile-form">
+                <label>
+                  Nombre
+                  <input
+                    name="first_name"
+                    autocomplete="given-name"
+                    maxlength="80"
+                    required
+                  />
+                </label>
+                <label>
+                  Apellidos
+                  <input
+                    name="last_name"
+                    autocomplete="family-name"
+                    maxlength="120"
+                    required
+                  />
+                </label>
+                <label>
+                  Teléfono
+                  <input
+                    name="phone"
+                    type="tel"
+                    autocomplete="tel"
+                    minlength="7"
+                    maxlength="30"
+                    required
+                  />
+                </label>
+                <label>
+                  Correo de acceso
+                  <input id="profile-email" type="email" readonly />
+                </label>
+                <label>
+                  Tipo de cuenta
+                  <input id="profile-role" readonly />
+                </label>
+                <p class="panel-muted">
+                  El correo y los permisos los gestiona el administrador.
+                </p>
+                <p id="profile-notice" role="status" hidden></p>
+                <button type="submit" class="btn" id="save-profile">
+                  Guardar mi perfil
+                </button>
+              </form>
+            </article>
+            <article class="profile-card">
+              <p class="eyebrow">Seguridad</p>
+              <h2>Cambiar contraseña.</h2>
+              <form id="password-form">
+                <label>
+                  Contraseña actual
+                  <input
+                    name="current_password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                  />
+                </label>
+                <label>
+                  Nueva contraseña
+                  <input
+                    name="new_password"
+                    type="password"
+                    autocomplete="new-password"
+                    minlength="12"
+                    maxlength="128"
+                    required
+                  />
+                </label>
+                <label>
+                  Confirmar nueva contraseña
+                  <input
+                    name="confirm_password"
+                    type="password"
+                    autocomplete="new-password"
+                    minlength="12"
+                    maxlength="128"
+                    required
+                  />
+                </label>
+                <p class="panel-muted">
+                  Utiliza al menos 12 caracteres. Tras cambiarla, volverás a iniciar
+                  sesión.
+                </p>
+                <p id="password-notice" role="status" hidden></p>
+                <button type="submit" class="btn" id="change-password">
+                  Actualizar contraseña
+                </button>
+              </form>
+            </article>
+          </div>
+        </section>
+        <p class="panel-retention" data-admin-only>
           Las solicitudes caducan a los 60 días de su envío. También puedes eliminarlas
           antes.
         </p>
@@ -182,8 +298,8 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=20261021-login1" defer></script>
+    <script src="../js/backend.js?v=profile1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/panel.js?v=20261021-theme2" defer></script>
+    <script src="../js/panel.js?v=profile1" defer></script>
   </body>
 </html>

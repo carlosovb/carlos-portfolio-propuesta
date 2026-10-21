@@ -7,6 +7,10 @@
     /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url) && key.startsWith("sb_publishable_");
   let session = null;
   let refreshing = null;
+  let accessDetails = null;
+  let accountLinkType = null;
+  const applicationRoot = new URL("../", document.currentScript.src);
+  const accountPage = new URL("cuenta/", applicationRoot).href;
   const redirectKey = `portfolio-panel-login:${url}`;
 
   function clearRedirect() {
@@ -73,8 +77,128 @@
     return request(route, options, await token());
   }
 
+  async function readAccess() {
+    try {
+      const response = await authenticated("/rest/v1/rpc/panel_access", {
+        method: "POST",
+        body: "{}",
+      });
+      const details = await response.json();
+      if (!details || !["admin", "consultant"].includes(details.role)) {
+        const error = new Error("Tu cuenta no está autorizada.");
+        error.status = 403;
+        throw error;
+      }
+      accessDetails = details;
+    } catch (error) {
+      // Compatibilidad con el panel anterior mientras se ejecuta la nueva migración.
+      if (error.status !== 404) throw error;
+      const check = await authenticated("/rest/v1/rpc/is_panel_owner", {
+        method: "POST",
+        body: "{}",
+      });
+      if ((await check.json()) !== true) throw new Error("Tu cuenta no está autorizada.");
+      const user = await (await authenticated("/auth/v1/user")).json();
+      accessDetails = {
+        role: "admin",
+        profile_enabled: false,
+        profile_complete: true,
+        needs_password: false,
+        email: user.email,
+        profile: null,
+      };
+    }
+    return structuredClone(accessDetails);
+  }
+
+  function validatePassword(password) {
+    if (typeof password !== "string" || password.length < 12 || password.length > 128) {
+      throw new Error("Utiliza una contraseña de entre 12 y 128 caracteres.");
+    }
+  }
+
   window.PortfolioBackend = Object.freeze({
     ready,
+    get panelAccess() {
+      return accessDetails ? structuredClone(accessDetails) : null;
+    },
+    getPanelAccess: readAccess,
+    async saveProfile(fields) {
+      const response = await authenticated("/rest/v1/rpc/save_my_profile", {
+        method: "POST",
+        body: JSON.stringify({
+          p_first_name: fields.first_name,
+          p_last_name: fields.last_name,
+          p_phone: fields.phone,
+        }),
+      });
+      accessDetails = await response.json();
+      return structuredClone(accessDetails);
+    },
+    async changePassword(currentPassword, newPassword) {
+      validatePassword(newPassword);
+      if (currentPassword === newPassword)
+        throw new Error("La nueva contraseña debe ser diferente.");
+      const user = await (await authenticated("/auth/v1/user")).json();
+      const fresh = await (
+        await request("/auth/v1/token?grant_type=password", {
+          method: "POST",
+          body: JSON.stringify({ email: user.email, password: currentPassword }),
+        })
+      ).json();
+      if (fresh.user?.id !== user.id || !fresh.access_token || !fresh.refresh_token)
+        throw new Error("No se ha podido verificar la contraseña actual.");
+      session = { ...fresh, expiresAt: Date.now() + fresh.expires_in * 1000 };
+      await authenticated("/auth/v1/user", {
+        method: "PUT",
+        body: JSON.stringify({ password: newPassword }),
+      });
+      await this.signOut();
+    },
+    async requestPasswordRecovery(email) {
+      await request(`/auth/v1/recover?redirect_to=${encodeURIComponent(accountPage)}`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+    async acceptAccountLink(link) {
+      if (!["invite", "recovery"].includes(link?.type))
+        throw new Error("El enlace no es válido.");
+      if (link.token_hash) {
+        const response = await request("/auth/v1/verify", {
+          method: "POST",
+          body: JSON.stringify({ token_hash: link.token_hash, type: link.type }),
+        });
+        const result = await response.json();
+        session = { ...result, expiresAt: Date.now() + Number(result.expires_in) * 1000 };
+      } else if (link.access_token && link.refresh_token) {
+        session = {
+          access_token: link.access_token,
+          refresh_token: link.refresh_token,
+          expiresAt: Date.now() + Math.min(Number(link.expires_in) || 300, 3600) * 1000,
+        };
+      } else throw new Error("El enlace no es válido o ha caducado.");
+      try {
+        await authenticated("/auth/v1/user");
+        const details = await readAccess();
+        accountLinkType = link.type;
+        return details;
+      } catch (error) {
+        await this.signOut();
+        throw error;
+      }
+    },
+    async setPasswordFromLink(password) {
+      validatePassword(password);
+      if (!["invite", "recovery"].includes(accountLinkType))
+        throw new Error("Abre el enlace de invitación o recuperación.");
+      await authenticated("/auth/v1/user", {
+        method: "PUT",
+        body: JSON.stringify({ password }),
+      });
+      accountLinkType = null;
+      return readAccess();
+    },
     async preparePanelRedirect() {
       await token();
       const issuedAt = Date.now();
@@ -121,11 +245,7 @@
       try {
         // Verificación real con el servidor: el contenido del navegador no otorga acceso.
         await authenticated("/auth/v1/user");
-        const check = await authenticated("/rest/v1/rpc/is_panel_owner", {
-          method: "POST",
-          body: "{}",
-        });
-        if ((await check.json()) !== true) throw new Error("Acceso no autorizado.");
+        await readAccess();
         return true;
       } catch {
         await this.signOut();
@@ -158,12 +278,7 @@
         throw new Error("Acceso no disponible.");
       session = { ...result, expiresAt: Date.now() + result.expires_in * 1000 };
       try {
-        const check = await authenticated("/rest/v1/rpc/is_panel_owner", {
-          method: "POST",
-          body: "{}",
-        });
-        if ((await check.json()) !== true)
-          throw new Error("Tu cuenta no tiene acceso a las solicitudes.");
+        await readAccess();
       } catch (error) {
         await this.signOut();
         throw error;
@@ -173,6 +288,8 @@
       clearRedirect();
       const previous = session;
       session = null;
+      accessDetails = null;
+      accountLinkType = null;
       if (previous) {
         try {
           await request("/auth/v1/logout", { method: "POST" }, previous.access_token);

@@ -21,6 +21,7 @@ La cabecera del portfolio ofrece «Acceso consultor»: despliega el inicio de se
 - `js/backend-config.js`: URL y clave pública del servicio; no contiene contraseñas ni claves privadas.
 - `js/backend.js`: autenticación, registro y operaciones autorizadas.
 - `js/contact.js`, `js/panel.js`: comportamiento de las interfaces.
+- `cuenta/index.html`, `js/account-link-init.js`, `js/account.js`: activación y recuperación.
 - `database/`: estructura, permisos e instrucciones de activación, sin datos privados.
 - `assets/`: fotografía.
 
@@ -41,3 +42,15 @@ Con Node.js instalado, ejecutar `node server.cjs` y abrir `http://127.0.0.1:4173
 HTML por secciones, CSS con comentarios y JavaScript por función. Sangría de dos espacios. Los estilos del portfolio se cargan en orden: base, estilos, adaptación y contacto. El panel utiliza una hoja independiente después de los estilos compartidos.
 
 El panel de RED, el formulario financiero previo y la edición del portfolio siguen pendientes.
+
+## Perfiles y primer acceso
+
+La pestaña Mi perfil permite guardar nombre, apellidos y teléfono y cambiar la contraseña comprobando la actual. El correo de acceso y los permisos no son editables. La activación por invitación incluye esos tres datos y la creación de contraseña.
+
+Aplicar `database/profile-setup.sql` y seguir `database/PROFILE-CONFIGURACION.md`. Esta ampliación se activa en el servidor; no basta con publicar el código. Hasta ejecutarla, el administrador conserva su acceso anterior y el perfil indica que falta configuración.
+
+Los consultores invitados no reciben permisos para consultar las solicitudes. La gestión y envío de invitaciones se realizan desde Supabase por ahora. Para enviar a compañeros se debe configurar un SMTP propio; no se ha configurado ni contratado uno automáticamente.
+
+## Pruebas
+
+Con las dependencias de desarrollo y Chromium de Playwright instalados, ejecutar `npm test`. Se puede indicar `CHROME_EXECUTABLE` para usar un navegador local. Las pruebas usan datos ficticios y respuestas simuladas; no envían correos ni cambian contraseñas reales. La verificación de servidor se prepara en `database/profile-verify.sql`.

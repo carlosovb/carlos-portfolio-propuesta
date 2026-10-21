@@ -104,6 +104,13 @@ body.consultant-dialog-open {
   color: var(--muted);
   font-size: 14px;
 }
+
+#consultant-login-form .panel-back {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 #consultant-login-form {
   display: grid;
   grid-template-columns: 1fr;

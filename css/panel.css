@@ -1,4 +1,54 @@
 /* Panel de solicitudes: interfaz independiente del portfolio público. */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.profile-card {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  min-width: 0;
+}
+.profile-card h2 {
+  font:
+    600 27px/1.2 "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.7px;
+}
+.profile-card form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+.profile-card .btn {
+  justify-self: start;
+  font-size: 13px;
+}
+.profile-card .panel-muted {
+  font-size: 12px;
+  margin: 0;
+}
+.profile-card input[readonly] {
+  color: var(--muted);
+  background: var(--bg);
+}
+.profile-card [role="status"] {
+  font-size: 13px;
+  margin: 0;
+}
+@media (max-width: 1050px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 450px) {
+  .profile-card {
+    padding: 24px 18px;
+  }
+}
 .panel-page {
   min-height: 100dvh;
 }

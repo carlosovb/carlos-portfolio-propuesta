@@ -1,0 +1,14 @@
+{
+  "name": "carlos-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Portfolio estático y panel privado de consultores",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node tests/profile-flow.cjs && node tests/profile-permissions.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "@electric-sql/pglite": "0.5.10"
+  }
+}

@@ -21,6 +21,7 @@
   let inactivityTimer;
   let loadingVersion = 0;
   let mutationPending = false;
+  let account = null;
 
   function notice(id, text) {
     get(id).textContent = text;
@@ -28,12 +29,47 @@
   }
 
   function enterPanel() {
+    account = backend.panelAccess;
     active = true;
     epoch++;
     get("login-screen").hidden = true;
     get("panel-screen").hidden = false;
     resetInactivity();
-    setView("home");
+    renderIdentity();
+    setView(account?.profile_complete === false ? "profile" : "home");
+  }
+
+  function renderIdentity() {
+    const profile = account?.profile;
+    get("consultant-display-name").textContent = profile
+      ? `${profile.first_name} ${profile.last_name}`
+      : "Mi cuenta";
+    get("consultant-display-role").textContent =
+      account?.role === "admin" ? "Administrador" : "Consultor · RED";
+    document.querySelectorAll("[data-admin-only]").forEach((element) => {
+      element.hidden = account?.role !== "admin";
+    });
+    get("consultant-home").hidden = account?.role === "admin";
+  }
+
+  function renderProfile() {
+    const form = get("profile-form");
+    const profile = account?.profile;
+    form.elements.first_name.value = profile?.first_name || "";
+    form.elements.last_name.value = profile?.last_name || "";
+    form.elements.phone.value = profile?.phone || "";
+    get("profile-email").value = account?.email || "";
+    get("profile-role").value =
+      account?.role === "admin" ? "Administrador" : "Consultor · RED";
+    get("save-profile").disabled = !account?.profile_enabled;
+    notice(
+      "profile-setup-notice",
+      !account?.profile_enabled
+        ? "Falta activar la configuración de perfiles en Supabase. Tu acceso actual sigue funcionando."
+        : !account?.profile_complete
+          ? "Completa tu nombre, apellidos y teléfono para terminar de preparar tu cuenta."
+          : "",
+    );
   }
 
   function resetInactivity() {
@@ -64,6 +100,9 @@
     get("panel-screen").hidden = true;
     get("login-screen").hidden = false;
     get("login-form").reset();
+    get("profile-form").reset();
+    get("password-form").reset();
+    account = null;
     notice("login-notice", message);
     await backend.signOut();
   }
@@ -105,7 +144,16 @@
     get("refresh-button").disabled = true;
     notice("panel-notice", "Cargando solicitudes…");
     try {
-      if (view === "home") {
+      if (view === "profile") {
+        const details = await backend.getPanelAccess();
+        if (!valid()) return;
+        account = details;
+        renderIdentity();
+        renderProfile();
+      } else if (view === "home" && account?.role !== "admin") {
+        if (!valid()) return;
+        renderIdentity();
+      } else if (view === "home") {
         const [counts, latest] = await Promise.all([
           backend.counts(),
           backend.listRequests({ pageSize: 5 }),
@@ -151,11 +199,21 @@
   }
 
   function setView(next) {
+    if (!active || !["home", "requests", "profile"].includes(next)) return;
+    if (account?.profile_complete === false && next !== "profile") next = "profile";
+    if (next === "requests" && account?.role !== "admin") next = "home";
     view = next;
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";
+    get("profile-view").hidden = view !== "profile";
     get("panel-title").textContent =
-      view === "home" ? "Bienvenido, Carlos." : "Tus solicitudes.";
+      view === "profile"
+        ? "Mi perfil."
+        : view === "requests"
+          ? "Tus solicitudes."
+          : account?.profile?.first_name
+            ? `Hola, ${account.profile.first_name}.`
+            : "Tu espacio de trabajo.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
@@ -252,6 +310,63 @@
       button.addEventListener("click", () => setView(button.dataset.view)),
     );
   get("logout-button").addEventListener("click", () => logout());
+  get("profile-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!active || !account?.profile_enabled) return;
+    const snapshot = epoch;
+    const form = event.currentTarget;
+    get("save-profile").disabled = true;
+    notice("profile-notice", "Guardando…");
+    try {
+      const details = await backend.saveProfile({
+        first_name: form.elements.first_name.value.trim(),
+        last_name: form.elements.last_name.value.trim(),
+        phone: form.elements.phone.value.trim(),
+      });
+      if (!active || epoch !== snapshot) return;
+      account = details;
+      renderIdentity();
+      renderProfile();
+      notice("profile-notice", "Tus datos se han guardado.");
+    } catch {
+      if (active && epoch === snapshot)
+        notice(
+          "profile-notice",
+          "No se han podido guardar los datos. Revisa los campos y vuelve a intentarlo.",
+        );
+    } finally {
+      get("save-profile").disabled = !account?.profile_enabled;
+    }
+  });
+  get("password-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!active) return;
+    const form = event.currentTarget;
+    if (form.elements.new_password.value !== form.elements.confirm_password.value) {
+      notice("password-notice", "Las contraseñas nuevas no coinciden.");
+      return;
+    }
+    const snapshot = epoch;
+    get("change-password").disabled = true;
+    notice("password-notice", "Comprobando y actualizando contraseña…");
+    try {
+      await backend.changePassword(
+        form.elements.current_password.value,
+        form.elements.new_password.value,
+      );
+      if (epoch === snapshot && active)
+        await logout("Contraseña actualizada. Entra de nuevo con tu nueva contraseña.");
+    } catch {
+      if (epoch === snapshot && active)
+        notice(
+          "password-notice",
+          "No se ha confirmado el cambio. Comprueba tu contraseña actual o utiliza la recuperación de acceso.",
+        );
+    } finally {
+      form.reset();
+      get("change-password").disabled = false;
+    }
+  });
   get("refresh-button").addEventListener("click", load);
   get("previous-page").addEventListener("click", () => {
     page = Math.max(0, page - 1);
