@@ -14,20 +14,37 @@
     notice.hidden = !text;
   }
 
+  function positionDialog() {
+    const header = document.querySelector(".site-header").getBoundingClientRect();
+    dialog.style.setProperty("--login-top", `${Math.max(12, header.bottom + 10)}px`);
+    const width = Math.min(460, innerWidth - 30);
+    const right = Math.max(
+      15,
+      Math.min(innerWidth - open.getBoundingClientRect().right, innerWidth - width - 15),
+    );
+    dialog.style.setProperty("--login-right", `${right}px`);
+  }
+
   open.addEventListener("click", () => {
     message(backend?.ready ? "" : "El acceso no está disponible en este momento.");
     submit.disabled = !backend?.ready;
+    positionDialog();
     dialog.showModal();
+    open.setAttribute("aria-expanded", "true");
     document.body.classList.add("consultant-dialog-open");
   });
   document
     .getElementById("close-consultant-login")
     .addEventListener("click", () => dialog.close());
   dialog.addEventListener("close", () => {
+    open.setAttribute("aria-expanded", "false");
     generation++;
     form.reset();
     document.body.classList.remove("consultant-dialog-open");
     open.focus({ preventScroll: true });
+  });
+  addEventListener("resize", () => {
+    if (dialog.open) positionDialog();
   });
 
   form.addEventListener("submit", async (event) => {

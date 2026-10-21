@@ -29,9 +29,32 @@
   background: var(--panel);
 }
 
+/* El acceso ocupa el lugar del botón de reunión en la cabecera. */
+.site-header .header-consultant-login {
+  display: inline-flex;
+  margin: 0;
+  background: var(--mint);
+  color: #202e40;
+  border-color: var(--mint);
+  padding: 12px 16px;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.site-header .header-consultant-login svg {
+  width: 19px;
+  height: 19px;
+}
+
 #consultant-login-dialog {
+  position: fixed;
+  margin: 0;
+  top: var(--login-top, 115px);
+  right: var(--login-right, 5%);
+  left: auto;
   width: min(460px, calc(100% - 30px));
-  max-height: calc(100dvh - 30px);
+  max-height: calc(100dvh - var(--login-top, 115px) - 16px);
   overflow-y: auto;
   padding: 32px;
   border: 1px solid var(--line);
@@ -119,6 +142,31 @@ body.consultant-dialog-open {
 }
 
 @media (max-width: 600px) {
+  .site-header .brand {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .site-header .brand-name {
+    max-width: 110px;
+    font-size: 12px;
+  }
+  .site-header .header-consultant-login {
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    padding: 10px;
+    min-height: 44px;
+  }
+  .header-consultant-login .consultant-access-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   footer > span,
   footer > a {
     display: block;
