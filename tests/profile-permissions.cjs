@@ -26,7 +26,7 @@ const path = require("node:path");
     await db.exec(`
       create role anon; create role authenticated;
       create schema auth;
-      create table auth.users (id uuid primary key, email text, invited_at timestamptz, created_at timestamptz default now(), encrypted_password text default '');
+      create table auth.users (id uuid primary key, email text, invited_at timestamptz, last_sign_in_at timestamptz, created_at timestamptz default now(), encrypted_password text default '');
       create function auth.uid() returns uuid language sql stable as
         $$select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid$$;
     `);
@@ -70,6 +70,13 @@ const path = require("node:path");
     );
     await asUser(member);
     await assert.rejects(() => db.query("select public.list_consultants()"));
+    await asUser(member);
+    await assert.rejects(() => db.query("select public.cancel_pending_invitation('22222222-2222-4222-8222-222222222222')"));
+    await asUser(owner);
+    assert.equal((await db.query("select public.cancel_pending_invitation('11111111-1111-4111-8111-111111111111') as ok")).rows[0].ok, false);
+    assert.equal((await db.query("select public.cancel_pending_invitation('22222222-2222-4222-8222-222222222222') as ok")).rows[0].ok, true);
+    await db.exec('reset role');
+    await db.query('update private.panel_members set enabled = true where user_id = $1', [member]);
     await asUser(unknown);
     assert.equal(await access(), null);
     assert.equal(
@@ -115,6 +122,8 @@ const path = require("node:path");
       "update auth.users set encrypted_password='new-test-hash' where id=$1",
       [member],
     );
+    await asUser(owner);
+    assert.equal((await db.query("select public.cancel_pending_invitation('22222222-2222-4222-8222-222222222222') as ok")).rows[0].ok, false);
     await asUser(member);
     details = await access();
     assert.equal(details.needs_password, false);

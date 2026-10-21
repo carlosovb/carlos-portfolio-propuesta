@@ -130,6 +130,12 @@
       });
       return response.json();
     },
+    async deletePendingInvitation(userId) {
+      const response = await authenticated('/functions/v1/invite-consultant', {
+        method: 'POST', body: JSON.stringify({ action: 'delete_pending', user_id: userId }),
+      });
+      return response.json();
+    },
     async inviteConsultant(email) {
       const response = await authenticated("/functions/v1/invite-consultant", {
         method: "POST",

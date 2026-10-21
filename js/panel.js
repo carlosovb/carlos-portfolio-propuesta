@@ -231,6 +231,32 @@
               ? "Perfil completado"
               : "Pendiente de activar";
           row.append(identity, state);
+          if (member.can_delete && member.user_id) {
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'panel-delete';
+            remove.textContent = 'Eliminar invitación';
+            remove.addEventListener('click', async () => {
+              if (!active || account?.role !== 'admin' || mutationPending) return;
+              if (!confirm('¿Eliminar la invitación de ' + member.email + '? Su enlace dejará de funcionar.')) return;
+              mutationPending = true;
+              remove.disabled = true;
+              const snapshot = epoch;
+              try {
+                await backend.deletePendingInvitation(member.user_id);
+                if (!active || epoch !== snapshot) return;
+                clearInvitation();
+                notice('invite-notice', 'Invitación eliminada. Su enlace ya no permite activar la cuenta.');
+                await load();
+              } catch {
+                if (!active || epoch !== snapshot) return;
+                clearInvitation();
+                notice('invite-notice', 'No se ha confirmado la eliminación. Actualiza el listado; si ya ha iniciado la activación, esta opción no está disponible. Comprueba también la configuración de Supabase.');
+                await load();
+              } finally { mutationPending = false; remove.disabled = false; }
+            });
+            row.append(remove);
+          }
           get("consultant-list").append(row);
         });
       } else if (view === "profile") {

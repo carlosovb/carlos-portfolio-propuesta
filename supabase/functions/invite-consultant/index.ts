@@ -52,6 +52,19 @@ async function handleInvite(req) {
     } catch {
       return reply(400, "Invalid request");
     }
+    if (input?.action === 'delete_pending') {
+      if (typeof input.user_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.user_id)) return reply(400, 'Invalid user');
+      const claim = await call('/rest/v1/rpc/cancel_pending_invitation', {
+        method: 'POST', body: JSON.stringify({ p_user_id: input.user_id }),
+      });
+      if (!claim.ok || await claim.json() !== true) return reply(409, 'Invitation is not pending');
+      const removed = await call('/auth/v1/admin/users/' + input.user_id, {
+        method: 'DELETE', headers: { Authorization: 'Bearer ' + secret },
+      });
+      if (!removed.ok) return reply(503, 'Access revoked; deletion not confirmed');
+      return reply(200, 'Invitation deleted');
+    }
+    if (input?.action && input.action !== 'invite') return reply(400, 'Invalid action');
     const email =
       typeof input?.email === "string" ? input.email.trim().toLowerCase() : "";
     if (email.length > 254 || !/^[^\s@]+@ovb\.es$/.test(email))
