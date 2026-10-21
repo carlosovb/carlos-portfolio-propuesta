@@ -12,9 +12,9 @@
     height = 0,
     saving = false,
     anchor = null;
-  const CARD_WIDTH = 280;
-  const CARD_HEIGHT = 228;
-  const LEVEL_GAP = 312;
+  let CARD_WIDTH = 460;
+  let CARD_HEIGHT = 320;
+  let LEVEL_GAP = 410;
   const photos = new Map();
   const places = new Map();
   const fullName = (person) =>
@@ -31,7 +31,7 @@
     photos.forEach((url) => URL.revokeObjectURL(url));
     photos.clear();
   }
-  function avatar(target, person) {
+  function avatar(target, person, portrait = false) {
     target.replaceChildren();
     const initials = fullName(person)
       .split(" ")
@@ -40,11 +40,12 @@
       .slice(0, 2)
       .join("");
     target.textContent = initials || "CC";
-    const src =
-      photos.get(person.user_id) ||
-      (person.user_id === "ee1355b0-7a6c-4559-87a6-fa72a7d8f73b"
+    // Retrato de portada facilitado por Carlos para su presentación en el árbol.
+    const presentationPhoto =
+      portrait && person.user_id === "ee1355b0-7a6c-4559-87a6-fa72a7d8f73b"
         ? "../assets/carlos.png"
-        : null);
+        : null;
+    const src = presentationPhoto || photos.get(person.user_id);
     if (src) {
       const img = document.createElement("img");
       img.src = src;
@@ -121,6 +122,9 @@
   function draw() {
     const canvas = get("team-canvas");
     canvas.replaceChildren();
+    CARD_WIDTH = Math.min(460, Math.max(260, get("team-viewport").clientWidth - 40));
+    CARD_HEIGHT = CARD_WIDTH < 360 ? 270 : 320;
+    LEVEL_GAP = CARD_HEIGHT + 90;
     canvas.style.setProperty("--team-card-width", CARD_WIDTH + "px");
     canvas.style.setProperty("--team-card-height", CARD_HEIGHT + "px");
     places.clear();
@@ -215,7 +219,7 @@
       );
       const face = document.createElement("span");
       face.className = "team-avatar team-node-portrait";
-      avatar(face, member);
+      avatar(face, member, true);
       const name = document.createElement("strong");
       name.textContent = fullName(member);
       const position = document.createElement("span");
@@ -258,7 +262,7 @@
         ? fullName(manager)
         : "Responsable principal";
     get("team-member-reports").textContent = childrenCount(member.user_id) + " personas";
-    avatar(get("team-member-photo"), member);
+    avatar(get("team-member-photo"), member, true);
     const form = get("team-assignment-form");
     form.hidden = account?.role !== "admin";
     form.elements.position.value = member.position_code || "";
