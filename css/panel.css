@@ -550,3 +550,43 @@
   .invitation-heading button { width: 100%; }
   .invitation-heading h3 { font-size: 21px; }
 }
+
+/* Acción secundaria de las invitaciones pendientes. */
+.invitation-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  justify-self: start;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 15px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 13px/1.4 "Segoe UI", sans-serif;
+  cursor: pointer;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.invitation-delete svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.invitation-delete:hover,
+.invitation-delete:focus-visible {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.invitation-delete:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.invitation-delete:active { transform: translateY(1px); }
+.invitation-delete:disabled { opacity: .5; cursor: wait; }
+@media (prefers-reduced-motion: reduce) {
+  .invitation-delete { transition: none; }
+}

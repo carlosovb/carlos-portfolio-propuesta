@@ -234,8 +234,15 @@
           if (member.can_delete && member.user_id) {
             const remove = document.createElement('button');
             remove.type = 'button';
-            remove.className = 'panel-delete';
-            remove.textContent = 'Eliminar invitación';
+            remove.className = 'invitation-delete';
+            remove.setAttribute('aria-label', 'Eliminar invitación de ' + member.email);
+            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.setAttribute('aria-hidden', 'true');
+            icon.innerHTML = '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5" />';
+            const label = document.createElement('span');
+            label.textContent = 'Eliminar invitación';
+            remove.append(icon, label);
             remove.addEventListener('click', async () => {
               if (!active || account?.role !== 'admin' || mutationPending) return;
               if (!confirm('¿Eliminar la invitación de ' + member.email + '? Su enlace dejará de funcionar.')) return;
