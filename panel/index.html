@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/team.css?v=portraits5" />
+    <link rel="stylesheet" href="../css/team.css?v=profile6" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -597,21 +597,25 @@
         >
           ✕
         </button>
-        <p class="eyebrow">Conoce a tu equipo</p>
-        <div id="team-member-photo" class="team-avatar team-avatar-large"></div>
-        <h2 id="team-member-name"></h2>
-        <p id="team-member-position" class="team-modal-position"></p>
-        <strong id="team-member-multiplier" class="team-modal-multiplier"></strong>
-        <dl class="team-member-facts">
-          <div>
-            <dt>Responsable</dt>
-            <dd id="team-member-manager"></dd>
+        <div class="team-member-hero">
+          <div id="team-member-photo" class="team-avatar team-avatar-large"></div>
+          <div class="team-member-summary">
+            <p class="eyebrow">Conoce a tu equipo</p>
+            <h2 id="team-member-name"></h2>
+            <p id="team-member-position" class="team-modal-position"></p>
+            <strong id="team-member-multiplier" class="team-modal-multiplier"></strong>
+            <dl class="team-member-facts">
+              <div>
+                <dt>Responsable</dt>
+                <dd id="team-member-manager"></dd>
+              </div>
+              <div>
+                <dt>Equipo directo</dt>
+                <dd id="team-member-reports"></dd>
+              </div>
+            </dl>
           </div>
-          <div>
-            <dt>Equipo directo</dt>
-            <dd id="team-member-reports"></dd>
-          </div>
-        </dl>
+        </div>
         <form id="team-assignment-form" hidden>
           <p class="eyebrow">Administración del equipo</p>
           <label>
@@ -686,7 +690,7 @@
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/team.js?v=portraits5" defer></script>
+    <script src="../js/team.js?v=profile6" defer></script>
     <script src="../js/panel.js?v=team2" defer></script>
   </body>
 </html>

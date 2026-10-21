@@ -561,6 +561,20 @@ async function login(page, base) {
     await treePage.locator("#team-member-dialog").waitFor();
     assert.equal(await treePage.locator("#team-assignment-form").isVisible(), false);
     assert.equal(await treePage.locator("#team-member-multiplier").textContent(), "×2,5");
+    for (const width of [320, 768, 1440]) {
+      await treePage.setViewportSize({ width, height: 900 });
+      assert.equal(
+        await treePage
+          .locator("#team-member-dialog")
+          .evaluate(
+            (dialog) =>
+              dialog.scrollWidth <= dialog.clientWidth &&
+              dialog.getBoundingClientRect().width <= innerWidth,
+          ),
+        true,
+        "La ficha debe ajustarse sin desbordamiento horizontal",
+      );
+    }
     await treePage.locator("#team-member-close").click();
     await treePage.locator("#team-zoom-out").click();
     assert.equal(await treePage.locator("#team-zoom-label").textContent(), "90 %");
