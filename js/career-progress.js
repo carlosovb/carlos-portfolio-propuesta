@@ -28,7 +28,7 @@
     }
     return result;
   }
-  function calculate(member, directory, authorizedCounts = null) {
+  function calculate(member, directory, authorizedCounts = null, production = null) {
     const people = branch(member.user_id, directory);
     const ruleProgress = (rule) =>
       rule
@@ -38,8 +38,11 @@
               .map((key) => ({
                 kind: key,
                 required: rule[key],
-                recorded: null,
-                missing: null,
+                recorded: production ? Number(production[key] || 0) : null,
+                missing: production
+                  ? Math.max(0, rule[key] - Number(production[key] || 0))
+                  : null,
+                incomplete: !!production?.incomplete,
               })),
             team: (rule.team || []).map((requirement) => {
               const code = levels.find((l) => l.short === requirement.role).code;

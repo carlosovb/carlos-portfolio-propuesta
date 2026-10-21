@@ -200,6 +200,7 @@ const server = http.createServer((req, res) => {
         "clients",
         "team",
         "consultants",
+        "statistics",
         "profile",
       ],
     );

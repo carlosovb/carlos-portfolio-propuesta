@@ -20,7 +20,8 @@
     <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
     <link rel="stylesheet" href="../css/workspace.css?v=products1" />
     <link rel="stylesheet" href="../css/clipboard.css?v=products1" />
-    <link rel="stylesheet" href="../css/client-products.css?v=selection1" />
+    <link rel="stylesheet" href="../css/client-products.css?v=units1" />
+    <link rel="stylesheet" href="../css/statistics.css?v=units1" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -109,6 +110,10 @@
           </button>
           <button type="button" data-view="consultants" data-admin-only>
             Consultores
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="statistics">
+            Estadísticas
             <span>↗</span>
           </button>
           <button type="button" data-view="profile">
@@ -795,6 +800,7 @@
             </p>
           </div>
         </section>
+        <section id="statistics-view" aria-label="Estadísticas" hidden></section>
         <section id="profile-view" aria-label="Mi perfil" hidden>
           <p id="profile-setup-notice" class="panel-notice" hidden></p>
           <div class="profile-card team-profile-card">
@@ -1166,24 +1172,25 @@
     <script src="../js/clipboard.js?v=products1" defer></script>
     <script src="../js/companies.js?v=products1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=career2" defer></script>
+    <script src="../js/backend.js?v=units1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
-    <script src="../js/client-products.js?v=selection1" defer></script>
+    <script src="../js/client-products.js?v=units1" defer></script>
     <script src="../js/clients.js?v=selection1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
     <script src="../js/career-data.js?v=career1" defer></script>
-    <script src="../js/career-progress.js?v=career2" defer></script>
-    <script src="../js/career.js?v=career2" defer></script>
+    <script src="../js/career-progress.js?v=units1" defer></script>
+    <script src="../js/career.js?v=units1" defer></script>
     <script src="../js/panel-selects.js?v=progress1" defer></script>
-    <script src="../js/team.js?v=career2" defer></script>
+    <script src="../js/team.js?v=units1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=navigation1" defer></script>
     <script src="../js/resources.js?v=selection1" defer></script>
+    <script src="../js/statistics.js?v=units1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=career1" defer></script>
+    <script src="../js/panel.js?v=units1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

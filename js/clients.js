@@ -506,7 +506,7 @@
           selection.size +
           " clientes seleccionados" +
           (demo ? " de este ejemplo" : " de tu cartera") +
-          "?",
+          "? También se eliminarán sus productos, unidades y comisiones registradas.",
       )
     )
       return;

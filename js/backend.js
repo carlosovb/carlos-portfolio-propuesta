@@ -22,6 +22,7 @@
     "get_team_directory",
     "get_team_client_counts",
     "list_consultants",
+    "get_unit_statistics",
   ]);
   function invalidateCache() {
     cacheVersion++;
@@ -363,7 +364,7 @@
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
       const query = new URLSearchParams({
         select:
-          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at",
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,signature_rates",
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });
@@ -379,6 +380,9 @@
         payment_type: fields.payment_type,
         amount: fields.amount,
         units: fields.units,
+        signed_on: fields.signed_on,
+        signed_multiplier: fields.signed_multiplier,
+        signature_rates: fields.signature_rates,
       };
       const query = new URLSearchParams({ select: "id" });
       if (id) {
@@ -461,6 +465,14 @@
         await authenticated("/rest/v1/rpc/get_my_team_profile", {
           method: "POST",
           body: "{}",
+        })
+      ).json();
+    },
+    async getUnitStatistics(month) {
+      return (
+        await authenticated("/rest/v1/rpc/get_unit_statistics", {
+          method: "POST",
+          body: JSON.stringify({ p_month: month + "-01" }),
         })
       ).json();
     },

@@ -1,0 +1,222 @@
+.stats-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.stats-heading h2 {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  margin: 0.5rem 0;
+}
+.stats-heading label {
+  display: grid;
+  gap: 0.6rem;
+}
+.stats-heading input {
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid #8396aa55;
+  border-radius: 12px;
+  padding: 0.8rem;
+  font: inherit;
+  color-scheme: dark;
+}
+.stats-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 2rem 0;
+}
+.stats-tabs button {
+  font: inherit;
+  color: inherit;
+  padding: 1rem 1.5rem;
+  border: 1px solid #8396aa55;
+  border-radius: 100px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+}
+.stats-tabs button:hover {
+  transform: translateY(-3px);
+  border-color: #e4b087;
+}
+.stats-tabs button[aria-pressed="true"] {
+  background: #e4b087;
+  color: #102033;
+  border-color: #e4b087;
+}
+.stats-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.stats-metric {
+  border: 1px solid #8396aa55;
+  border-radius: 20px;
+  padding: 1.6rem;
+  border-top: 3px solid #80b7ea;
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.stats-metric strong {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  overflow-wrap: anywhere;
+}
+.stats-metric[data-kind="money"] {
+  border-top-color: #7fc7a7;
+}
+.stats-metric[data-kind="pending"] {
+  border-top-color: #e4b087;
+}
+.stats-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.stats-split article {
+  border-radius: 18px;
+  padding: 1.5rem;
+  background: #80b7ea0c;
+  display: grid;
+  gap: 0.5rem;
+}
+.stats-split article + article {
+  background: #7fc7a70c;
+}
+.stats-split strong {
+  font-size: 1.8rem;
+}
+.stats-caption {
+  font-size: 0.85rem;
+  max-width: 75ch;
+}
+.stats-warning {
+  border-left: 3px solid #e4b087;
+  padding: 1rem;
+  background: #e4b0870c;
+}
+.stats-chart {
+  margin: 2.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #8396aa44;
+  border-radius: 22px;
+}
+.stats-bars {
+  height: 200px;
+  display: flex;
+  gap: clamp(2px, 0.5vw, 8px);
+  align-items: end;
+  padding: 1rem 0 2rem;
+  margin-bottom: 1rem;
+}
+.stats-bars > div {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: end;
+  border-bottom: 1px solid #8396aa44;
+}
+.stats-bars span {
+  width: 100%;
+  min-height: 2px;
+  background: #80b7ea;
+  border-radius: 5px 5px 0 0;
+  transition: background 0.2s;
+}
+.stats-bars > div:hover span {
+  background: #e4b087;
+}
+.stats-bars small {
+  position: absolute;
+  top: 100%;
+  font-size: 0.65rem;
+  margin-top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.stats-chart table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  text-align: left;
+}
+.stats-chart th,
+.stats-chart td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #8396aa33;
+}
+.stats-chart summary {
+  cursor: pointer;
+}
+.stats-person {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid #8396aa44;
+}
+.stats-person div {
+  display: grid;
+  gap: 0.4rem;
+}
+.stats-person div:last-of-type strong {
+  color: #7fc7a7;
+}
+.stats-person h4 {
+  margin: 0;
+}
+.stats-person strong {
+  font-size: 1.4rem;
+}
+html[data-theme="light"] .stats-heading input {
+  color-scheme: light;
+  background: #fff;
+  color: #102033;
+}
+html[data-theme="light"] .stats-person div:last-of-type strong {
+  color: #237350;
+}
+@media (max-width: 650px) {
+  .stats-heading {
+    display: grid;
+  }
+  .stats-metrics {
+    grid-template-columns: 1fr;
+  }
+  .stats-metric {
+    padding: 1rem;
+  }
+  .stats-split {
+    grid-template-columns: 1fr;
+  }
+  .stats-tabs button {
+    padding: 0.8rem 1rem;
+  }
+  .stats-person {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stats-person h4 {
+    grid-column: 1/-1;
+  }
+  .stats-chart {
+    padding: 1rem 0.6rem;
+  }
+  .stats-bars small {
+    font-size: 0.55rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stats-tabs button,
+  .stats-bars span {
+    transition: none;
+  }
+}

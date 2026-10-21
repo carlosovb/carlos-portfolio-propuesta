@@ -159,6 +159,56 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
               },
             })
           : json([]);
+      if (url.pathname.endsWith("/rpc/get_unit_statistics")) {
+        return json({
+          month: body.p_month,
+          last_day: 29,
+          undated_own: 1,
+          incomplete_global: 1,
+          incomplete_team: 0,
+          scopes: {
+            own: {
+              units: 100,
+              own_units: 100,
+              own_euros: 250,
+              team_units: 0,
+              team_euros: 0,
+              pending: 0,
+            },
+            team: {
+              units: 100,
+              own_units: 0,
+              own_euros: 0,
+              team_units: 100,
+              team_euros: 150,
+              pending: 0,
+            },
+            global: {
+              units: 100,
+              own_units: 100,
+              own_euros: 200,
+              team_units: 200,
+              team_euros: 200,
+              pending: 0,
+            },
+          },
+          days: {
+            own: [{ day: 29, units: 100, euros: 250 }],
+            global: [{ day: 29, units: 100, euros: 400 }],
+          },
+          people: [
+            {
+              user_id: uid,
+              name: "Consultor de ejemplo",
+              own_units: 100,
+              own_euros: 200,
+              team_units: 100,
+              team_euros: 150,
+              pending: 0,
+            },
+          ],
+        });
+      }
       if (url.pathname.endsWith("/rpc/get_my_team_profile"))
         return json({
           user_id: uid,
@@ -168,7 +218,13 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           multiplier: 3.5,
           manager_id: null,
         });
-      if (url.pathname.endsWith("/rpc/get_career_progress")) return json({user_id:uid,counts:{},units_available:false});
+      if (url.pathname.endsWith("/rpc/get_career_progress"))
+        return json({
+          user_id: uid,
+          counts: {},
+          units_available: true,
+          production: { quarter: 25, historical: 100, totalQuarter: 125, incomplete: 0 },
+        });
       if (url.pathname.endsWith("/rpc/get_team_directory"))
         return json([
           {
@@ -362,10 +418,15 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=portfolio]").fill("Cartera equilibrada");
     await contract.locator("[name=amount]").fill("50");
     await contract.locator("[name=units]").fill("2.5");
+    await contract.locator("[name=signed_on]").fill("2024-02-29");
+    await contract.locator("[name=signed_multiplier]").selectOption("2.5");
+    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.locator(".contract-card").waitFor();
     assert.equal(products.length, 1);
     assert.equal(products[0].portfolio, "Cartera equilibrada");
+    assert.equal(products[0].signed_on, "2024-02-29");
+    assert.equal(products[0].signed_multiplier, 2.5);
     await page
       .locator(".contract-card")
       .getByRole("button", { name: "Editar", exact: true })
@@ -373,6 +434,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=payment_type]").selectOption("single");
     await contract.locator("[name=amount]").fill("1000");
     await contract.locator("[name=units]").fill("");
+    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(() =>
       document.querySelector(".contract-card").textContent.includes("Aportación única"),
@@ -405,6 +467,33 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.locator("#client-detail-close").click();
     assert.equal(await page.locator("#client-products-section").textContent(), "");
 
+    await page.locator('#panel-navigation [data-view="statistics"]').click();
+    await page.locator(".stats-heading").waitFor();
+    await page.locator(".stats-heading input").fill("2024-02");
+    await page.locator(".stats-heading input").dispatchEvent("change");
+    await page.locator(".stats-heading").waitFor();
+    assert.equal(await page.locator(".stats-bars>div").count(), 29);
+    await page.getByRole("button", { name: "Equipo completo", exact: true }).click();
+    assert.match(await page.locator(".stats-metrics").textContent(), /400/);
+    assert.equal(await page.locator(".stats-person").count(), 1);
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+      for (const width of [320, 768, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert(
+          await page
+            .locator("#statistics-view")
+            .evaluate((el) => el.scrollWidth <= el.clientWidth),
+          "Statistics responsive",
+        );
+        if (width === 1440)
+          await page.screenshot({
+            path: path.join(process.env.TEMP, "statistics-" + theme + ".png"),
+            fullPage: true,
+          });
+      }
+    }
+    await page.locator('#panel-navigation [data-view="clients"]').click();
     await page.locator("#clients-search").fill("Bruno");
     await page.waitForFunction(
       () =>
@@ -422,6 +511,11 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.locator(".team-node-self").click();
     assert.equal(await page.locator("#team-member-clients").textContent(), "2");
     assert.equal(await page.locator("#team-member-interested").textContent(), "0");
+    await page.waitForFunction(() =>
+      document
+        .querySelector("#team-member-progress")
+        .textContent.includes("125 U registradas"),
+    );
     await page.locator("#team-member-close").click();
     assert.equal(
       await page

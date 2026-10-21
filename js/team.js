@@ -297,7 +297,12 @@
           ) {
             if (result?.user_id !== target || !result.counts)
               throw Error("Progress unavailable");
-            window.CareerPlan.renderProgress(member, [], result.counts);
+            window.CareerPlan.renderProgress(
+              member,
+              [],
+              result.counts,
+              result.production,
+            );
           }
         })
         .catch(() => {

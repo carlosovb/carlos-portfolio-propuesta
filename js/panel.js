@@ -231,6 +231,7 @@
     window.ClientsPanel?.reset();
     window.PremeetingPanel?.reset();
     window.ResourcesPanel?.reset();
+    window.StatisticsPanel?.reset();
     window.DashboardPanel?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
@@ -411,7 +412,9 @@
     get("refresh-button").disabled = true;
     notice("panel-notice", "Actualizando…");
     try {
-      if (view === "resources") {
+      if (view === "statistics") {
+        await window.StatisticsPanel.load(account);
+      } else if (view === "resources") {
         await window.ResourcesPanel.load(account);
       } else if (view === "premeeting") {
         await window.PremeetingPanel.load(account);
@@ -586,6 +589,7 @@
         "clients",
         "premeeting",
         "resources",
+        "statistics",
       ].includes(next)
     )
       return;
@@ -600,6 +604,8 @@
     window.ClientsPanel?.hide();
     window.PremeetingPanel?.hide();
     window.ResourcesPanel?.hide();
+    window.StatisticsPanel?.reset();
+    get("statistics-view").hidden = view !== "statistics";
     window.DashboardPanel?.reset();
     get("resources-view").hidden = view !== "resources";
     get("premeeting-view").hidden = view !== "premeeting";
@@ -610,21 +616,23 @@
     get("team-view").hidden = view !== "team";
     get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "resources"
-        ? "Herramientas y recursos."
-        : view === "premeeting"
-          ? "Antes de la reunión."
-          : view === "clients"
-            ? "Tus clientes."
-            : view === "team"
-              ? "Nuestro equipo."
-              : view === "consultants"
-                ? "Tu equipo."
-                : view === "profile"
-                  ? "Mi perfil."
-                  : view === "requests"
-                    ? "Tus solicitudes."
-                    : "Tu panel.";
+      view === "statistics"
+        ? "Tus estadísticas."
+        : view === "resources"
+          ? "Herramientas y recursos."
+          : view === "premeeting"
+            ? "Antes de la reunión."
+            : view === "clients"
+              ? "Tus clientes."
+              : view === "team"
+                ? "Nuestro equipo."
+                : view === "consultants"
+                  ? "Tu equipo."
+                  : view === "profile"
+                    ? "Mi perfil."
+                    : view === "requests"
+                      ? "Tus solicitudes."
+                      : "Tu panel.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");

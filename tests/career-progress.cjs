@@ -62,3 +62,13 @@ assert.equal(
 console.log(
   "Carrera: rama completa, alternativas, exclusión del propio consultor, ciclos, exceso de colaboradores y unidades pendientes comprobados.",
 );
+
+const actual = P.calculate(
+  { user_id: "x", position_code: "financial_trainee" },
+  [],
+  {},
+  { historical: 250, quarter: 50, totalQuarter: 75, incomplete: 1 },
+)[0].base.units[0];
+assert.equal(actual.recorded, 250);
+assert.equal(actual.missing, 750);
+assert.equal(actual.incomplete, true);

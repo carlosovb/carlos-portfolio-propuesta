@@ -256,14 +256,14 @@
     if (outside && e.target === dialog && isOutside(e)) dialog.close();
     outside = false;
   });
-  function renderProgress(member, directory, counts) {
+  function renderProgress(member, directory, counts, production) {
     const host = document.getElementById("team-member-progress");
     host.replaceChildren();
     host.append(
       node("p", "Tu siguiente paso", "eyebrow"),
       node("h3", "Lo que falta para avanzar."),
     );
-    const goals = window.CareerProgress.calculate(member, [], counts);
+    const goals = window.CareerProgress.calculate(member, [], counts, production);
     if (!goals.length) {
       host.append(
         node(
@@ -306,7 +306,16 @@
           item.append(
             node("strong", number(units.required) + " U"),
             node("span", names[units.kind]),
-            node("small", "Cuánto falta: pendiente de registrar unidades"),
+            node(
+              "small",
+              units.recorded === null
+                ? "Cuánto falta: pendiente de registrar unidades"
+                : number(units.recorded) +
+                    " U registradas · Faltan " +
+                    number(units.missing) +
+                    " U" +
+                    (units.incomplete ? " · Recuento incompleto" : ""),
+            ),
           );
           box.append(item);
         }
@@ -375,7 +384,7 @@
     host.append(
       node(
         "p",
-        "Las unidades todavía no se han incorporado a las estadísticas. Los recuentos usan el puesto exacto registrado de cada persona en su rama; Estado Activo y criterios de calidad pendientes de validar.",
+        "Unidades según firmas registradas y trimestres naturales. Los recuentos usan el puesto exacto registrado de cada persona en su rama; Estado Activo y criterios de calidad pendientes de validar.",
         "career-progress-footnote",
       ),
     );

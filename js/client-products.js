@@ -133,7 +133,9 @@
         if (
           busy ||
           !selected.size ||
-          !confirm(`¿Eliminar ${selected.size} productos contratados seleccionados?`)
+          !confirm(
+            `¿Eliminar ${selected.size} productos contratados seleccionados? También se eliminarán sus unidades y comisiones de las estadísticas.`,
+          )
         )
           return;
         const ticket = epoch;
@@ -196,6 +198,11 @@
       const dl = node("dl");
       [
         ["Cartera de fondos", row.portfolio || "Sin indicar"],
+        ["Fecha de firma", row.signed_on || "Pendiente · No cuenta en estadísticas"],
+        [
+          "Multiplicador al firmar",
+          row.signed_multiplier == null ? "Pendiente" : "×" + row.signed_multiplier,
+        ],
         [
           row.payment_type === "monthly" ? "Aportación mensual" : "Aportación única",
           euro(row.amount) + (row.payment_type === "monthly" ? " / mes" : ""),
@@ -247,10 +254,26 @@
     editing = null;
     render();
   }
-  function editor() {
+  async function editor() {
     const box = document.getElementById("client-product-editor");
     box.replaceChildren();
     if (!editing) return;
+    const selectedProduct = editing,
+      ticket = epoch;
+    box.textContent = "Preparando los datos de la firma…";
+    let me, directory;
+    try {
+      [me, directory] = demo
+        ? [{ user_id: "demo" }, []]
+        : await Promise.all([backend.getMyTeamProfile(), backend.listTeam()]);
+    } catch {
+      if (ticket === epoch && selectedProduct === editing)
+        box.textContent =
+          "No se ha podido preparar la firma. Pulsa Editar o Añadir producto para reintentar.";
+      return;
+    }
+    if (ticket !== epoch || selectedProduct !== editing) return;
+    box.replaceChildren();
     const form = node("form", undefined, "contract-editor"),
       grid = node("div", undefined, "contract-fields");
     form.append(
@@ -273,6 +296,82 @@
       type: "number",
     });
     form.append(grid);
+    const signature = node("fieldset", undefined, "contract-signature");
+    signature.append(
+      node("legend", "Producción de esta firma"),
+      node(
+        "p",
+        "La aportación del cliente y tu comisión son importes diferentes. Las unidades cuentan una vez, en el mes de firma. Confirma los multiplicadores de entonces; si no los conoces, déjalos pendientes.",
+      ),
+    );
+    const signed = field(signature, "Fecha de firma", "signed_on", editing.signed_on, {
+      type: "date",
+    });
+    signed.min = "2000-01-01";
+    signed.max = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Atlantic/Canary",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    const multipliers = [
+      ["", "Pendiente de confirmar"],
+      ...[2, 2.5, 3.5, 4.5, 5, 5.5, 6].map((v) => [String(v), "×" + v]),
+    ];
+    field(
+      signature,
+      "Tu multiplicador al firmar",
+      "signed_multiplier",
+      editing.signed_multiplier,
+      { options: multipliers },
+    );
+    const structure = node("details"),
+      rates = {};
+    structure.append(node("summary", "Multiplicadores de los responsables al firmar"));
+    if (editing.signed_on) Object.assign(rates, editing.signature_rates || {});
+    else {
+      const seen = new Set([me.user_id]);
+      let parent =
+        directory.find((p) => p.user_id === me.user_id)?.manager_id || me.manager_id;
+      while (parent && !seen.has(parent)) {
+        seen.add(parent);
+        rates[parent] = null;
+        parent = directory.find((p) => p.user_id === parent)?.manager_id;
+      }
+    }
+    Object.entries(rates).forEach(([id, value]) => {
+      const person = directory.find((p) => p.user_id === id);
+      field(
+        structure,
+        person?.name ||
+          ((person?.first_name || "") + " " + (person?.last_name || "")).trim() ||
+          "Responsable de la firma",
+        "rate_" + id,
+        value,
+        { options: multipliers },
+      );
+    });
+    if (!Object.keys(rates).length)
+      structure.append(node("p", "Esta firma no tiene responsables por encima."));
+    if (!editing.signed_on)
+      structure.append(
+        node(
+          "p",
+          "La estructura propuesta es la actual. Si era diferente en la fecha de firma, revísala antes de registrar este producto.",
+        ),
+      );
+    signature.append(structure);
+    const confirmation = node(
+      "label",
+      "He revisado los multiplicadores de la fecha de firma. Los que dejo pendientes no generarán un importe calculado.",
+    );
+    const check = node("input");
+    check.type = "checkbox";
+    check.required = !!signed.value;
+    signed.addEventListener("change", () => (check.required = !!signed.value));
+    confirmation.prepend(check);
+    signature.append(confirmation);
+    form.append(signature);
     const actions = node("div", undefined, "contract-actions"),
       save = node("button", "Guardar producto", "btn");
     save.type = "submit";
@@ -315,6 +414,15 @@
         payment_type: values.payment_type,
         amount: Number(values.amount),
         units: values.units === "" ? null : Number(values.units),
+        signed_on: values.signed_on || null,
+        signed_multiplier:
+          values.signed_multiplier === "" ? null : Number(values.signed_multiplier),
+        signature_rates: Object.fromEntries(
+          Object.keys(rates).map((id) => [
+            id,
+            values["rate_" + id] === "" ? null : Number(values["rate_" + id]),
+          ]),
+        ),
       };
       const ticket = epoch,
         target = client.id,
