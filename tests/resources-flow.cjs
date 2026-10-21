@@ -218,10 +218,12 @@ const server = http.createServer((req, res) => {
     });
     await page.locator('.resource-company[data-company="axa"]').hover();
     await page.waitForTimeout(400);
-    assert.equal(await page.locator('.resource-company[data-company="axa"]').evaluate(n=>getComputedStyle(n,'::before').opacity),'1');
+    assert.equal(await page.locator('.resource-company[data-company="axa"]').evaluate(n=>getComputedStyle(n,'::before').content),'none');
     await page.locator('.resource-company[data-company="axa"]').click();
     assert.match(await page.locator(".resource-breadcrumb").textContent(), /AXA/);
+    assert.equal(await page.locator(".resource-personal").isVisible(),false);
     await page.getByRole("button", { name: "Todas las compañías", exact: true }).click();
+    assert.equal(await page.locator(".resource-personal").isVisible(),true);
     await page.evaluate(() => {
       window.testCopy = navigator.clipboard.writeText.bind(navigator.clipboard);
       navigator.clipboard.writeText = () => Promise.reject(new Error("denied"));

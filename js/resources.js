@@ -90,6 +90,7 @@
     }
   }
   function render() {
+    document.querySelector(".resource-personal").hidden = !!company;
     const host = get("resources-browser");
     host.replaceChildren();
     selection.clear();
