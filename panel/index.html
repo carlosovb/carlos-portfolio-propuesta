@@ -9,7 +9,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=consultants1" />
+    <link rel="stylesheet" href="../css/panel.css?v=consultants2" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -175,7 +175,7 @@
             <p class="eyebrow">Tu equipo</p>
             <h2>Invitar a un consultor</h2>
             <p>
-              Recibirá un enlace para completar su perfil y crear su propia contraseña. Su
+              Genera su enlace personal y envíaselo desde tu correo. Podrá completar su perfil y crear su contraseña. Su
               acceso no incluye las solicitudes de clientes.
             </p>
             <form id="invite-consultant-form">
@@ -191,9 +191,14 @@
                 />
               </label>
               <button type="submit" class="btn" id="invite-consultant-button">
-                Enviar invitación ↗
+                Generar enlace de invitación ↗
               </button>
             </form>
+            <div id="invitation-result" hidden>
+              <label>Enlace para <span id="invitation-email"></span><textarea id="invitation-url" rows="4" readonly spellcheck="false" autocomplete="off"></textarea></label>
+              <button type="button" class="panel-secondary" id="copy-invitation">Copiar enlace</button>
+              <p>Envíalo solo a este consultor. Es personal, de un solo uso y caduca según la configuración de Supabase. No lo abras tú para probarlo.</p>
+            </div>
             <p id="invite-notice" class="panel-notice" role="status" hidden></p>
           </div>
           <div class="panel-section-heading"><h2>Consultores invitados</h2></div>
@@ -331,8 +336,8 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=consultants1" defer></script>
+    <script src="../js/backend.js?v=consultants2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/panel.js?v=consultants1" defer></script>
+    <script src="../js/panel.js?v=consultants2" defer></script>
   </body>
 </html>

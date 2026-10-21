@@ -23,7 +23,7 @@ const context = {
     if (url.endsWith("/auth/v1/user"))
       return Response.json({}, { status: valid ? 200 : 401 });
     if (url.endsWith("/rpc/is_panel_owner")) return Response.json(owner);
-    return Response.json({ access_token: "must-not-leak" }, { status: mailStatus });
+    return Response.json({ access_token: "must-not-leak", hashed_token: "test-hash", verification_type: "invite" }, { status: mailStatus });
   },
 };
 vm.runInNewContext(
@@ -45,21 +45,24 @@ const request = (email, auth = "Bearer user-token") =>
   calls = [];
   assert.equal((await handler(request("test@ovb.es"))).status, 403);
   assert.equal(
-    calls.some((c) => c.url.includes("/invite")),
+    calls.some((c) => c.url.includes("/admin/generate_link")),
     false,
   );
   owner = true;
   calls = [];
   assert.equal((await handler(request("test@other.invalid"))).status, 400);
   assert.equal(
-    calls.some((c) => c.url.includes("/invite")),
+    calls.some((c) => c.url.includes("/admin/generate_link")),
     false,
   );
   calls = [];
   const result = await handler(request(" TEST@OVB.ES "));
   assert.equal(result.status, 200);
-  assert.equal((await result.text()).includes("must-not-leak"), false);
-  const invite = calls.find((c) => c.url.includes("/invite"));
+  const output = await result.json();
+  assert.equal(JSON.stringify(output).includes('must-not-leak'), false);
+  assert.equal(output.invitation_url, 'https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite');
+  assert.equal(calls.some(c => c.url.includes('/auth/v1/invite?')), false);
+  const invite = calls.find((c) => c.url.includes("/admin/generate_link"));
   assert.equal(JSON.parse(invite.options.body).email, "test@ovb.es");
   assert.equal(invite.options.headers.Authorization, "Bearer server-only-secret");
   assert.equal(calls[1].options.headers.Authorization, "Bearer user-token");

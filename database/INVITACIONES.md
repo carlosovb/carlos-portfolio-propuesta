@@ -1,39 +1,34 @@
-# Invitaciones desde el panel
+# Invitaciones por enlace desde el panel
+
+Esta versión genera el enlace sin enviar correo desde Supabase. Carlos lo copia y lo envía desde su correo habitual. No requiere configurar SMTP para las invitaciones.
 
 ## 1. Base de datos
-Ejecutar consultants-setup.sql en SQL Editor después de profile-setup.sql.
-Solo el propietario puede consultar la lista de consultores.
+Ejecutar consultants-setup.sql después de profile-setup.sql, si no se ha hecho todavía.
 
-## 2. Función de envío
+## 2. Función protegida
 En Supabase > Edge Functions > Deploy a new function > Via Editor:
-- Nombre exacto: invite-consultant.
-- Sustituir index.ts por supabase/functions/invite-consultant/index.ts de este repositorio.
-- Desplegar y mantener la verificación JWT activada (Verify JWT).
-- SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY son variables del entorno de Supabase. No copiarlas al navegador ni al repositorio.
-La función valida la sesión con Auth y comprueba is_panel_owner con el token del usuario antes de utilizar permisos administrativos. Solo admite correos @ovb.es y una dirección de activación fija. No permite elegir contraseñas, roles ni destinos desde el navegador. Los errores no devuelven datos internos de Auth.
+- Nombre exacto: invite-consultant (si existe, editarla).
+- Sustituir todo index.ts por supabase/functions/invite-consultant/index.ts del repositorio y desplegar.
+- Mantener Verify JWT activado.
+- Las variables SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY se proporcionan dentro de Supabase. Nunca copiarlas a GitHub ni al navegador.
 
-## 3. Direcciones de autenticación
+La función valida la identidad con Auth y comprueba is_panel_owner con la sesión del administrador. Solo después solicita /auth/v1/admin/generate_link con type invite. No llama al endpoint de envío de correo. Solo devuelve un enlace de activación fijo con TokenHash, nunca el objeto de usuario, OTP, credenciales administrativas o tokens de sesión.
+Solo acepta correos @ovb.es. Los registros públicos permanecen desactivados.
+
+## 3. Direcciones
 Authentication > URL Configuration:
-- Site URL: https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/
-- Redirect URLs: añadir exactamente la misma dirección.
-Mantener los registros públicos desactivados.
+Site URL y Redirect URLs deben incluir exactamente:
+https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/
 
-## 4. Correo de salida
-Authentication > Email > SMTP Settings (o Custom SMTP según el panel):
-- Activar Custom SMTP.
-- Sender email: una dirección que el proveedor permita usar como remitente.
-- Sender name: Carlos Caballero Dávila.
-- Host, puerto, usuario y contraseña: los que facilite el proveedor SMTP.
-Guardar estos datos solo en Supabase. No usar la contraseña habitual del correo si el proveedor requiere una contraseña de aplicación o credencial SMTP específica.
-Para utilizar el correo corporativo, confirmar con su administrador que permite envío SMTP desde Supabase y solicitar los datos correctos. No asumir que basta con conocer el correo y su contraseña. Si no se dispone de SMTP corporativo, elegir otro proveedor con un remitente verificado; el dominio ovb.es no es un dominio que podamos verificar por nuestra cuenta.
-Sin Custom SMTP, Supabase limita los destinatarios a miembros del equipo del proyecto. Los límites y costes dependen del proveedor elegido.
+## 4. Uso
+Consultores > introducir correo > Generar enlace de invitación > Copiar enlace.
+Enviarlo únicamente al destinatario indicado. No abrirlo como administrador para probar: permite activar esa cuenta. Es de un solo uso y su caducidad depende de la configuración Auth del proyecto. Si falla la copia automática puede copiarse del campo de texto.
+El enlace no se guarda en la base de datos del panel ni en almacenamiento del navegador. Se retira al cambiar de apartado o cerrar sesión; la copia en el portapapeles y el correo enviado quedan bajo el control del usuario.
+Una cuenta ya activada puede impedir generar otra invitación. Esta pantalla no genera accesos para cuentas existentes ni enlaces de recuperación.
 
-## 5. Plantillas
-Usar las plantillas Invite user y Reset password indicadas en PROFILE-CONFIGURACION.md, con TokenHash y SiteURL. La pantalla de activación valida el enlace al pulsar el botón y retira sus credenciales de la dirección.
+## 5. Comprobación real pendiente
+Generar una invitación para un correo de prueba bajo control de Carlos. Enviarla y abrirla como destinatario. Comprobar validación, perfil, contraseña y entrada sin solicitudes de clientes. Un enlace usado o caducado no debe permitir activar nuevamente.
+Las pruebas automatizadas usan Auth simulado: no crean cuentas reales ni mandan mensajes.
 
-## 6. Prueba real
-Desde Consultores, introducir un correo corporativo de prueba bajo tu control y enviar una sola invitación. Verificar recepción (también spam), activación, creación de contraseña, perfil y entrada. Comprobar que el consultor no ve solicitudes de clientes. El listado distingue pendiente, perfil completado y acceso desactivado. El envío confirmado significa que Auth aceptó el envío, no garantiza entrega en la bandeja de entrada.
-No hay botón de reenvío ni desactivación en esta fase. Una cuenta ya existente puede impedir una nueva invitación; para recuperar contraseña se utiliza el flujo de recuperación.
-
-## Validación realizada en desarrollo
-Pruebas aisladas de la función con Auth y correo simulados; pruebas PostgreSQL de acceso al listado. No se han enviado invitaciones reales ni configurado SMTP automáticamente.
+## Recuperación de contraseña
+El flujo de recuperación por correo existente sigue necesitando SMTP para destinatarios ajenos al equipo del proyecto. Generar invitaciones manuales no activa ese envío. Se configurará o adaptará por separado.

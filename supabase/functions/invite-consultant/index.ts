@@ -8,7 +8,7 @@ const cors = {
   Vary: "Origin",
 };
 const reply = (status, message) =>
-  new Response(JSON.stringify({ message }), {
+  new Response(JSON.stringify(typeof message === "string" ? { message } : message), {
     status,
     headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
@@ -58,16 +58,20 @@ async function handleInvite(req) {
       return reply(400, "Invalid email");
     // Solo esta llamada usa el privilegio administrativo. Nunca se devuelve su respuesta.
     const result = await call(
-      "/auth/v1/invite?redirect_to=" + encodeURIComponent(redirectTo),
+      "/auth/v1/admin/generate_link?redirect_to=" + encodeURIComponent(redirectTo),
       {
         method: "POST",
         headers: { Authorization: "Bearer " + secret },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ type: "invite", email }),
       },
     );
     if (!result.ok)
       return reply(result.status === 429 ? 429 : 502, "Invitation not confirmed");
-    return reply(200, "Invitation sent");
+    const data = await result.json();
+    if (data.verification_type !== 'invite' || typeof data.hashed_token !== 'string' || !data.hashed_token)
+      return reply(502, 'Invalid invitation response');
+    // Solo el enlace de activación necesario; no devolver usuarios, OTP ni tokens de sesión.
+    return reply(200, { invitation_url: redirectTo + '#token_hash=' + encodeURIComponent(data.hashed_token) + '&type=invite' });
   } catch {
     return reply(503, "Service unavailable");
   }

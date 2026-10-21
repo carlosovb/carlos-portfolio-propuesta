@@ -103,6 +103,7 @@
     get("profile-form").reset();
     get("password-form").reset();
     get("invite-consultant-form").reset();
+    clearInvitation();
     get("consultant-list").replaceChildren();
     notice("invite-notice", "");
     account = null;
@@ -122,14 +123,19 @@
     }
     mutationPending = true;
     button.disabled = true;
-    notice("invite-notice", "Enviando invitación…");
+    clearInvitation();
+    notice("invite-notice", "Generando enlace…");
     try {
-      await backend.inviteConsultant(email);
+      const result = await backend.inviteConsultant(email);
       if (!active || epoch !== snapshot) return;
-      get("invite-consultant-form").reset();
+      const link = new URL(result.invitation_url);
+      if (link.origin !== 'https://carlosovb.github.io' || link.pathname !== '/carlos-portfolio-propuesta/cuenta/' || !link.hash.startsWith('#token_hash=')) throw new Error('Invalid invitation');
+      get('invitation-url').value = link.href;
+      get('invitation-email').textContent = email;
+      get('invitation-result').hidden = false;
       notice(
         "invite-notice",
-        "Invitación enviada. El consultor podrá crear su contraseña desde el enlace recibido.",
+        "Enlace generado. Cópialo y envíaselo al consultor desde tu correo.",
       );
       await load();
     } catch (error) {
@@ -138,11 +144,29 @@
         "invite-notice",
         error.status === 404
           ? "Falta desplegar la función de invitaciones en Supabase."
-          : "No se ha confirmado el envío. Comprueba el correo de salida y si la cuenta ya existe antes de volver a intentarlo.",
+          : "No se ha podido generar el enlace. Comprueba que la función esté actualizada en Supabase y que la cuenta no esté ya activada.",
       );
     } finally {
       mutationPending = false;
       button.disabled = false;
+    }
+  });
+
+  function clearInvitation() {
+    get('invitation-url').value = '';
+    get('invitation-email').textContent = '';
+    get('invitation-result').hidden = true;
+  }
+  get('invite-consultant-form').elements.email.addEventListener('input', clearInvitation);
+  get('copy-invitation').addEventListener('click', async () => {
+    if (!active || account?.role !== 'admin' || !get('invitation-url').value) return;
+    try {
+      await navigator.clipboard.writeText(get('invitation-url').value);
+      notice('invite-notice', 'Enlace copiado. Ya puedes pegarlo en tu correo.');
+    } catch {
+      get('invitation-url').focus();
+      get('invitation-url').select();
+      notice('invite-notice', 'Selecciona y copia el enlace con el menú de tu dispositivo.');
     }
   });
 
@@ -269,6 +293,7 @@
     if (account?.profile_complete === false && next !== "profile") next = "profile";
     if (["requests", "consultants"].includes(next) && account?.role !== "admin")
       next = "home";
+    if (next !== "consultants") clearInvitation();
     view = next;
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";

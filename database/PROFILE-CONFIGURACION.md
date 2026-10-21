@@ -21,7 +21,9 @@ En Authentication > URL Configuration:
 
 No habilitar registros públicos.
 
-## 3. Preparar el correo de autenticación
+## 3. Invitaciones manuales y correo de recuperación
+
+Para invitar sin envío automático, seguir INVITACIONES.md y generar/copiar el enlace desde el panel. No requiere SMTP. Lo siguiente aplica al envío automático y a la recuperación de contraseña por correo.
 
 Supabase restringe el envío sin SMTP propio a los correos del equipo del proyecto. Para invitar a compañeros fuera de ese equipo se necesita configurar Custom SMTP. Este requisito es independiente del almacenamiento de solicitudes: los datos de clientes siguen sin enviarse por correo.
 

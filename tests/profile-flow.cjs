@@ -97,7 +97,7 @@ async function mock(context, state) {
       assert.equal(state.role, "admin");
       state.invites = (state.invites || 0) + 1;
       assert.equal(body.email, "invitado@ovb.es");
-      return json({ message: "Invitation sent" });
+      return json({ invitation_url: 'https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite' });
     }
     if (url.pathname.includes("contact_requests")) {
       state.requestReads++;
@@ -161,15 +161,20 @@ async function login(page, base) {
       await page.waitForFunction(() =>
         document
           .querySelector("#invite-notice")
-          .textContent.includes("Invitación enviada"),
+          .textContent.includes("Enlace generado"),
       );
       assert.equal(data.invites, 1);
+      assert.equal(await page.locator('#invitation-url').inputValue(), 'https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite');
+      await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.copiedInvitation = text; } } }));
+      await page.locator('#copy-invitation').click();
+      assert.equal(await page.evaluate(() => window.copiedInvitation), await page.locator('#invitation-url').inputValue());
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
       );
       if (width <= 850) await page.locator(".panel-menu-toggle").click();
       await page.locator('#panel-navigation [data-view="profile"]').click();
+      assert.equal(await page.locator('#invitation-url').inputValue(), '');
       await page.locator('#profile-form [name="first_name"]').fill("Nombre actualizado");
       await page.locator('#profile-form [name="last_name"]').fill("Apellidos de prueba");
       await page.locator('#profile-form [name="phone"]').fill("000000001");
