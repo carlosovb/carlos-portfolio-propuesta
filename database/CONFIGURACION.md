@@ -49,7 +49,7 @@ Las solicitudes vencen a los 60 días; los permisos dejan de mostrarlas al vence
 
 Supabase documenta cifrado AES-256 en almacenamiento y TLS en tránsito. No es cifrado de extremo a extremo: el proveedor opera la base de datos. No se suben los datos al repositorio, ni cifrados ni sin cifrar.
 
-La sesión del panel vive en memoria y se cierra tras 15 minutos de inactividad o al recargar. No se persisten tokens, contraseñas o solicitudes en el almacenamiento del navegador. Solo se conserva la preferencia visual de tema.
+La sesión del panel vive en memoria y se cierra tras 15 minutos de inactividad o al recargar. El acceso desde el portfolio usa un traspaso de sesión de un solo uso en `sessionStorage`, válido durante 30 segundos: el panel lo elimina al leerlo y vuelve a verificar el usuario y sus permisos con el servidor. No contiene contraseñas ni solicitudes. No se guardan sesiones en `localStorage`; solo se conserva ahí la preferencia visual de tema.
 
 ## Pendiente de esta fase
 

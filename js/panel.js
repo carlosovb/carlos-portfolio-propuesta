@@ -27,6 +27,15 @@
     get(id).hidden = !text;
   }
 
+  function enterPanel() {
+    active = true;
+    epoch++;
+    get("login-screen").hidden = true;
+    get("panel-screen").hidden = false;
+    resetInactivity();
+    setView("home");
+  }
+
   function resetInactivity() {
     clearTimeout(inactivityTimer);
     if (active)
@@ -225,12 +234,7 @@
         form.elements.password.value,
       );
       form.reset();
-      active = true;
-      epoch++;
-      get("login-screen").hidden = true;
-      get("panel-screen").hidden = false;
-      resetInactivity();
-      setView("home");
+      enterPanel();
     } catch {
       form.elements.password.value = "";
       notice(
@@ -293,4 +297,17 @@
       theme === "dark" ? "Activar modo claro" : "Activar modo oscuro",
     );
   });
+
+  // Acceso desde el formulario de la página principal, sin pedir la contraseña otra vez.
+  if (backend.ready) {
+    get("login-button").disabled = true;
+    backend
+      .resumePanelRedirect()
+      .then((restored) => {
+        if (restored) enterPanel();
+      })
+      .finally(() => {
+        get("login-button").disabled = false;
+      });
+  }
 })();

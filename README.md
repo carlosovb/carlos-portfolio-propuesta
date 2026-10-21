@@ -8,6 +8,8 @@ El portfolio incluye el formulario de primera reunión y el panel de solicitudes
 
 No se envían solicitudes por correo. El formulario y el inicio de sesión se desactivan si la configuración falta. El panel no simula un acceso privado con contraseñas o datos en archivos públicos.
 
+El pie del portfolio ofrece «Acceso consultor»: abre el inicio de sesión en una ventana sobre la misma página y después lleva al panel. El traspaso usa `sessionStorage` una sola vez, caduca en 30 segundos y se elimina al entrar. El servidor vuelve a verificar la identidad y el permiso de administrador. Las contraseñas nunca se guardan en ese traspaso.
+
 ## Estructura
 
 - `index.html`: portfolio y formulario.

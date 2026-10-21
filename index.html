@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/styles.css?v=20261021-panel1" />
     <link rel="stylesheet" href="css/responsive.css?v=20261021-panel1" />
     <link rel="stylesheet" href="css/contact.css?v=20261021-confirmacion2" />
+    <link rel="stylesheet" href="css/consultant-login.css?v=20261021-login1" />
   </head>
   <body>
     <header class="site-header">
@@ -621,13 +622,62 @@
     <footer>
       <span>Carlos Caballero Dávila · Consultor financiero</span>
       <span>Propuesta visual · Textos sujetos a revisión</span>
+      <button type="button" class="consultant-access" id="open-consultant-login">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="5" y="10" width="14" height="11" rx="3" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+        </svg>
+        Acceso consultor
+      </button>
       <a href="#inicio">Volver arriba ↑</a>
     </footer>
+    <dialog
+      id="consultant-login-dialog"
+      aria-labelledby="consultant-login-title"
+      aria-describedby="consultant-login-description"
+    >
+      <div class="consultant-dialog-heading">
+        <span class="eyebrow">Tu espacio de trabajo</span>
+        <button type="button" id="close-consultant-login" aria-label="Cerrar acceso">
+          ✕
+        </button>
+      </div>
+      <h2 id="consultant-login-title">Acceso consultor.</h2>
+      <p id="consultant-login-description">
+        Introduce tus datos para entrar en tu panel privado.
+      </p>
+      <form id="consultant-login-form" method="dialog">
+        <label>
+          Correo de acceso
+          <input
+            name="email"
+            type="email"
+            autocomplete="username"
+            maxlength="254"
+            required
+          />
+        </label>
+        <label>
+          Contraseña
+          <input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <p id="consultant-login-notice" role="status" hidden></p>
+        <button class="btn" type="submit" id="consultant-login-submit" disabled>
+          Entrar en mi panel ↗
+        </button>
+      </form>
+    </dialog>
     <script src="js/theme.js?v=20261021-panel1"></script>
     <script src="js/interactions.js?v=20261021-panel1" defer></script>
     <script src="js/backend-config.js?v=20261021-panel1" defer></script>
-    <script src="js/backend.js?v=20261021-panel1" defer></script>
+    <script src="js/backend.js?v=20261021-login1" defer></script>
     <script src="js/contact.js?v=20261021-confirmacion2" defer></script>
+    <script src="js/consultant-login.js?v=20261021-login1" defer></script>
     <a
       class="back-to-top"
       href="#inicio"

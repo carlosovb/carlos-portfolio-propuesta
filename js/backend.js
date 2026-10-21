@@ -1,4 +1,4 @@
-// Cliente del panel. Los datos y la sesión permanecen únicamente en memoria.
+// Cliente del panel: sesión activa en memoria y traspaso temporal de un solo uso.
 (() => {
   const config = window.PORTFOLIO_BACKEND || {};
   const url = (config.url || "").replace(/\/$/, "");
@@ -7,6 +7,22 @@
     /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url) && key.startsWith("sb_publishable_");
   let session = null;
   let refreshing = null;
+  const redirectKey = `portfolio-panel-login:${url}`;
+
+  function clearRedirect() {
+    try {
+      sessionStorage.removeItem(redirectKey);
+    } catch {}
+  }
+
+  // El traspaso entre documentos se consume una sola vez y caduca en 30 segundos.
+  // No contiene la contraseña ni datos de clientes; no se utiliza localStorage.
+  try {
+    const pending = JSON.parse(sessionStorage.getItem(redirectKey) || "null");
+    if (pending && Date.now() - pending.issuedAt > 30000) clearRedirect();
+  } catch {
+    clearRedirect();
+  }
 
   async function request(route, options = {}, accessToken) {
     if (!ready) throw new Error("El almacenamiento privado todavía no está conectado.");
@@ -59,6 +75,63 @@
 
   window.PortfolioBackend = Object.freeze({
     ready,
+    async preparePanelRedirect() {
+      await token();
+      const issuedAt = Date.now();
+      sessionStorage.setItem(
+        redirectKey,
+        JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expiresAt: session.expiresAt,
+          issuedAt,
+        }),
+      );
+      // Si la navegación no llega a producirse, limpiar también desde la portada.
+      setTimeout(() => {
+        try {
+          const saved = JSON.parse(sessionStorage.getItem(redirectKey) || "null");
+          if (saved?.issuedAt === issuedAt) clearRedirect();
+        } catch {
+          clearRedirect();
+        }
+      }, 30000);
+    },
+    async resumePanelRedirect() {
+      let saved;
+      try {
+        saved = JSON.parse(sessionStorage.getItem(redirectKey) || "null");
+      } catch {
+        return false;
+      } finally {
+        clearRedirect();
+      }
+      if (
+        !saved ||
+        !Number.isFinite(saved.issuedAt) ||
+        !Number.isFinite(saved.expiresAt) ||
+        Date.now() < saved.issuedAt ||
+        Date.now() - saved.issuedAt > 30000 ||
+        saved.expiresAt <= Date.now() ||
+        typeof saved.access_token !== "string" ||
+        typeof saved.refresh_token !== "string"
+      )
+        return false;
+      session = saved;
+      try {
+        // Verificación real con el servidor: el contenido del navegador no otorga acceso.
+        await authenticated("/auth/v1/user");
+        const check = await authenticated("/rest/v1/rpc/is_panel_owner", {
+          method: "POST",
+          body: "{}",
+        });
+        if ((await check.json()) !== true) throw new Error("Acceso no autorizado.");
+        return true;
+      } catch {
+        await this.signOut();
+        return false;
+      }
+    },
     async submitContact(fields, requestId) {
       const response = await request("/rest/v1/rpc/submit_contact_request", {
         method: "POST",
@@ -97,6 +170,7 @@
       }
     },
     async signOut() {
+      clearRedirect();
       const previous = session;
       session = null;
       if (previous) {
