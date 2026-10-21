@@ -139,10 +139,45 @@
   border-radius: 0;
   background: transparent;
   color: var(--ink);
-  transition: transform 0.2s;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
-.resource-company:hover {
-  transform: translateY(-5px);
+.resource-company::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: 28px 28px 0 0;
+  background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 72%);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.3s ease, transform 0.4s ease;
+}
+.resource-company:is(:hover, :focus-visible) {
+  transform: translateY(-6px);
+  border-bottom-color: var(--accent);
+}
+.resource-company:is(:hover, :focus-visible)::before {
+  opacity: 1;
+  transform: scale(1);
+}
+.resource-company:is(:hover, :focus-visible) img {
+  transform: translateY(-4px) scale(1.08);
+}
+.resource-company:is(:hover, :focus-visible) strong {
+  color: var(--accent);
+}
+.resource-company:is(:hover, :focus-visible) small {
+  color: var(--ink);
+  border-color: var(--accent);
+  transform: translateY(3px);
+}
+.resource-company:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
 }
 .resource-company img {
   display: block;
@@ -150,6 +185,7 @@
   max-width: min(280px, 100%);
   height: 68px;
   object-fit: contain;
+  transition: transform 0.35s ease;
 }
 .resource-company[data-company="axa"] img {
   width: 88px;
@@ -158,10 +194,15 @@
 .resource-company strong {
   font-size: 18px;
   line-height: 1.5;
+  transition: color 0.25s ease;
 }
 .resource-company small {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition: color 0.25s ease, border-color 0.25s ease, transform 0.3s ease;
 }
 .resource-company .resource-eyebrow {
   display: none;
@@ -208,4 +249,9 @@ html[data-theme="dark"] .resource-company[data-company="axa"] img {
   .resource-grid:has(.resource-company) {
     grid-template-columns: 1fr;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+ .resource-company, .resource-company::before, .resource-company img, .resource-company small, .resource-company strong { transition: none; }
+ .resource-company:is(:hover, :focus-visible), .resource-company:is(:hover, :focus-visible) img, .resource-company:is(:hover, :focus-visible) small { transform: none; }
 }

@@ -216,6 +216,9 @@ const server = http.createServer((req, res) => {
       path: path.join(process.env.TEMP, "company-gallery.png"),
       fullPage: true,
     });
+    await page.locator('.resource-company[data-company="axa"]').hover();
+    await page.waitForTimeout(400);
+    assert.equal(await page.locator('.resource-company[data-company="axa"]').evaluate(n=>getComputedStyle(n,'::before').opacity),'1');
     await page.locator('.resource-company[data-company="axa"]').click();
     assert.match(await page.locator(".resource-breadcrumb").textContent(), /AXA/);
     await page.getByRole("button", { name: "Todas las compañías", exact: true }).click();
