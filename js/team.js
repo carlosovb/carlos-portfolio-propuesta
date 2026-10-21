@@ -15,6 +15,7 @@
   let CARD_WIDTH = 460;
   let CARD_HEIGHT = 320;
   let LEVEL_GAP = 410;
+  let clientCounts = null;
   const photos = new Map();
   const places = new Map();
   const fullName = (person) =>
@@ -79,6 +80,9 @@
     account = null;
     me = null;
     members = [];
+    clientCounts = null;
+    get("team-clients-total").textContent = "—";
+    get("team-clients-mine").textContent = "—";
     selected = null;
     clearPhotos();
     places.clear();
@@ -236,6 +240,16 @@
       hint.className = "team-node-hint";
       hint.textContent = "Ver perfil ↗";
       info.append(name, position, factor, hint);
+      const count = clientCounts?.by_consultant.find(
+        (row) => row.user_id === member.user_id,
+      );
+      if (count) {
+        const clients = document.createElement("span");
+        clients.className = "team-node-client-count";
+        clients.textContent =
+          count.clients + (count.clients === 1 ? " cliente" : " clientes");
+        info.append(clients);
+      }
       card.append(face, info);
       if (self) {
         const tag = document.createElement("span");
@@ -315,11 +329,20 @@
     notice("team-notice", "Preparando el árbol del equipo…");
     get("team-canvas").replaceChildren();
     try {
-      const [directory, mine] = await Promise.all([
+      clientCounts = null;
+      get("team-clients-total").textContent = "—";
+      get("team-clients-mine").textContent = "—";
+      const [directory, mine, counts] = await Promise.all([
         backend.listTeam(),
         backend.getMyTeamProfile(),
+        backend.teamClientCounts().catch(() => null),
       ]);
       if (snapshot !== revision) return;
+      clientCounts = counts;
+      get("team-clients-total").textContent = counts?.total ?? "—";
+      get("team-clients-mine").textContent =
+        counts?.by_consultant.find((row) => row.user_id === mine?.user_id)?.clients ??
+        "—";
       members = directory;
       me = mine;
       await fetchPhotos(members, snapshot);

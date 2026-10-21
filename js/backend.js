@@ -124,6 +124,51 @@
       return accessDetails ? structuredClone(accessDetails) : null;
     },
     getPanelAccess: readAccess,
+    async listClients(search = "", page = 0) {
+      return (
+        await authenticated("/rest/v1/rpc/list_my_clients", {
+          method: "POST",
+          body: JSON.stringify({ p_search: search, p_page: page }),
+        })
+      ).json();
+    },
+    async importClients(rows, preview = true) {
+      return (
+        await authenticated("/rest/v1/rpc/import_my_clients", {
+          method: "POST",
+          body: JSON.stringify({ p_rows: rows, p_preview: preview }),
+        })
+      ).json();
+    },
+    async teamClientCounts() {
+      return (
+        await authenticated("/rest/v1/rpc/get_team_client_counts", {
+          method: "POST",
+          body: "{}",
+        })
+      ).json();
+    },
+    async deleteClients(ids) {
+      if (
+        !Array.isArray(ids) ||
+        !ids.length ||
+        ids.length > 25 ||
+        ids.some(
+          (id) =>
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),
+        )
+      )
+        throw Error("Selección no válida.");
+      const query = new URLSearchParams({
+        id: "in.(" + ids.join(",") + ")",
+        select: "id",
+      });
+      const response = await authenticated("/rest/v1/portfolio_clients?" + query, {
+        method: "DELETE",
+        headers: { Prefer: "return=representation" },
+      });
+      return (await response.json()).length;
+    },
     async getMyTeamProfile() {
       return (
         await authenticated("/rest/v1/rpc/get_my_team_profile", {

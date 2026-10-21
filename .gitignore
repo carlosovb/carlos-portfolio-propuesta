@@ -8,3 +8,8 @@ Thumbs.db
 
 # Copias anidadas previas; no publicar.
 /carlos-portfolio-propuesta/
+
+# Informes de clientes: nunca publicar los archivos de importación.
+*.xlsx
+*.xls
+/imports/

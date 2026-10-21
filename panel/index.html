@@ -11,8 +11,9 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/team.css?v=photo9" />
+    <link rel="stylesheet" href="../css/team.css?v=clients1" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
+    <link rel="stylesheet" href="../css/clients.css?v=clients1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -82,6 +83,10 @@
           </button>
           <button type="button" data-view="requests" data-admin-only>
             Solicitudes
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="clients">
+            Clientes
             <span>↗</span>
           </button>
           <button type="button" data-view="consultants" data-admin-only>
@@ -259,6 +264,156 @@
             </button>
           </div>
         </section>
+        <section id="clients-view" aria-label="Clientes privados" hidden>
+          <div class="clients-hero">
+            <div>
+              <p class="eyebrow">Tu cartera · Tu espacio privado</p>
+              <h2>
+                Personas detrás
+                <br />
+                de cada proyecto.
+              </h2>
+              <p>
+                Importa tu informe de clientes y mantén tu cartera organizada, sin repetir
+                registros.
+              </p>
+              <button type="button" id="clients-demo-toggle" class="panel-text-button">
+                Ver ejemplo ↗
+              </button>
+            </div>
+            <div class="clients-import-card">
+              <span class="clients-import-symbol" aria-hidden="true">↥</span>
+              <h3>Tu Excel, listo para organizar.</h3>
+              <p>
+                Conservamos los datos hasta Localidad. Los clientes que ya existen se
+                omiten.
+              </p>
+              <label class="btn clients-upload">
+                Subir informe Excel
+                <input type="file" id="clients-file" accept=".xlsx" />
+              </label>
+              <small>Excel .xlsx · Hasta 5 MB · Vista previa antes de guardar</small>
+            </div>
+          </div>
+          <p id="clients-notice" class="panel-notice" role="status" hidden></p>
+          <div id="clients-demo-banner" class="clients-demo-banner" hidden>
+            <strong>Vista de ejemplo · Datos ficticios</strong>
+            <span>
+              Estos contactos no son tus clientes ni se guardan en la base de datos.
+            </span>
+          </div>
+          <div id="clients-preview" class="clients-preview" hidden>
+            <div class="clients-section-heading">
+              <div>
+                <p class="eyebrow">Antes de guardar</p>
+                <h3>Revisa tu importación.</h3>
+              </div>
+              <button type="button" id="clients-cancel-import" class="panel-secondary">
+                Cancelar
+              </button>
+            </div>
+            <div class="clients-preview-numbers">
+              <span>
+                <strong id="clients-preview-new">0</strong>
+                Nuevos
+              </span>
+              <span>
+                <strong id="clients-preview-duplicates">0</strong>
+                Repetidos
+              </span>
+              <span>
+                <strong id="clients-preview-invalid">0</strong>
+                Por revisar
+              </span>
+            </div>
+            <p id="clients-preview-help" class="panel-muted"></p>
+            <ul id="clients-import-issues"></ul>
+            <div id="clients-preview-sample" class="clients-preview-sample"></div>
+            <button type="button" id="clients-confirm-import" class="btn">
+              Añadir clientes nuevos ↗
+            </button>
+          </div>
+          <div class="clients-metrics" aria-label="Resumen de mi cartera">
+            <article>
+              <span>Mis clientes</span>
+              <strong id="clients-count">—</strong>
+            </article>
+            <article>
+              <span>Localidades</span>
+              <strong id="clients-localities-count">—</strong>
+            </article>
+            <article>
+              <span>Con datos de contacto</span>
+              <strong id="clients-contact-count">—</strong>
+            </article>
+          </div>
+          <div class="clients-section-heading">
+            <div>
+              <p class="eyebrow">Cada cliente, a mano</p>
+              <h2>Tu cartera de clientes</h2>
+              <p id="clients-total" class="panel-muted" aria-live="polite"></p>
+            </div>
+            <label class="clients-search">
+              Buscar en mi cartera
+              <input
+                type="search"
+                id="clients-search"
+                maxlength="120"
+                placeholder="Nombre, localidad o contacto"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+          <div id="clients-bulk" class="bulk-toolbar" hidden>
+            <label class="bulk-all">
+              <input id="clients-select-all" type="checkbox" />
+              Seleccionar página
+            </label>
+            <span id="clients-selected-count" class="bulk-count" aria-live="polite">
+              0 seleccionados
+            </span>
+            <button
+              type="button"
+              id="clients-delete-selected"
+              class="invitation-delete"
+              disabled
+            >
+              Eliminar seleccionados
+            </button>
+          </div>
+          <p id="clients-empty" class="panel-empty" hidden>
+            Todavía no tienes clientes importados. Sube tu informe o abre el ejemplo para
+            ver cómo quedará.
+          </p>
+          <div class="clients-table-wrap" id="clients-table-wrap" hidden>
+            <table class="clients-table">
+              <caption class="clients-sr-only">
+                Clientes de mi cartera. Abre una ficha para ver todos los datos hasta
+                Localidad.
+              </caption>
+              <thead>
+                <tr>
+                  <th><span class="clients-sr-only">Seleccionar</span></th>
+                  <th>Cliente</th>
+                  <th>Contacto</th>
+                  <th>Localidad</th>
+                  <th>Estado</th>
+                  <th><span class="clients-sr-only">Ficha</span></th>
+                </tr>
+              </thead>
+              <tbody id="clients-list"></tbody>
+            </table>
+          </div>
+          <div class="panel-pagination" id="clients-pagination" hidden>
+            <button id="clients-previous" type="button" class="panel-secondary">
+              ← Anterior
+            </button>
+            <span id="clients-page-label"></span>
+            <button id="clients-next" type="button" class="panel-secondary">
+              Siguiente →
+            </button>
+          </div>
+        </section>
         <section id="consultants-view" aria-label="Consultores" hidden>
           <div class="profile-card">
             <p class="eyebrow">Tu equipo</p>
@@ -370,6 +525,16 @@
               <abbr title="Gestor de Equipo">GE</abbr>
               <b>×3,5</b>
             </span>
+          </div>
+          <div class="team-clients-summary" aria-label="Resumen de clientes del equipo">
+            <div>
+              <strong id="team-clients-total">—</strong>
+              <span>Clientes del equipo</span>
+            </div>
+            <div>
+              <strong id="team-clients-mine">—</strong>
+              <span>Mis clientes</span>
+            </div>
           </div>
           <p id="team-notice" class="panel-notice" role="status" hidden></p>
           <button type="button" id="team-open-profile" class="panel-secondary">
@@ -682,6 +847,20 @@
         <p id="team-member-notice" class="panel-notice" role="status" hidden></p>
       </div>
     </dialog>
+    <dialog id="client-detail-dialog" aria-labelledby="client-detail-name">
+      <button
+        type="button"
+        class="team-modal-close"
+        id="client-detail-close"
+        aria-label="Cerrar ficha de cliente"
+      >
+        ✕
+      </button>
+      <p class="eyebrow">Mi cartera · Ficha de cliente</p>
+      <h2 id="client-detail-name"></h2>
+      <p id="client-detail-demo" class="panel-muted" hidden>Datos ficticios de ejemplo</p>
+      <dl id="client-detail-fields"></dl>
+    </dialog>
     <dialog id="request-dialog" aria-labelledby="request-title">
       <div class="dialog-heading">
         <p class="eyebrow">Primera reunión</p>
@@ -740,10 +919,13 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=invitation-button2" defer></script>
+    <script src="../js/backend.js?v=clients1" defer></script>
+    <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
+    <script src="../js/client-import.js?v=clients1" defer></script>
+    <script src="../js/clients.js?v=clients1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/team.js?v=photo9" defer></script>
-    <script src="../js/panel.js?v=requests8" defer></script>
+    <script src="../js/team.js?v=clients1" defer></script>
+    <script src="../js/panel.js?v=clients1" defer></script>
   </body>
 </html>

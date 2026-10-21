@@ -89,6 +89,8 @@ async function mock(context, state) {
       };
       return json(access());
     }
+    if (url.pathname.endsWith("/rpc/get_team_client_counts"))
+      return json({ total: 0, by_consultant: [], consultants_with_clients: 0 });
     if (url.pathname.endsWith("/rpc/get_my_team_profile")) {
       const member = state.team?.find(
         (person) =>

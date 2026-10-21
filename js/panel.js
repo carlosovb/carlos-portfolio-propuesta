@@ -232,6 +232,7 @@
     selected = null;
     get("request-dialog").close();
     window.TeamPanel?.reset();
+    window.ClientsPanel?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
     get("request-initials").textContent = "";
@@ -407,7 +408,9 @@
     get("refresh-button").disabled = true;
     notice("panel-notice", "Actualizando…");
     try {
-      if (view === "team") {
+      if (view === "clients") {
+        await window.ClientsPanel.load(account);
+      } else if (view === "team") {
         await window.TeamPanel.load(account);
       } else if (view === "consultants") {
         get("consultant-list").replaceChildren();
@@ -561,31 +564,40 @@
 
   function setView(next) {
     if (bulkRunning) return;
-    if (!active || !["home", "requests", "profile", "consultants", "team"].includes(next))
+    if (
+      !active ||
+      !["home", "requests", "profile", "consultants", "team", "clients"].includes(next)
+    )
       return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
     if (["requests", "consultants"].includes(next) && account?.role !== "admin")
       next = "home";
     if (next !== "consultants") clearInvitation();
     view = next;
+    document.querySelector(".panel-retention").hidden =
+      !["home", "requests"].includes(view) || account?.role !== "admin";
     document.body.classList.toggle("team-workspace", view === "team");
+    window.ClientsPanel?.hide();
+    get("clients-view").hidden = view !== "clients";
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";
     get("profile-view").hidden = view !== "profile";
     get("team-view").hidden = view !== "team";
     get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "team"
-        ? "Nuestro equipo."
-        : view === "consultants"
-          ? "Tu equipo."
-          : view === "profile"
-            ? "Mi perfil."
-            : view === "requests"
-              ? "Tus solicitudes."
-              : account?.profile?.first_name
-                ? `Hola, ${account.profile.first_name}.`
-                : "Tu espacio de trabajo.";
+      view === "clients"
+        ? "Tus clientes."
+        : view === "team"
+          ? "Nuestro equipo."
+          : view === "consultants"
+            ? "Tu equipo."
+            : view === "profile"
+              ? "Mi perfil."
+              : view === "requests"
+                ? "Tus solicitudes."
+                : account?.profile?.first_name
+                  ? `Hola, ${account.profile.first_name}.`
+                  : "Tu espacio de trabajo.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
