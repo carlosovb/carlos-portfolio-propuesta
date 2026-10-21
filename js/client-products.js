@@ -1,0 +1,344 @@
+// Productos contratados de la ficha. Los permisos reales se aplican en Supabase.
+(() => {
+  const backend = window.PortfolioBackend,
+    host = document.getElementById("client-products-section");
+  let epoch = 0,
+    client = null,
+    demo = false,
+    rows = [],
+    editing = null,
+    busy = false,
+    selected = new Set();
+  const node = (tag, text, cls) => {
+    const n = document.createElement(tag);
+    if (text !== undefined) n.textContent = text;
+    if (cls) n.className = cls;
+    return n;
+  };
+  const euro = (value) =>
+    new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(value);
+  const button = (text, fn, cls = "panel-secondary") => {
+    const b = node("button", text, cls);
+    b.type = "button";
+    b.addEventListener("click", fn);
+    return b;
+  };
+  function reset() {
+    epoch++;
+    client = null;
+    rows = [];
+    editing = null;
+    busy = false;
+    selected.clear();
+    host.replaceChildren();
+  }
+  function say(text) {
+    const p = host.querySelector('[role="status"]');
+    if (p) {
+      p.textContent = text;
+      p.hidden = !text;
+    }
+  }
+  async function open(row, isDemo = false) {
+    reset();
+    client = row;
+    demo = isDemo;
+    const ticket = epoch;
+    render();
+    say("Cargando productos…");
+    if (demo) {
+      rows = [];
+      say("En el ejemplo puedes probar el editor. Los cambios no se guardan.");
+      return;
+    }
+    try {
+      const list = await backend.listClientProducts(row.id);
+      if (ticket !== epoch) return;
+      rows = list;
+      render();
+    } catch {
+      if (ticket === epoch)
+        say(
+          "No se han podido cargar los productos. Cierra y vuelve a abrir la ficha para reintentar.",
+        );
+    }
+  }
+  function field(form, label, key, value, opts = {}) {
+    const wrap = node("label", label);
+    const input = node(opts.options ? "select" : "input");
+    input.name = key;
+    input.required = !!opts.required;
+    if (opts.options)
+      opts.options.forEach(([v, t]) => {
+        const o = node("option", t);
+        o.value = v;
+        input.append(o);
+      });
+    else {
+      input.type = opts.type || "text";
+      if (input.type === "number") {
+        input.min = "0";
+        input.max = "100000000";
+        input.step = key === "units" ? "0.0001" : "0.01";
+        input.inputMode = "decimal";
+      } else input.maxLength = key === "company" ? 120 : 160;
+    }
+    input.value = value ?? "";
+    if (key === "company") input.setAttribute("list", "contract-companies");
+    wrap.append(input);
+    form.append(wrap);
+    return input;
+  }
+  function render() {
+    host.replaceChildren();
+    if (!client) return;
+    selected.clear();
+    const heading = node("div", undefined, "client-products-heading");
+    heading.append(
+      node("div", "PRODUCTOS CONTRATADOS", "eyebrow"),
+      node("h3", "Lo que tiene contratado."),
+    );
+    host.append(heading);
+    const note = node("p");
+    note.setAttribute("role", "status");
+    note.hidden = true;
+    host.append(note);
+    const metrics = node("div", undefined, "contract-metrics");
+    const monthly = rows
+        .filter((r) => r.payment_type === "monthly")
+        .reduce((s, r) => s + Number(r.amount), 0),
+      single = rows
+        .filter((r) => r.payment_type === "single")
+        .reduce((s, r) => s + Number(r.amount), 0);
+    [
+      ["Productos", String(rows.length)],
+      ["Aportación mensual", euro(monthly)],
+      ["Aportaciones únicas", euro(single)],
+    ].forEach(([label, value]) => {
+      const box = node("article");
+      box.append(node("small", label), node("strong", value));
+      metrics.append(box);
+    });
+    host.append(metrics);
+    const controls = node("div", undefined, "contract-actions");
+    controls.append(
+      button("+ Añadir producto", () => {
+        editing = {};
+        editor();
+      }),
+    );
+    const remove = button(
+      "Eliminar seleccionados",
+      async () => {
+        if (
+          busy ||
+          !selected.size ||
+          !confirm(`¿Eliminar ${selected.size} productos contratados seleccionados?`)
+        )
+          return;
+        const ticket = epoch;
+        busy = true;
+        remove.disabled = true;
+        try {
+          if (demo) {
+            rows = rows.filter((r) => !selected.has(r.id));
+            render();
+          } else {
+            await backend.deleteClientProducts(client.id, [...selected]);
+            if (ticket === epoch) await reload();
+          }
+        } catch {
+          if (ticket === epoch)
+            say(
+              "No se ha podido confirmar la eliminación. Reabre la ficha para actualizarla.",
+            );
+        } finally {
+          if (ticket === epoch) {
+            busy = false;
+            remove.disabled = !selected.size;
+          }
+        }
+      },
+      "invitation-delete",
+    );
+    remove.disabled = true;
+    controls.append(remove);
+    if (rows.length) {
+      const all = node("label", "Seleccionar todos");
+      const check = node("input");
+      check.type = "checkbox";
+      check.addEventListener("change", () => {
+        host.querySelectorAll(".contract-card input[type=checkbox]").forEach((c) => {
+          c.checked = check.checked;
+          c.dispatchEvent(new Event("change"));
+        });
+      });
+      all.prepend(check);
+      controls.append(all);
+    }
+    host.append(controls);
+    const list = node("div", undefined, "contract-list");
+    rows.forEach((row) => {
+      const card = node("article", undefined, "contract-card"),
+        check = node("input");
+      check.type = "checkbox";
+      check.setAttribute("aria-label", "Seleccionar producto " + row.product);
+      check.addEventListener("change", () => {
+        check.checked ? selected.add(row.id) : selected.delete(row.id);
+        remove.disabled = !selected.size || busy;
+      });
+      const copy = node("div", undefined, "contract-copy");
+      copy.append(node("small", row.company), node("h4", row.product));
+      const dl = node("dl");
+      [
+        ["Cartera de fondos", row.portfolio || "Sin indicar"],
+        [
+          row.payment_type === "monthly" ? "Aportación mensual" : "Aportación única",
+          euro(row.amount) + (row.payment_type === "monthly" ? " / mes" : ""),
+        ],
+        [
+          "Unidades generadas",
+          row.units == null
+            ? "Sin indicar"
+            : new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 }).format(
+                row.units,
+              ),
+        ],
+      ].forEach(([label, value]) => {
+        const item = node("div");
+        item.append(node("dt", label), node("dd", value));
+        dl.append(item);
+      });
+      copy.append(dl);
+      card.append(
+        check,
+        copy,
+        button("Editar", () => {
+          editing = row;
+          editor();
+        }),
+      );
+      list.append(card);
+    });
+    host.append(list);
+    if (!rows.length)
+      host.append(
+        node(
+          "p",
+          "Todavía no hay productos añadidos. Puedes registrar el primero con «Añadir producto».",
+          "contract-empty",
+        ),
+      );
+    const editorHost = node("div");
+    editorHost.id = "client-product-editor";
+    host.append(editorHost);
+    if (editing) editor();
+    if (demo) say("Datos de ejemplo: los productos añadidos aquí no se guardan.");
+  }
+  async function reload() {
+    const ticket = epoch,
+      list = await backend.listClientProducts(client.id);
+    if (ticket !== epoch) return;
+    rows = list;
+    editing = null;
+    render();
+  }
+  function editor() {
+    const box = document.getElementById("client-product-editor");
+    box.replaceChildren();
+    if (!editing) return;
+    const form = node("form", undefined, "contract-editor"),
+      grid = node("div", undefined, "contract-fields");
+    form.append(
+      node("h4", editing.id ? "Editar producto contratado" : "Nuevo producto contratado"),
+    );
+    field(grid, "Compañía", "company", editing.company, { required: true });
+    field(grid, "Producto", "product", editing.product, { required: true });
+    field(grid, "Cartera de fondos", "portfolio", editing.portfolio);
+    field(grid, "Tipo de aportación", "payment_type", editing.payment_type || "monthly", {
+      options: [
+        ["monthly", "Mensual · €/mes"],
+        ["single", "Aportación única"],
+      ],
+    });
+    field(grid, "Importe en euros", "amount", editing.amount, {
+      type: "number",
+      required: true,
+    });
+    field(grid, "Unidades generadas (opcional)", "units", editing.units, {
+      type: "number",
+    });
+    form.append(grid);
+    const actions = node("div", undefined, "contract-actions"),
+      save = node("button", "Guardar producto", "btn");
+    save.type = "submit";
+    actions.append(
+      save,
+      button("Cancelar", () => {
+        editing = null;
+        box.replaceChildren();
+      }),
+    );
+    form.append(actions);
+    box.append(form);
+    requestAnimationFrame(() => {
+      if (form.isConnected) {
+        form.scrollIntoView({
+          block: "nearest",
+          behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "instant"
+            : "smooth",
+        });
+        form.querySelector("input")?.focus({ preventScroll: true });
+      }
+    });
+    const datalist = node("datalist");
+    datalist.id = "contract-companies";
+    window.PortfolioCompanies.list.forEach((c) => {
+      const o = node("option");
+      o.value = c.name;
+      datalist.append(o);
+    });
+    form.append(datalist);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (busy || !client) return;
+      const values = Object.fromEntries(new FormData(form));
+      const fields = {
+        company: window.PortfolioCompanies.label(values.company),
+        product: values.product.trim(),
+        portfolio: values.portfolio.trim(),
+        payment_type: values.payment_type,
+        amount: Number(values.amount),
+        units: values.units === "" ? null : Number(values.units),
+      };
+      const ticket = epoch,
+        target = client.id,
+        id = editing.id || null;
+      busy = true;
+      save.disabled = true;
+      try {
+        if (demo) {
+          const row = { ...fields, id: id || crypto.randomUUID(), client_id: target };
+          rows = id ? rows.map((r) => (r.id === id ? row : r)) : [row, ...rows];
+          editing = null;
+          render();
+        } else {
+          await backend.saveClientProduct(target, fields, id);
+          if (ticket === epoch) await reload();
+        }
+      } catch {
+        if (ticket === epoch)
+          say(
+            "No se ha podido guardar el producto. Comprueba los campos y vuelve a intentarlo.",
+          );
+      } finally {
+        if (ticket === epoch) {
+          busy = false;
+          save.disabled = false;
+        }
+      }
+    });
+  }
+  window.ClientProducts = { open, reset };
+})();

@@ -17,7 +17,9 @@
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
     <link rel="stylesheet" href="../css/premeeting.css?v=previo1" />
     <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
-    <link rel="stylesheet" href="../css/workspace.css?v=hub1" />
+    <link rel="stylesheet" href="../css/workspace.css?v=products1" />
+    <link rel="stylesheet" href="../css/clipboard.css?v=products1" />
+    <link rel="stylesheet" href="../css/client-products.css?v=products1" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -84,25 +86,28 @@
             Inicio
             <span>↗</span>
           </button>
+          <button type="button" data-view="resources">
+            Herramientas y recursos
+            <span>↗</span>
+          </button>
           <button type="button" data-view="requests" data-admin-only>
             Solicitudes
             <span>↗</span>
           </button>
-          <button type="button" data-view="premeeting">Formularios recibidos</button>
-          <button type="button" data-view="resources">
-            Herramientas y recursos
+          <button type="button" data-view="premeeting">
+            Formularios
             <span>↗</span>
           </button>
           <button type="button" data-view="clients">
             Clientes
             <span>↗</span>
           </button>
-          <button type="button" data-view="consultants" data-admin-only>
-            Consultores
-            <span>↗</span>
-          </button>
           <button type="button" data-view="team">
             Equipo
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="consultants" data-admin-only>
+            Consultores
             <span>↗</span>
           </button>
           <button type="button" data-view="profile">
@@ -383,7 +388,12 @@
             <form id="resource-form" class="resource-form">
               <label>
                 Compañía
-                <input name="company" required maxlength="120" />
+                <input
+                  name="company"
+                  list="resource-companies"
+                  required
+                  maxlength="120"
+                />
               </label>
               <label>
                 Producto
@@ -432,6 +442,10 @@
               Eliminar seleccionados
             </button>
           </div>
+          <datalist id="resource-companies">
+            <option value="AXA"></option>
+            <option value="Intesa Sanpaolo Assicurazioni"></option>
+          </datalist>
           <div id="resources-browser"></div>
         </section>
         <section id="premeeting-view" aria-label="Formularios previos privados" hidden>
@@ -1079,6 +1093,7 @@
       <h2 id="client-detail-name"></h2>
       <p id="client-detail-demo" class="panel-muted" hidden>Datos ficticios de ejemplo</p>
       <dl id="client-detail-fields"></dl>
+      <section id="client-products-section" aria-label="Productos contratados"></section>
     </dialog>
     <dialog id="request-dialog" aria-labelledby="request-title">
       <div class="dialog-heading">
@@ -1137,19 +1152,22 @@
       </div>
     </dialog>
 
+    <script src="../js/clipboard.js?v=products1" defer></script>
+    <script src="../js/companies.js?v=products1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=hub1" defer></script>
+    <script src="../js/backend.js?v=products1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
-    <script src="../js/clients.js?v=client-close4" defer></script>
+    <script src="../js/client-products.js?v=products1" defer></script>
+    <script src="../js/clients.js?v=products1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
     <script src="../js/team.js?v=clients2" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=hub1" defer></script>
-    <script src="../js/resources.js?v=hub1" defer></script>
+    <script src="../js/resources.js?v=products1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=hub1" defer></script>
+    <script src="../js/panel.js?v=products1" defer></script>
   </body>
 </html>

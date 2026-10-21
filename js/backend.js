@@ -265,6 +265,66 @@
         })
       ).json();
     },
+    async listClientProducts(clientId) {
+      if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
+      const query = new URLSearchParams({
+        select:
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at",
+        client_id: "eq." + clientId,
+        order: "created_at.desc,id",
+      });
+      return (await authenticated("/rest/v1/client_products?" + query)).json();
+    },
+    async saveClientProduct(clientId, fields, id = null) {
+      if (!/^[0-9a-f-]{36}$/i.test(clientId) || (id && !/^[0-9a-f-]{36}$/i.test(id)))
+        throw Error("Cliente o producto no válido.");
+      const body = {
+        company: fields.company,
+        product: fields.product,
+        portfolio: fields.portfolio,
+        payment_type: fields.payment_type,
+        amount: fields.amount,
+        units: fields.units,
+      };
+      const query = new URLSearchParams({ select: "id" });
+      if (id) {
+        query.set("id", "eq." + id);
+        query.set("client_id", "eq." + clientId);
+      } else {
+        body.id = crypto.randomUUID();
+        body.client_id = clientId;
+      }
+      const response = await authenticated("/rest/v1/client_products?" + query, {
+        method: id ? "PATCH" : "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(body),
+      });
+      if ((await response.json()).length !== 1)
+        throw Error("No se ha confirmado el guardado.");
+    },
+    async deleteClientProducts(clientId, ids) {
+      if (
+        !/^[0-9a-f-]{36}$/i.test(clientId) ||
+        !Array.isArray(ids) ||
+        !ids.length ||
+        ids.length > 100 ||
+        ids.some((id) => !/^[0-9a-f-]{36}$/i.test(id))
+      )
+        throw Error("Selección no válida.");
+      const query = new URLSearchParams({
+        client_id: "eq." + clientId,
+        id: "in.(" + ids.join(",") + ")",
+        select: "id",
+      });
+      return (
+        await (
+          await authenticated("/rest/v1/client_products?" + query, {
+            method: "DELETE",
+            headers: { Prefer: "return=representation" },
+          })
+        ).json()
+      ).length;
+    },
     async importClients(rows, preview = true) {
       return (
         await authenticated("/rest/v1/rpc/import_my_clients", {

@@ -74,7 +74,8 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     headless: true,
     executablePath: process.env.CHROME_EXECUTABLE || undefined,
   });
-  let delayNextList = 0;
+  let delayNextList = 0,
+    products = [];
   let clients = [],
     writes = 0,
     previewCalls = 0,
@@ -108,6 +109,30 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           user: { id: uid },
         });
       if (url.pathname === "/auth/v1/logout") return json({});
+      if (url.pathname.includes("/client_products")) {
+        const clientId = url.searchParams.get("client_id")?.slice(3),
+          id = url.searchParams.get("id");
+        if (req.method() === "POST") {
+          const row = { ...body, created_at: new Date().toISOString() };
+          products.push(row);
+          return json([row]);
+        }
+        if (req.method() === "PATCH") {
+          const found = products.find(
+            (r) => r.client_id === clientId && id === "eq." + r.id,
+          );
+          Object.assign(found, body);
+          return json([found]);
+        }
+        if (req.method() === "DELETE") {
+          const removed = products.filter(
+            (r) => r.client_id === clientId && id.includes(r.id),
+          );
+          products = products.filter((r) => !removed.includes(r));
+          return json(removed.map((r) => ({ id: r.id })));
+        }
+        return json(products.filter((r) => r.client_id === clientId));
+      }
       if (url.pathname.includes("/team_resources")) return json([]);
 
       if (url.pathname.includes("premeeting_responses")) return json([]);
@@ -328,6 +353,57 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(await page.locator("#clients-confirm-import").isDisabled(), true);
     await page.locator("#clients-cancel-import").click();
     assert.equal(writes, 2);
+    await page.locator("#clients-list .client-action button").first().click();
+    await page.getByRole("button", { name: "+ Añadir producto", exact: true }).click();
+    const contract = page.locator(".contract-editor");
+    await contract.locator("[name=company]").fill("AXA");
+    await contract.locator("[name=product]").fill("Ahorro de ejemplo");
+    await contract.locator("[name=portfolio]").fill("Cartera equilibrada");
+    await contract.locator("[name=amount]").fill("50");
+    await contract.locator("[name=units]").fill("2.5");
+    await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
+    await page.locator(".contract-card").waitFor();
+    assert.equal(products.length, 1);
+    assert.equal(products[0].portfolio, "Cartera equilibrada");
+    await page
+      .locator(".contract-card")
+      .getByRole("button", { name: "Editar", exact: true })
+      .click();
+    await contract.locator("[name=payment_type]").selectOption("single");
+    await contract.locator("[name=amount]").fill("1000");
+    await contract.locator("[name=units]").fill("");
+    await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
+    await page.waitForFunction(() =>
+      document.querySelector(".contract-card").textContent.includes("Aportación única"),
+    );
+    assert.equal(products[0].payment_type, "single");
+    assert.equal(products[0].units, null);
+    for (const width of [320, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert(
+        await page
+          .locator("#client-detail-dialog")
+          .evaluate((d) => d.scrollWidth <= d.clientWidth),
+        "Ficha productos responsive",
+      );
+    }
+    await page.screenshot({
+      path: path.join(process.env.TEMP, "client-products.png"),
+      fullPage: true,
+    });
+    await page.locator(".contract-card input[type=checkbox]").check();
+    page.once("dialog", (d) => d.accept());
+    await page
+      .getByRole("button", { name: "Eliminar seleccionados", exact: true })
+      .last()
+      .click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 0,
+    );
+    assert.equal(products.length, 0);
+    await page.locator("#client-detail-close").click();
+    assert.equal(await page.locator("#client-products-section").textContent(), "");
+
     await page.locator("#clients-search").fill("Bruno");
     await page.waitForFunction(
       () =>

@@ -183,11 +183,53 @@ const server = http.createServer((req, res) => {
       await page.locator("#resource-personal-link").inputValue(),
       new RegExp(owner),
     );
+    assert.deepEqual(
+      await page
+        .locator("#panel-navigation [data-view]")
+        .evaluateAll((a) => a.map((n) => n.dataset.view)),
+      [
+        "home",
+        "resources",
+        "requests",
+        "premeeting",
+        "clients",
+        "team",
+        "consultants",
+        "profile",
+      ],
+    );
+    assert.equal(await page.locator(".resource-company").count(), 2);
+    assert(
+      await page
+        .locator(".resource-company img")
+        .evaluateAll((a) => a.every((i) => i.complete && i.naturalWidth > 0)),
+    );
     await page.locator("#resource-copy-link").click();
+    assert.match(await page.locator(".copy-feedback").textContent(), /Enlace copiado/);
+    assert.match(await page.locator("#resource-copy-link").textContent(), /Copiado/);
     assert.match(
       await page.evaluate(() => navigator.clipboard.readText()),
       new RegExp(owner),
     );
+    await page.screenshot({
+      path: path.join(process.env.TEMP, "company-gallery.png"),
+      fullPage: true,
+    });
+    await page.locator('.resource-company[data-company="axa"]').click();
+    assert.match(await page.locator(".resource-breadcrumb").textContent(), /AXA/);
+    await page.getByRole("button", { name: "Todas las compañías", exact: true }).click();
+    await page.evaluate(() => {
+      window.testCopy = navigator.clipboard.writeText.bind(navigator.clipboard);
+      navigator.clipboard.writeText = () => Promise.reject(new Error("denied"));
+    });
+    await page.locator("#resource-copy-link").click();
+    assert.match(
+      await page.locator(".copy-feedback").textContent(),
+      /No se ha podido copiar/,
+    );
+    await page.evaluate(() => {
+      navigator.clipboard.writeText = window.testCopy;
+    });
     await page.locator("#resource-admin summary").click();
     await page.locator('#resource-form [name="company"]').fill("Compañía de ejemplo");
     await page.locator('#resource-form [name="product"]').fill("Producto de ejemplo");
@@ -211,13 +253,11 @@ const server = http.createServer((req, res) => {
     await page.locator('#resource-form [name="company"]').fill("Compañía de ejemplo");
     await page.locator('#resource-form [name="product"]').fill("Producto de ejemplo");
     await page.locator('#resource-form [name="title"]').fill("PDF de ejemplo");
-    await page
-      .locator("#resource-file")
-      .setInputFiles({
-        name: "ejemplo.pdf",
-        mimeType: "application/pdf",
-        buffer: Buffer.from("%PDF-1.4\n%%EOF"),
-      });
+    await page.locator("#resource-file").setInputFiles({
+      name: "ejemplo.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("%PDF-1.4\n%%EOF"),
+    });
     await page.locator("#resource-save").click();
     await page.getByText("PDF de ejemplo", { exact: true }).waitFor();
     assert.equal(uploads, 1);

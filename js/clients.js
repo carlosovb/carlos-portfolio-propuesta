@@ -131,6 +131,7 @@
       fields.append(group);
     });
     get("client-detail-dialog").showModal();
+    window.ClientProducts.open(row, demo);
     get("client-detail-close").focus({ preventScroll: true });
     window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
   }
@@ -275,6 +276,7 @@
     }
   }
   function hide() {
+    window.ClientProducts.reset();
     visible = false;
     dialogScroll = null;
     operation++;
@@ -343,19 +345,25 @@
   // Cierra solo si el gesto empieza y termina en el fondo exterior.
   const clientDialog = get("client-detail-dialog");
   let backdropPressed = false;
-  const outsideClientDialog = event => {
+  const outsideClientDialog = (event) => {
     const rect = clientDialog.getBoundingClientRect();
-    return event.clientX < rect.left || event.clientX > rect.right ||
-      event.clientY < rect.top || event.clientY > rect.bottom;
+    return (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    );
   };
-  clientDialog.addEventListener("pointerdown", event => {
+  clientDialog.addEventListener("pointerdown", (event) => {
     backdropPressed = event.target === clientDialog && outsideClientDialog(event);
   });
-  clientDialog.addEventListener("click", event => {
-    if (backdropPressed && event.target === clientDialog && outsideClientDialog(event)) clientDialog.close();
+  clientDialog.addEventListener("click", (event) => {
+    if (backdropPressed && event.target === clientDialog && outsideClientDialog(event))
+      clientDialog.close();
     backdropPressed = false;
   });
   get("client-detail-dialog").addEventListener("close", () => {
+    window.ClientProducts.reset();
     const saved = dialogScroll;
     dialogScroll = null;
     get("client-detail-fields").replaceChildren();

@@ -1,0 +1,211 @@
+#client-products-section {
+  margin-top: 30px;
+  border-top: 1px solid var(--line);
+  padding-top: 28px;
+}
+.client-products-heading h3 {
+  font-size: 26px;
+  margin: 12px 0 24px;
+}
+.contract-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.contract-metrics article {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+}
+.contract-metrics small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.contract-metrics strong {
+  display: block;
+  font-size: 22px;
+  color: var(--accent);
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+.contract-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+.contract-card {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  margin: 14px 0;
+}
+.contract-card > input {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 4px;
+  accent-color: var(--accent);
+}
+.contract-copy {
+  min-width: 0;
+  flex: 1;
+}
+.contract-copy > small {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--accent);
+}
+.contract-copy h4 {
+  font-size: 19px;
+  margin: 10px 0 16px;
+  overflow-wrap: anywhere;
+}
+.contract-copy dl {
+  margin: 0;
+  display: grid;
+  gap: 9px;
+}
+.contract-copy dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.contract-copy dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.contract-copy dd {
+  font-size: 12px;
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.contract-editor {
+  display: block !important;
+  padding: 24px;
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  margin-top: 26px;
+  background: var(--bg);
+}
+.contract-editor h4 {
+  font-size: 20px;
+  margin: 0 0 24px;
+}
+.contract-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.contract-fields label {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+}
+.contract-fields input,
+.contract-fields select {
+  min-width: 0;
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+}
+.contract-empty {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 22px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+}
+.resource-company {
+  min-height: 235px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 20px;
+  text-align: center;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  transition: transform 0.2s;
+}
+.resource-company:hover {
+  transform: translateY(-5px);
+}
+.resource-company img {
+  display: block;
+  width: auto;
+  max-width: min(280px, 100%);
+  height: 68px;
+  object-fit: contain;
+}
+.resource-company[data-company="axa"] img {
+  width: 88px;
+  height: 88px;
+}
+.resource-company strong {
+  font-size: 18px;
+  line-height: 1.5;
+}
+.resource-company small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.resource-company .resource-eyebrow {
+  display: none;
+}
+html[data-theme="dark"] .resource-company[data-company="intesa"] img {
+  filter: brightness(1.8) saturate(0.8);
+}
+@media (max-width: 700px) {
+  .contract-metrics,
+  .contract-fields {
+    grid-template-columns: 1fr;
+  }
+  .contract-card {
+    flex-wrap: wrap;
+    padding: 18px;
+  }
+  .contract-copy {
+    flex-basis: 75%;
+  }
+  .contract-copy dl div {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .contract-copy dd {
+    text-align: left;
+  }
+  .contract-editor {
+    padding: 20px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .resource-company {
+    transition: none;
+  }
+}
+
+.resource-grid:has(.resource-company) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html[data-theme="dark"] .resource-company[data-company="axa"] img {
+  filter: brightness(0) invert(1);
+}
+@media (max-width: 600px) {
+  .resource-grid:has(.resource-company) {
+    grid-template-columns: 1fr;
+  }
+}

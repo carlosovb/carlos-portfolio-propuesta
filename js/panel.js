@@ -315,10 +315,14 @@
   get("invite-consultant-form").elements.email.addEventListener("input", clearInvitation);
   get("copy-invitation").addEventListener("click", async () => {
     if (!active || account?.role !== "admin" || !get("invitation-url").value) return;
-    try {
-      await navigator.clipboard.writeText(get("invitation-url").value);
+    if (
+      await window.PortfolioClipboard.copy(
+        get("invitation-url").value,
+        get("copy-invitation"),
+      )
+    ) {
       notice("invite-notice", "Enlace copiado. Ya puedes pegarlo en tu correo.");
-    } catch {
+    } else {
       get("invitation-url").focus();
       get("invitation-url").select();
       notice(

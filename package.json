@@ -5,7 +5,7 @@
   "description": "Portfolio estático y panel privado de consultores",
   "scripts": {
     "start": "node server.cjs",
-    "test": "node tests/profile-flow.cjs && node tests/profile-permissions.cjs && node tests/invitations.cjs && node tests/team-permissions.cjs && node tests/clients-permissions.cjs && node tests/clients-flow.cjs && node tests/premeeting-permissions.cjs && node tests/premeeting-flow.cjs && node tests/resources-permissions.cjs && node tests/resources-flow.cjs"
+    "test": "node tests/profile-flow.cjs && node tests/profile-permissions.cjs && node tests/invitations.cjs && node tests/team-permissions.cjs && node tests/clients-permissions.cjs && node tests/clients-flow.cjs && node tests/premeeting-permissions.cjs && node tests/premeeting-flow.cjs && node tests/resources-permissions.cjs && node tests/resources-flow.cjs && node tests/client-products-permissions.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1",

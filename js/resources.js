@@ -64,7 +64,10 @@
         backend.getMyTeamProfile(),
       ]);
       if (!active || version !== ticket) return;
-      rows = list;
+      rows = list.map((row) => ({
+        ...row,
+        company: window.PortfolioCompanies.label(row.company),
+      }));
       const link = new URL("previo/", applicationRoot);
       link.searchParams.set("consultor", me.user_id);
       get("resource-personal-link").value = link.href;
@@ -125,7 +128,12 @@
     if (!company || !product) {
       const grid = node("div", undefined, "resource-grid"),
         key = company ? "product" : "company";
-      [...new Set(list.map((r) => r[key]))]
+      [
+        ...new Set([
+          ...(company ? [] : window.PortfolioCompanies.list.map((c) => c.name)),
+          ...list.map((r) => r[key]),
+        ]),
+      ]
         .sort((a, b) => a.localeCompare(b, "es"))
         .forEach((name) => {
           const count = list.filter((r) => r[key] === name).length;
@@ -135,8 +143,18 @@
               company ? (product = name) : (company = name);
               render();
             },
-            "resource-folder",
+            company ? "resource-folder" : "resource-company",
           );
+          const brand = !company && window.PortfolioCompanies.find(name);
+          if (brand) {
+            const img = node("img");
+            img.src = new URL("assets/companies/" + brand.logo, applicationRoot).href;
+            img.alt = "";
+            img.width = brand.id === "axa" ? 160 : 280;
+            img.height = 80;
+            card.append(img);
+            card.dataset.company = brand.id;
+          }
           card.append(
             node("span", company ? "PRODUCTO" : "COMPAÑÍA", "resource-eyebrow"),
             node("strong", name),
@@ -265,7 +283,7 @@
     event.preventDefault();
     if (busy || account?.role !== "admin" || !active) return;
     const fields = Object.fromEntries(new FormData(event.currentTarget));
-    fields.company = fields.company.trim();
+    fields.company = window.PortfolioCompanies.label(fields.company);
     fields.product = fields.product.trim();
     fields.title = fields.title.trim();
     fields.url = fields.url.trim();
@@ -345,10 +363,9 @@
   get("resource-copy-link").addEventListener("click", async () => {
     const text = get("resource-personal-link").value;
     if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
+    if (await window.PortfolioClipboard.copy(text, get("resource-copy-link"))) {
       say("Tu enlace personal se ha copiado.");
-    } catch {
+    } else {
       get("resource-personal-link").select();
       say("Selecciona y copia tu enlace desde el campo.");
     }
