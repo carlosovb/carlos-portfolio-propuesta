@@ -685,6 +685,7 @@ async function login(page, base) {
         .textContent.includes("encuadre actualizados"),
     );
     assert.equal(treeData.photoUploaded, true);
+    await treePage.locator("#team-photo-options > summary").click();
     await treePage.locator("#team-photo-adjust").click();
     await treePage.locator("#photo-crop-dialog").waitFor();
     await treePage.locator("#photo-crop-cancel").click();

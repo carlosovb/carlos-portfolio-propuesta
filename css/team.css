@@ -1213,3 +1213,42 @@
     font-size: 29px;
   }
 }
+
+/* Un único acceso a las opciones de la foto. */
+.team-photo-options {
+  max-width: 100%;
+  text-align: center;
+}
+.team-photo-options > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+}
+.team-photo-options > summary::-webkit-details-marker {
+  display: none;
+}
+.team-photo-options > summary::after {
+  content: "+";
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}
+.team-photo-options[open] > summary::after {
+  content: "−";
+}
+.team-photo-options-content {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+}
+.team-photo-options-content .panel-text-button {
+  padding: 6px 10px;
+}

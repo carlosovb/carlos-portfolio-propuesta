@@ -87,6 +87,7 @@
     get("team-canvas").replaceChildren();
     get("team-assignment-form").reset();
     get("team-photo-input").value = "";
+    get("team-photo-options").open = false;
     get("my-team-photo").replaceChildren();
     get("my-profile-name").textContent = "Tu perfil profesional.";
     get("team-member-photo").replaceChildren();

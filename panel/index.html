@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/team.css?v=requests8" />
+    <link rel="stylesheet" href="../css/team.css?v=photo9" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
@@ -412,31 +412,36 @@
             <div class="team-profile-content">
               <div class="team-photo-editor">
                 <div id="my-team-photo" class="team-avatar team-avatar-large"></div>
-                <label class="panel-secondary team-upload-label">
-                  Cambiar foto
-                  <input
-                    id="team-photo-input"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                  />
-                </label>
-                <button
-                  type="button"
-                  id="team-photo-adjust"
-                  class="panel-text-button"
-                  hidden
-                >
-                  Ajustar foto
-                </button>
-                <button
-                  type="button"
-                  id="team-photo-remove"
-                  class="panel-text-button"
-                  hidden
-                >
-                  Quitar foto
-                </button>
-                <small>JPG, PNG o WebP · Máximo 5 MB</small>
+                <details id="team-photo-options" class="team-photo-options">
+                  <summary class="panel-secondary">Cambiar foto</summary>
+                  <div class="team-photo-options-content">
+                    <label class="panel-secondary team-upload-label">
+                      Subir una nueva foto
+                      <input
+                        id="team-photo-input"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      id="team-photo-adjust"
+                      class="panel-text-button"
+                      hidden
+                    >
+                      Ajustar foto
+                    </button>
+                    <button
+                      type="button"
+                      id="team-photo-remove"
+                      class="panel-text-button"
+                      hidden
+                    >
+                      Quitar foto
+                    </button>
+                    <small>JPG, PNG o WebP · Máximo 5 MB</small>
+                  </div>
+                </details>
               </div>
               <div class="profile-professional-summary">
                 <p class="eyebrow">Mi perfil · Tu lugar en el equipo</p>
@@ -738,7 +743,7 @@
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/team.js?v=requests8" defer></script>
+    <script src="../js/team.js?v=photo9" defer></script>
     <script src="../js/panel.js?v=requests8" defer></script>
   </body>
 </html>
