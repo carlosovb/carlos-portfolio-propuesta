@@ -89,26 +89,46 @@ async function mock(context, state) {
     }
     if (url.pathname.endsWith("/rpc/list_consultants")) {
       assert.equal(state.role, "admin");
-      return json([
-        { email: "invitado@ovb.es", name: "", enabled: true, complete: false },
-      ]);
+      return json(
+        state.members || [
+          { email: "invitado@ovb.es", name: "", enabled: true, complete: false },
+        ],
+      );
     }
     if (url.pathname === "/functions/v1/invite-consultant") {
       assert.equal(state.role, "admin");
+      if (body.action === "delete_pending") {
+        const member = state.members?.find((member) => member.user_id === body.user_id);
+        assert.equal(member?.can_delete, true);
+        state.members = state.members.filter((member) => member.user_id !== body.user_id);
+        return json({ message: "Deleted" });
+      }
       state.invites = (state.invites || 0) + 1;
       assert.equal(body.email, "invitado@ovb.es");
-      return json({ invitation_url: 'https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite' });
+      return json({
+        invitation_url:
+          "https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite",
+      });
     }
     if (url.pathname.includes("contact_requests")) {
       state.requestReads++;
       assert.equal(state.role, "admin", "Un consultor intentó consultar solicitudes");
       if (request.method() === "HEAD")
         return route.fulfill({ status: 200, headers: { "Content-Range": "*/0" } });
-      if (request.method() === 'PATCH' && state.requests?.length) {
+      if (request.method() === "DELETE") {
+        const id = url.searchParams.get("id").slice(3);
+        if (id === state.deleteFail) return json({}, 500);
+        const found = state.requests.find((item) => item.id === id);
+        state.requests = state.requests.filter((item) => item.id !== id);
+        return json(found ? [{ id }] : []);
+      }
+      if (request.method() === "PATCH" && state.requests?.length) {
         state.requests[0].status = body.status;
         return json([{ id: state.requests[0].id }]);
       }
-      return json(state.requests || [], 200, { "Content-Range": '*/' + (state.requests?.length || 0) });
+      return json(state.requests || [], 200, {
+        "Content-Range": "*/" + (state.requests?.length || 0),
+      });
     }
     throw new Error(`Petición no prevista: ${request.method()} ${url.pathname}`);
   });
@@ -163,23 +183,38 @@ async function login(page, base) {
         .fill("invitado@ovb.es");
       await page.locator("#invite-consultant-button").click();
       await page.waitForFunction(() =>
-        document
-          .querySelector("#invite-notice")
-          .textContent.includes("Enlace generado"),
+        document.querySelector("#invite-notice").textContent.includes("Enlace generado"),
       );
       assert.equal(data.invites, 1);
-      assert.equal(await page.locator('#invitation-url').inputValue(), 'https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite');
-      await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.copiedInvitation = text; } } }));
-      await page.locator('#copy-invitation').click();
-      assert.equal(await page.evaluate(() => window.copiedInvitation), await page.locator('#invitation-url').inputValue());
+      assert.equal(
+        await page.locator("#invitation-url").inputValue(),
+        "https://carlosovb.github.io/carlos-portfolio-propuesta/cuenta/#token_hash=test-hash&type=invite",
+      );
+      await page.evaluate(() =>
+        Object.defineProperty(navigator, "clipboard", {
+          configurable: true,
+          value: {
+            writeText: async (text) => {
+              window.copiedInvitation = text;
+            },
+          },
+        }),
+      );
+      await page.locator("#copy-invitation").click();
+      assert.equal(
+        await page.evaluate(() => window.copiedInvitation),
+        await page.locator("#invitation-url").inputValue(),
+      );
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
       );
       if (width <= 850) await page.locator(".panel-menu-toggle").click();
       await page.locator('#panel-navigation [data-view="profile"]').click();
-      await page.waitForFunction(() => !document.querySelector("#refresh-button").disabled);
-      assert.equal(await page.locator('#invitation-url').inputValue(), '');
+      await page.waitForFunction(
+        () => !document.querySelector("#refresh-button").disabled,
+      );
+      assert.equal(await page.locator("#invitation-url").inputValue(), "");
       await page.locator('#profile-form [name="first_name"]').fill("Nombre actualizado");
       await page.locator('#profile-form [name="last_name"]').fill("Apellidos de prueba");
       await page.locator('#profile-form [name="phone"]').fill("000000001");
@@ -230,12 +265,19 @@ async function login(page, base) {
     assert.equal(data.verifications, 0, "El enlace debe validarse solo al pulsar");
     await page.locator("#verify-account-link").click();
     await page.locator("#account-form").waitFor();
-    if (process.env.ACCOUNT_SCREENSHOT) await page.screenshot({ path: process.env.ACCOUNT_SCREENSHOT, fullPage: true });
+    if (process.env.ACCOUNT_SCREENSHOT)
+      await page.screenshot({ path: process.env.ACCOUNT_SCREENSHOT, fullPage: true });
     for (const width of [320, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      for (const theme of ['light', 'dark']) {
-        await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
-        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      for (const theme of ["light", "dark"]) {
+        await page.evaluate(
+          (theme) => document.documentElement.setAttribute("data-theme", theme),
+          theme,
+        );
+        assert.equal(
+          await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+          false,
+        );
       }
     }
     await page.setViewportSize({ width: 390, height: 844 });
@@ -263,31 +305,129 @@ async function login(page, base) {
     );
     await context.close();
 
-    const statusContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const statusContext = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+    });
     const statusData = state();
-    statusData.requests = [{ id: 'test-request', full_name: 'Solicitud ficticia', phone: '000000000', email: 'test@example.invalid', reasons: [], call_time: 'indiferente', status: 'pending', created_at: '2026-10-21T00:00:00Z', expires_at: '2026-12-20T00:00:00Z' }];
+    statusData.requests = [
+      {
+        id: "test-request",
+        full_name: "Solicitud ficticia",
+        phone: "000000000",
+        email: "test@example.invalid",
+        reasons: [],
+        call_time: "indiferente",
+        status: "pending",
+        created_at: "2026-10-21T00:00:00Z",
+        expires_at: "2026-12-20T00:00:00Z",
+      },
+    ];
     await mock(statusContext, statusData);
     const statusPage = await statusContext.newPage();
     await login(statusPage, base);
-    await statusPage.locator('#recent-requests .request-row').click();
-    assert.equal(await statusPage.locator('#request-status input[value="pending"]').isChecked(), true);
     for (const width of [320, 768, 1440]) {
       await statusPage.setViewportSize({ width, height: 900 });
-      for (const theme of ['light', 'dark']) {
-        await statusPage.evaluate(theme => document.documentElement.dataset.theme = theme, theme);
-        assert.equal(await statusPage.evaluate(() => document.querySelector('#request-dialog').scrollWidth > document.querySelector('#request-dialog').clientWidth), false);
+      assert.equal(
+        await statusPage.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+        false,
+      );
+    }
+    await statusPage.locator("#recent-requests .request-row").click();
+    assert.equal(
+      await statusPage.locator('#request-status input[value="pending"]').isChecked(),
+      true,
+    );
+    for (const width of [320, 768, 1440]) {
+      await statusPage.setViewportSize({ width, height: 900 });
+      for (const theme of ["light", "dark"]) {
+        await statusPage.evaluate(
+          (theme) => (document.documentElement.dataset.theme = theme),
+          theme,
+        );
+        assert.equal(
+          await statusPage.evaluate(
+            () =>
+              document.querySelector("#request-dialog").scrollWidth >
+              document.querySelector("#request-dialog").clientWidth,
+          ),
+          false,
+        );
       }
     }
     await statusPage.locator('#request-status label[data-status="scheduled"]').click();
-    assert.equal(await statusPage.locator('#request-status input[value="scheduled"]').isChecked(), true);
+    assert.equal(
+      await statusPage.locator('#request-status input[value="scheduled"]').isChecked(),
+      true,
+    );
     await statusPage.waitForTimeout(500);
-    if (process.env.STATUS_SCREENSHOT) await statusPage.screenshot({ path: process.env.STATUS_SCREENSHOT });
-    await statusPage.locator('#save-status').click();
-    await statusPage.waitForFunction(() => !document.querySelector('#request-dialog').open);
-    assert.equal(statusData.requests[0].status, 'scheduled');
+    if (process.env.STATUS_SCREENSHOT)
+      await statusPage.screenshot({ path: process.env.STATUS_SCREENSHOT });
+    await statusPage.locator("#save-status").click();
+    await statusPage.waitForFunction(
+      () => !document.querySelector("#request-dialog").open,
+    );
+    assert.equal(statusData.requests[0].status, "scheduled");
     await statusPage.locator('#recent-requests [data-status="scheduled"]').waitFor();
+    statusData.requests.push({
+      ...statusData.requests[0],
+      id: "test-request-2",
+      full_name: "Segunda solicitud ficticia",
+    });
+    statusData.deleteFail = "test-request-2";
+    await statusPage.locator("#refresh-button").click();
+    await statusPage.waitForFunction(
+      () => !document.querySelector("#refresh-button").disabled,
+    );
+    await statusPage.locator('[data-bulk-all="recent-requests"]').check();
+    statusPage.once("dialog", (dialog) => dialog.dismiss());
+    await statusPage.locator('[data-bulk-delete="recent-requests"]').click();
+    assert.equal(statusData.requests.length, 2, "Cancelar no elimina nada");
+    statusPage.once("dialog", (dialog) => dialog.accept());
+    await statusPage.locator('[data-bulk-delete="recent-requests"]').click();
+    await statusPage.waitForFunction(() =>
+      document.querySelector("#panel-notice").textContent.includes("No se ha confirmado"),
+    );
+    assert.equal(
+      statusData.requests.length,
+      1,
+      "Las eliminaciones parciales conservan los fallos",
+    );
+    assert.equal(statusData.requests[0].id, "test-request-2");
+    assert.equal(
+      await statusPage.locator("#recent-requests .bulk-checkbox:checked").count(),
+      0,
+    );
+    statusData.members = [
+      {
+        user_id: "pending-test",
+        email: "pendiente@ovb.es",
+        enabled: true,
+        complete: false,
+        can_delete: true,
+      },
+      {
+        user_id: "active-test",
+        email: "activo@ovb.es",
+        enabled: true,
+        complete: true,
+        can_delete: false,
+      },
+    ];
+    await statusPage.locator('#panel-navigation [data-view="consultants"]').click();
+    await statusPage.locator("#consultant-list .bulk-checkbox").waitFor();
+    assert.equal(await statusPage.locator("#consultant-list .bulk-checkbox").count(), 1);
+    await statusPage.locator('[data-bulk-all="consultant-list"]').check();
+    statusPage.once("dialog", (dialog) => dialog.accept());
+    await statusPage.locator('[data-bulk-delete="consultant-list"]').click();
+    await statusPage.waitForFunction(() =>
+      document.querySelector("#panel-notice").textContent.includes("1 eliminada"),
+    );
+    assert.equal(statusData.members.length, 1);
+    assert.equal(statusData.members[0].user_id, "active-test");
     await statusContext.close();
-    console.log('Estados: selección horizontal, guardado y tamaños comprobados.');
+    console.log("Estados: selección horizontal, guardado y tamaños comprobados.");
 
     const recoveryContext = await browser.newContext();
     const recoveryData = state();

@@ -10,7 +10,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=consultant-status2" />
+    <link rel="stylesheet" href="../css/panel.css?v=bulk-delete1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -135,6 +135,29 @@
               Ver todas ↗
             </button>
           </div>
+          <div
+            class="bulk-toolbar"
+            data-bulk-toolbar="recent-requests"
+            data-admin-only
+            hidden
+          >
+            <label class="bulk-all">
+              <input type="checkbox" data-bulk-all="recent-requests" />
+              Seleccionar todas
+            </label>
+            <span class="bulk-count" data-bulk-count="recent-requests" aria-live="polite">
+              0 seleccionadas
+            </span>
+            <button
+              type="button"
+              class="invitation-delete"
+              data-bulk-delete="recent-requests"
+              disabled
+            >
+              Eliminar seleccionadas
+            </button>
+            <small>Solo las solicitudes mostradas</small>
+          </div>
           <div id="recent-requests" class="panel-request-list" data-admin-only></div>
           <div id="consultant-home" class="profile-card" hidden>
             <p class="eyebrow">Tu cuenta</p>
@@ -160,6 +183,29 @@
             />
           </label>
           <p id="request-total" class="panel-muted"></p>
+          <div
+            class="bulk-toolbar"
+            data-bulk-toolbar="request-list"
+            data-admin-only
+            hidden
+          >
+            <label class="bulk-all">
+              <input type="checkbox" data-bulk-all="request-list" />
+              Seleccionar todas
+            </label>
+            <span class="bulk-count" data-bulk-count="request-list" aria-live="polite">
+              0 seleccionadas
+            </span>
+            <button
+              type="button"
+              class="invitation-delete"
+              data-bulk-delete="request-list"
+              disabled
+            >
+              Eliminar seleccionadas
+            </button>
+            <small>Solo las solicitudes mostradas</small>
+          </div>
           <div id="request-list" class="panel-request-list"></div>
           <div class="panel-pagination">
             <button type="button" id="previous-page" class="panel-secondary">
@@ -176,8 +222,9 @@
             <p class="eyebrow">Tu equipo</p>
             <h2>Invitar a un consultor</h2>
             <p>
-              Genera su enlace personal y envíaselo desde tu correo. Podrá completar su perfil y crear su contraseña. Su
-              acceso no incluye las solicitudes de clientes.
+              Genera su enlace personal y envíaselo desde tu correo. Podrá completar su
+              perfil y crear su contraseña. Su acceso no incluye las solicitudes de
+              clientes.
             </p>
             <form id="invite-consultant-form">
               <label>
@@ -205,14 +252,53 @@
                   Copiar enlace ↗
                 </button>
               </div>
-              <p class="invitation-recipient">Destinatario <strong id="invitation-email"></strong></p>
-              <label class="invitation-link-label" for="invitation-url">Enlace personal de activación</label>
-              <textarea id="invitation-url" rows="3" readonly spellcheck="false" autocomplete="off" aria-describedby="invitation-help"></textarea>
-              <p id="invitation-help" class="invitation-help">Cópialo y envíalo desde tu correo únicamente a este consultor. El enlace es de un solo uso y caduca. Deja que sea el destinatario quien lo abra para activar su cuenta.</p>
+              <p class="invitation-recipient">
+                Destinatario
+                <strong id="invitation-email"></strong>
+              </p>
+              <label class="invitation-link-label" for="invitation-url">
+                Enlace personal de activación
+              </label>
+              <textarea
+                id="invitation-url"
+                rows="3"
+                readonly
+                spellcheck="false"
+                autocomplete="off"
+                aria-describedby="invitation-help"
+              ></textarea>
+              <p id="invitation-help" class="invitation-help">
+                Cópialo y envíalo desde tu correo únicamente a este consultor. El enlace
+                es de un solo uso y caduca. Deja que sea el destinatario quien lo abra
+                para activar su cuenta.
+              </p>
             </div>
             <p id="invite-notice" class="panel-notice" role="status" hidden></p>
           </div>
           <div class="panel-section-heading"><h2>Consultores invitados</h2></div>
+          <div
+            class="bulk-toolbar"
+            data-bulk-toolbar="consultant-list"
+            data-admin-only
+            hidden
+          >
+            <label class="bulk-all">
+              <input type="checkbox" data-bulk-all="consultant-list" />
+              Seleccionar todas
+            </label>
+            <span class="bulk-count" data-bulk-count="consultant-list" aria-live="polite">
+              0 seleccionadas
+            </span>
+            <button
+              type="button"
+              class="invitation-delete"
+              data-bulk-delete="consultant-list"
+              disabled
+            >
+              Eliminar seleccionadas
+            </button>
+            <small>Solo invitaciones pendientes</small>
+          </div>
           <div id="consultant-list" class="panel-request-list"></div>
         </section>
         <section id="profile-view" aria-label="Mi perfil" hidden>
@@ -334,15 +420,27 @@
         <div class="status-options">
           <label class="status-option" data-status="pending">
             <input type="radio" name="request-status" value="pending" />
-            <span class="status-choice"><span class="status-symbol" aria-hidden="true">◷</span><span>Pendiente</span><span class="status-selected" aria-hidden="true">✓</span></span>
+            <span class="status-choice">
+              <span class="status-symbol" aria-hidden="true">◷</span>
+              <span>Pendiente</span>
+              <span class="status-selected" aria-hidden="true">✓</span>
+            </span>
           </label>
           <label class="status-option" data-status="contacted">
             <input type="radio" name="request-status" value="contacted" />
-            <span class="status-choice"><span class="status-symbol" aria-hidden="true">↗</span><span>Contactado</span><span class="status-selected" aria-hidden="true">✓</span></span>
+            <span class="status-choice">
+              <span class="status-symbol" aria-hidden="true">↗</span>
+              <span>Contactado</span>
+              <span class="status-selected" aria-hidden="true">✓</span>
+            </span>
           </label>
           <label class="status-option" data-status="scheduled">
             <input type="radio" name="request-status" value="scheduled" />
-            <span class="status-choice"><span class="status-symbol" aria-hidden="true">✓</span><span>Cita acordada</span><span class="status-selected" aria-hidden="true">✓</span></span>
+            <span class="status-choice">
+              <span class="status-symbol" aria-hidden="true">✓</span>
+              <span>Cita acordada</span>
+              <span class="status-selected" aria-hidden="true">✓</span>
+            </span>
           </label>
         </div>
       </fieldset>
@@ -361,6 +459,6 @@
     <script src="../js/backend-config.js?v=panel1" defer></script>
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/panel.js?v=consultant-status2" defer></script>
+    <script src="../js/panel.js?v=bulk-delete1" defer></script>
   </body>
 </html>

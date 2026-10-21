@@ -22,6 +22,135 @@
   let loadingVersion = 0;
   let mutationPending = false;
   let account = null;
+  let bulkRunning = false;
+  const bulkLists = Object.fromEntries(
+    ["recent-requests", "request-list", "consultant-list"].map((id) => [
+      id,
+      { items: new Map(), selected: new Set() },
+    ]),
+  );
+
+  function updateBulk(id) {
+    const data = bulkLists[id];
+    const bar = document.querySelector('[data-bulk-toolbar="' + id + '"]');
+    bar.hidden = account?.role !== "admin" || !data.items.size;
+    const all = bar.querySelector("[data-bulk-all]");
+    all.checked = data.items.size > 0 && data.selected.size === data.items.size;
+    all.indeterminate = data.selected.size > 0 && data.selected.size < data.items.size;
+    all.disabled = mutationPending;
+    bar.querySelector("[data-bulk-count]").textContent =
+      data.selected.size + " seleccionadas";
+    bar.querySelector("[data-bulk-delete]").disabled =
+      !data.selected.size || mutationPending;
+    get(id)
+      .querySelectorAll(".bulk-checkbox")
+      .forEach((input) => {
+        input.checked = data.selected.has(input.value);
+        input.disabled = mutationPending;
+      });
+  }
+
+  function resetBulk() {
+    Object.entries(bulkLists).forEach(([id, data]) => {
+      data.items.clear();
+      data.selected.clear();
+      updateBulk(id);
+    });
+  }
+
+  function selectableRow(id, itemId, name, content) {
+    const data = bulkLists[id];
+    data.items.set(itemId, name);
+    const wrapper = document.createElement("div");
+    wrapper.className = "bulk-row";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "bulk-checkbox";
+    input.value = itemId;
+    input.setAttribute("aria-label", "Seleccionar " + name);
+    input.addEventListener("change", () => {
+      if (!mutationPending) {
+        if (input.checked) data.selected.add(itemId);
+        else data.selected.delete(itemId);
+      }
+      updateBulk(id);
+    });
+    wrapper.append(input, content);
+    return wrapper;
+  }
+
+  document.querySelectorAll("[data-bulk-all]").forEach((input) =>
+    input.addEventListener("change", () => {
+      const id = input.dataset.bulkAll;
+      if (!active || account?.role !== "admin" || mutationPending) return;
+      const data = bulkLists[id];
+      data.selected = input.checked ? new Set(data.items.keys()) : new Set();
+      updateBulk(id);
+    }),
+  );
+
+  document.querySelectorAll("[data-bulk-delete]").forEach((button) =>
+    button.addEventListener("click", async () => {
+      if (!active || account?.role !== "admin" || mutationPending) return;
+      const listId = button.dataset.bulkDelete;
+      const ids = [...bulkLists[listId].selected];
+      if (!ids.length) return;
+      const invitations = listId === "consultant-list";
+      if (
+        !confirm(
+          "¿Eliminar definitivamente " +
+            ids.length +
+            (invitations
+              ? " invitaciones seleccionadas? Sus enlaces dejarán de funcionar."
+              : " solicitudes seleccionadas?"),
+        )
+      )
+        return;
+      mutationPending = true;
+      bulkRunning = true;
+      const snapshot = epoch;
+      let removed = 0,
+        failed = 0;
+      Object.keys(bulkLists).forEach(updateBulk);
+      clearInvitation();
+      try {
+        for (const id of ids) {
+          if (!active || epoch !== snapshot) break;
+          try {
+            if (invitations) await backend.deletePendingInvitation(id);
+            else await backend.deleteRequest(id);
+            removed++;
+          } catch (error) {
+            failed++;
+            if (error.status === 401 || error.status === 403) break;
+          }
+          if (active && epoch === snapshot)
+            notice(
+              "panel-notice",
+              "Eliminación en curso: " + (removed + failed) + " de " + ids.length + ".",
+            );
+        }
+      } finally {
+        bulkRunning = false;
+        mutationPending = false;
+        if (active && epoch === snapshot) {
+          resetBulk();
+          await load();
+          const remaining = ids.length - removed;
+          notice(
+            "panel-notice",
+            removed +
+              " eliminada(s)." +
+              (remaining
+                ? " No se ha confirmado la eliminación de " +
+                  remaining +
+                  ". Revisa el listado actualizado antes de reintentar."
+                : " El listado está actualizado."),
+          );
+        }
+      }
+    }),
+  );
 
   function notice(id, text) {
     get(id).textContent = text;
@@ -107,6 +236,7 @@
     get("consultant-list").replaceChildren();
     notice("invite-notice", "");
     account = null;
+    resetBulk();
     notice("login-notice", message);
     await backend.signOut();
   }
@@ -129,10 +259,15 @@
       const result = await backend.inviteConsultant(email);
       if (!active || epoch !== snapshot) return;
       const link = new URL(result.invitation_url);
-      if (link.origin !== 'https://carlosovb.github.io' || link.pathname !== '/carlos-portfolio-propuesta/cuenta/' || !link.hash.startsWith('#token_hash=')) throw new Error('Invalid invitation');
-      get('invitation-url').value = link.href;
-      get('invitation-email').textContent = email;
-      get('invitation-result').hidden = false;
+      if (
+        link.origin !== "https://carlosovb.github.io" ||
+        link.pathname !== "/carlos-portfolio-propuesta/cuenta/" ||
+        !link.hash.startsWith("#token_hash=")
+      )
+        throw new Error("Invalid invitation");
+      get("invitation-url").value = link.href;
+      get("invitation-email").textContent = email;
+      get("invitation-result").hidden = false;
       notice(
         "invite-notice",
         "Enlace generado. Cópialo y envíaselo al consultor desde tu correo.",
@@ -153,20 +288,23 @@
   });
 
   function clearInvitation() {
-    get('invitation-url').value = '';
-    get('invitation-email').textContent = '';
-    get('invitation-result').hidden = true;
+    get("invitation-url").value = "";
+    get("invitation-email").textContent = "";
+    get("invitation-result").hidden = true;
   }
-  get('invite-consultant-form').elements.email.addEventListener('input', clearInvitation);
-  get('copy-invitation').addEventListener('click', async () => {
-    if (!active || account?.role !== 'admin' || !get('invitation-url').value) return;
+  get("invite-consultant-form").elements.email.addEventListener("input", clearInvitation);
+  get("copy-invitation").addEventListener("click", async () => {
+    if (!active || account?.role !== "admin" || !get("invitation-url").value) return;
     try {
-      await navigator.clipboard.writeText(get('invitation-url').value);
-      notice('invite-notice', 'Enlace copiado. Ya puedes pegarlo en tu correo.');
+      await navigator.clipboard.writeText(get("invitation-url").value);
+      notice("invite-notice", "Enlace copiado. Ya puedes pegarlo en tu correo.");
     } catch {
-      get('invitation-url').focus();
-      get('invitation-url').select();
-      notice('invite-notice', 'Selecciona y copia el enlace con el menú de tu dispositivo.');
+      get("invitation-url").focus();
+      get("invitation-url").select();
+      notice(
+        "invite-notice",
+        "Selecciona y copia el enlace con el menú de tu dispositivo.",
+      );
     }
   });
 
@@ -197,11 +335,16 @@
       empty.className = "panel-empty";
       empty.textContent = "No hay solicitudes para mostrar.";
       target.append(empty);
-    } else target.append(...rows.map(row));
+    } else
+      target.append(
+        ...rows.map((item) => selectableRow(id, item.id, item.full_name, row(item))),
+      );
+    updateBulk(id);
   }
 
   async function load() {
-    if (!active) return;
+    if (!active || bulkRunning) return;
+    resetBulk();
     const snapshot = epoch;
     const version = ++loadingVersion;
     const valid = () => active && epoch === snapshot && version === loadingVersion;
@@ -226,7 +369,11 @@
           identity.append(name, email);
           const state = document.createElement("span");
           state.className = "request-status";
-          state.dataset.status = !member.enabled ? 'disabled' : member.complete ? 'scheduled' : 'pending';
+          state.dataset.status = !member.enabled
+            ? "disabled"
+            : member.complete
+              ? "scheduled"
+              : "pending";
           state.textContent = !member.enabled
             ? "Acceso desactivado"
             : member.complete
@@ -234,20 +381,28 @@
               : "Pendiente de activar";
           row.append(identity, state);
           if (member.can_delete && member.user_id) {
-            const remove = document.createElement('button');
-            remove.type = 'button';
-            remove.className = 'invitation-delete';
-            remove.setAttribute('aria-label', 'Eliminar invitación de ' + member.email);
-            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            icon.setAttribute('viewBox', '0 0 24 24');
-            icon.setAttribute('aria-hidden', 'true');
-            icon.innerHTML = '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5" />';
-            const label = document.createElement('span');
-            label.textContent = 'Eliminar invitación';
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "invitation-delete";
+            remove.setAttribute("aria-label", "Eliminar invitación de " + member.email);
+            const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            icon.setAttribute("viewBox", "0 0 24 24");
+            icon.setAttribute("aria-hidden", "true");
+            icon.innerHTML =
+              '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5" />';
+            const label = document.createElement("span");
+            label.textContent = "Eliminar invitación";
             remove.append(icon, label);
-            remove.addEventListener('click', async () => {
-              if (!active || account?.role !== 'admin' || mutationPending) return;
-              if (!confirm('¿Eliminar la invitación de ' + member.email + '? Su enlace dejará de funcionar.')) return;
+            remove.addEventListener("click", async () => {
+              if (!active || account?.role !== "admin" || mutationPending) return;
+              if (
+                !confirm(
+                  "¿Eliminar la invitación de " +
+                    member.email +
+                    "? Su enlace dejará de funcionar.",
+                )
+              )
+                return;
               mutationPending = true;
               remove.disabled = true;
               const snapshot = epoch;
@@ -255,19 +410,33 @@
                 await backend.deletePendingInvitation(member.user_id);
                 if (!active || epoch !== snapshot) return;
                 clearInvitation();
-                notice('invite-notice', 'Invitación eliminada. Su enlace ya no permite activar la cuenta.');
+                notice(
+                  "invite-notice",
+                  "Invitación eliminada. Su enlace ya no permite activar la cuenta.",
+                );
                 await load();
               } catch {
                 if (!active || epoch !== snapshot) return;
                 clearInvitation();
-                notice('invite-notice', 'No se ha confirmado la eliminación. Actualiza el listado: si ya ha completado el perfil y creado su contraseña, la cuenta deja de ser una invitación pendiente. Si sigue pendiente, comprueba que has ejecutado el SQL actualizado.');
+                notice(
+                  "invite-notice",
+                  "No se ha confirmado la eliminación. Actualiza el listado: si ya ha completado el perfil y creado su contraseña, la cuenta deja de ser una invitación pendiente. Si sigue pendiente, comprueba que has ejecutado el SQL actualizado.",
+                );
                 await load();
-              } finally { mutationPending = false; remove.disabled = false; }
+              } finally {
+                mutationPending = false;
+                remove.disabled = false;
+              }
             });
             row.append(remove);
           }
-          get("consultant-list").append(row);
+          get("consultant-list").append(
+            member.can_delete && member.user_id
+              ? selectableRow("consultant-list", member.user_id, member.email, row)
+              : row,
+          );
         });
+        updateBulk("consultant-list");
       } else if (view === "profile") {
         const details = await backend.getPanelAccess();
         if (!valid()) return;
@@ -324,6 +493,7 @@
   }
 
   function setView(next) {
+    if (bulkRunning) return;
     if (!active || !["home", "requests", "profile", "consultants"].includes(next)) return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
     if (["requests", "consultants"].includes(next) && account?.role !== "admin")
@@ -354,6 +524,7 @@
   }
 
   function openRequest(item) {
+    if (mutationPending) return;
     selected = item;
     get("request-title").textContent = item.full_name;
     const details = get("request-details");
@@ -374,9 +545,11 @@
       description.textContent = value;
       details.append(term, description);
     });
-    get('request-status').querySelectorAll('input').forEach(input => {
-      input.checked = input.value === item.status;
-    });
+    get("request-status")
+      .querySelectorAll("input")
+      .forEach((input) => {
+        input.checked = input.value === item.status;
+      });
     notice("dialog-notice", "");
     get("request-dialog").showModal();
   }
@@ -391,7 +564,11 @@
     get("delete-request").disabled = true;
     try {
       if (remove) await backend.deleteRequest(id);
-      else await backend.updateStatus(id, get("request-status").querySelector("input:checked").value);
+      else
+        await backend.updateStatus(
+          id,
+          get("request-status").querySelector("input:checked").value,
+        );
       if (snapshot !== epoch || !active) return;
       selected = null;
       get("request-dialog").close();
