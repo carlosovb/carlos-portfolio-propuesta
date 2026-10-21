@@ -124,6 +124,51 @@
       return accessDetails ? structuredClone(accessDetails) : null;
     },
     getPanelAccess: readAccess,
+    async listPremeetings(page = 0) {
+      const query = new URLSearchParams({
+        select: "id,full_name,email,created_at,expires_at",
+        order: "created_at.desc,id",
+        limit: "25",
+        offset: String(page * 25),
+      });
+      const response = await authenticated("/rest/v1/premeeting_responses?" + query, {
+        headers: { Prefer: "count=exact" },
+      });
+      return {
+        rows: await response.json(),
+        total: Number(response.headers.get("Content-Range")?.split("/")[1] || 0),
+      };
+    },
+    async getPremeeting(id) {
+      if (!/^[0-9a-f-]{36}$/i.test(id)) throw Error("Identificador no válido.");
+      const query = new URLSearchParams({ select: "payload", id: "eq." + id });
+      const rows = await (
+        await authenticated("/rest/v1/premeeting_responses?" + query)
+      ).json();
+      if (!rows[0]) throw Error("Esta respuesta ya no está disponible.");
+      return rows[0].payload;
+    },
+    async deletePremeetings(ids) {
+      if (
+        !Array.isArray(ids) ||
+        !ids.length ||
+        ids.length > 25 ||
+        ids.some((id) => !/^[0-9a-f-]{36}$/i.test(id))
+      )
+        throw Error("Selección no válida.");
+      const query = new URLSearchParams({
+        select: "id",
+        id: "in.(" + ids.join(",") + ")",
+      });
+      return (
+        await (
+          await authenticated("/rest/v1/premeeting_responses?" + query, {
+            method: "DELETE",
+            headers: { Prefer: "return=representation" },
+          })
+        ).json()
+      ).length;
+    },
     async listClients(search = "", page = 0) {
       return (
         await authenticated("/rest/v1/rpc/list_my_clients", {

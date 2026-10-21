@@ -233,6 +233,7 @@
     get("request-dialog").close();
     window.TeamPanel?.reset();
     window.ClientsPanel?.reset();
+    window.PremeetingPanel?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
     get("request-initials").textContent = "";
@@ -408,7 +409,9 @@
     get("refresh-button").disabled = true;
     notice("panel-notice", "Actualizando…");
     try {
-      if (view === "clients") {
+      if (view === "premeeting") {
+        await window.PremeetingPanel.load(account);
+      } else if (view === "clients") {
         await window.ClientsPanel.load(account);
       } else if (view === "team") {
         await window.TeamPanel.load(account);
@@ -509,6 +512,7 @@
         if (!valid()) return;
         renderIdentity();
       } else if (view === "home") {
+        window.PremeetingPanel?.loadRecent(account);
         const [counts, latest] = await Promise.all([
           backend.counts(),
           backend.listRequests({ pageSize: 5 }),
@@ -566,11 +570,22 @@
     if (bulkRunning) return;
     if (
       !active ||
-      !["home", "requests", "profile", "consultants", "team", "clients"].includes(next)
+      ![
+        "home",
+        "requests",
+        "profile",
+        "consultants",
+        "team",
+        "clients",
+        "premeeting",
+      ].includes(next)
     )
       return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
-    if (["requests", "consultants"].includes(next) && account?.role !== "admin")
+    if (
+      ["requests", "consultants", "premeeting"].includes(next) &&
+      account?.role !== "admin"
+    )
       next = "home";
     if (next !== "consultants") clearInvitation();
     view = next;
@@ -578,6 +593,8 @@
       !["home", "requests"].includes(view) || account?.role !== "admin";
     document.body.classList.toggle("team-workspace", view === "team");
     window.ClientsPanel?.hide();
+    window.PremeetingPanel?.hide();
+    get("premeeting-view").hidden = view !== "premeeting";
     get("clients-view").hidden = view !== "clients";
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";
@@ -585,19 +602,21 @@
     get("team-view").hidden = view !== "team";
     get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "clients"
-        ? "Tus clientes."
-        : view === "team"
-          ? "Nuestro equipo."
-          : view === "consultants"
-            ? "Tu equipo."
-            : view === "profile"
-              ? "Mi perfil."
-              : view === "requests"
-                ? "Tus solicitudes."
-                : account?.profile?.first_name
-                  ? `Hola, ${account.profile.first_name}.`
-                  : "Tu espacio de trabajo.";
+      view === "premeeting"
+        ? "Antes de la reunión."
+        : view === "clients"
+          ? "Tus clientes."
+          : view === "team"
+            ? "Nuestro equipo."
+            : view === "consultants"
+              ? "Tu equipo."
+              : view === "profile"
+                ? "Mi perfil."
+                : view === "requests"
+                  ? "Tus solicitudes."
+                  : account?.profile?.first_name
+                    ? `Hola, ${account.profile.first_name}.`
+                    : "Tu espacio de trabajo.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");

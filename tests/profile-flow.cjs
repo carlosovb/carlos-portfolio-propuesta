@@ -63,6 +63,7 @@ async function mock(context, state) {
       return state.invalidLink ? json({}, 403) : json(session);
     }
     if (url.pathname === "/auth/v1/logout") return json({});
+    if (url.pathname.includes("premeeting_responses")) return json([]);
     if (url.pathname === "/auth/v1/recover") {
       state.recoveries++;
       return json({});

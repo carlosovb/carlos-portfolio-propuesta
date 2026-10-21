@@ -108,6 +108,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           user: { id: uid },
         });
       if (url.pathname === "/auth/v1/logout") return json({});
+      if (url.pathname.includes("premeeting_responses")) return json([]);
       if (url.pathname.endsWith("/rpc/panel_access"))
         return json({
           role,

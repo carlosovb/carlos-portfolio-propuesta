@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/clients.css?v=client-button3" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
+    <link rel="stylesheet" href="../css/premeeting.css?v=previo1" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -85,6 +86,9 @@
             Solicitudes
             <span>↗</span>
           </button>
+          <button type="button" data-view="premeeting" data-admin-only>
+            Formulario previo
+          </button>
           <button type="button" data-view="clients">
             Clientes
             <span>↗</span>
@@ -126,6 +130,21 @@
         </div>
         <p id="panel-notice" class="panel-notice" role="status" hidden></p>
         <section id="home-view" aria-label="Resumen de solicitudes">
+          <div class="profile-card" data-admin-only>
+            <p class="eyebrow">Antes de la reunión</p>
+            <h2>Preparar el siguiente paso.</h2>
+            <p>
+              Comparte el formulario previo con tu cliente. Sus respuestas solo las podrás
+              consultar tú.
+            </p>
+            <button type="button" class="panel-secondary" data-copy-premeeting>
+              Copiar enlace del formulario previo ↗
+            </button>
+            <button type="button" class="panel-text-button" data-view="premeeting">
+              Ver formularios recibidos ↗
+            </button>
+            <div id="premeeting-recent"></div>
+          </div>
           <div class="panel-metrics" data-admin-only>
             <article>
               <span>Pendientes de contactar</span>
@@ -260,6 +279,53 @@
             </button>
             <span id="page-label"></span>
             <button type="button" id="next-page" class="panel-secondary">
+              Siguiente →
+            </button>
+          </div>
+        </section>
+        <section id="premeeting-view" aria-label="Formularios previos privados" hidden>
+          <div class="profile-card">
+            <p class="eyebrow">Llegar con contexto</p>
+            <h2>Antes de vuestra reunión.</h2>
+            <p>
+              Un enlace para todos los clientes. Sin registro. Las respuestas son privadas
+              y se eliminan automáticamente a los 30 días.
+            </p>
+            <button type="button" class="panel-secondary" data-copy-premeeting>
+              Copiar enlace del formulario previo ↗
+            </button>
+            <a class="panel-text-button" href="../previo/" target="_blank" rel="noopener">
+              Ver formulario ↗
+            </a>
+          </div>
+          <div class="panel-section-heading">
+            <h2>
+              Formularios recibidos ·
+              <span id="premeeting-response-count">—</span>
+            </h2>
+          </div>
+          <p id="premeeting-panel-notice" class="panel-notice" role="status" hidden></p>
+          <div class="bulk-toolbar">
+            <label>
+              <input type="checkbox" id="premeeting-select-all" />
+              Seleccionar todas las mostradas
+            </label>
+            <button
+              type="button"
+              id="premeeting-delete-selected"
+              class="invitation-delete"
+              disabled
+            >
+              Eliminar seleccionadas
+            </button>
+          </div>
+          <div id="premeeting-response-list"></div>
+          <div class="dialog-actions">
+            <button type="button" class="panel-secondary" id="premeeting-previous">
+              ← Anterior
+            </button>
+            <span id="premeeting-page-label"></span>
+            <button type="button" class="panel-secondary" id="premeeting-following">
               Siguiente →
             </button>
           </div>
@@ -786,6 +852,13 @@
         <button type="button" class="btn" id="photo-crop-save">Usar este encuadre</button>
       </div>
     </dialog>
+    <dialog id="premeeting-detail" aria-labelledby="premeeting-detail-name">
+      <button type="button" class="premeeting-secondary" id="premeeting-detail-close">
+        Cerrar ×
+      </button>
+      <h2 id="premeeting-detail-name"></h2>
+      <div id="premeeting-private-summary"></div>
+    </dialog>
     <dialog id="team-member-dialog" aria-labelledby="team-member-name">
       <div class="team-modal-shell">
         <button
@@ -917,13 +990,16 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=clients2" defer></script>
+    <script src="../js/backend.js?v=previo1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/clients.js?v=client-close4" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
     <script src="../js/team.js?v=clients2" defer></script>
-    <script src="../js/panel.js?v=clients2" defer></script>
+    <script src="../js/premeeting-model.js?v=previo1" defer></script>
+    <script src="../js/premeeting-summary.js?v=previo1" defer></script>
+    <script src="../js/premeeting-panel.js?v=previo1" defer></script>
+    <script src="../js/panel.js?v=previo1" defer></script>
   </body>
 </html>
