@@ -13,8 +13,8 @@
     saving = false,
     anchor = null;
   const CARD_WIDTH = 280;
-  const CARD_HEIGHT = 184;
-  const LEVEL_GAP = 264;
+  const CARD_HEIGHT = 228;
+  const LEVEL_GAP = 312;
   const photos = new Map();
   const places = new Map();
   const fullName = (person) =>
@@ -40,7 +40,11 @@
       .slice(0, 2)
       .join("");
     target.textContent = initials || "CC";
-    const src = photos.get(person.user_id);
+    const src =
+      photos.get(person.user_id) ||
+      (person.user_id === "ee1355b0-7a6c-4559-87a6-fa72a7d8f73b"
+        ? "../assets/carlos.png"
+        : null);
     if (src) {
       const img = document.createElement("img");
       img.src = src;

@@ -834,3 +834,117 @@
     transition: none;
   }
 }
+
+/* Composición inspirada en el retrato de portada. */
+.team-workspace .team-node {
+  height: var(--team-card-height, 228px);
+  padding: 14px 14px 0 0;
+  gap: 8px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.team-workspace .team-node::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 30px 0 8px 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--line));
+  border-radius: 84px 72px 22px 22px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 13%, var(--panel)),
+    var(--panel) 70%
+  );
+  transform: rotate(-4deg);
+  box-shadow: 0 16px 32px #00000012;
+  transition:
+    transform 250ms ease,
+    border-color 250ms ease,
+    box-shadow 250ms ease;
+}
+.team-workspace .team-node:hover::before {
+  transform: rotate(-1deg);
+  border-color: var(--accent);
+  box-shadow: 0 20px 40px #00000024;
+}
+.team-workspace .team-node-self::before {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent) 9%, transparent),
+    0 16px 32px #00000018;
+}
+.team-workspace .team-node .team-node-portrait {
+  position: relative;
+  width: 136px;
+  height: 212px;
+  align-items: end;
+  padding-bottom: 0;
+  overflow: visible;
+  font-size: 42px;
+}
+.team-node-portrait img {
+  position: relative;
+  z-index: 1;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 66px 66px 12px 12px;
+  mask-image: linear-gradient(#000 75%, transparent 100%);
+}
+.team-node-portrait:not(:has(img)) {
+  align-items: center;
+}
+.team-node-info {
+  position: relative;
+  z-index: 2;
+  padding-top: 20px;
+  padding-bottom: 18px;
+}
+.team-node .team-node-info strong {
+  font-size: 17px;
+  letter-spacing: -0.4px;
+}
+.team-node-hint {
+  padding: 6px 9px;
+  margin-top: 1px;
+  border-left: 2px solid var(--accent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+}
+.team-node .team-self-label {
+  z-index: 3;
+  top: 18px;
+  right: 12px;
+}
+#team-member-photo {
+  position: relative;
+  isolation: isolate;
+  width: 180px;
+  height: 220px;
+  overflow: visible;
+}
+#team-member-photo::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 24px -6px 10px 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 80px 80px 18px 18px;
+  transform: rotate(-6deg);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    transparent
+  );
+}
+#team-member-photo img {
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 80px 80px 0 0;
+  mask-image: linear-gradient(#000 75%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-workspace .team-node::before {
+    transition: none;
+  }
+}
