@@ -87,6 +87,18 @@ async function mock(context, state) {
       };
       return json(access());
     }
+    if (url.pathname.endsWith("/rpc/list_consultants")) {
+      assert.equal(state.role, "admin");
+      return json([
+        { email: "invitado@ovb.es", name: "", enabled: true, complete: false },
+      ]);
+    }
+    if (url.pathname === "/functions/v1/invite-consultant") {
+      assert.equal(state.role, "admin");
+      state.invites = (state.invites || 0) + 1;
+      assert.equal(body.email, "invitado@ovb.es");
+      return json({ message: "Invitation sent" });
+    }
     if (url.pathname.includes("contact_requests")) {
       state.requestReads++;
       assert.equal(state.role, "admin", "Un consultor intentó consultar solicitudes");
@@ -139,6 +151,23 @@ async function login(page, base) {
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await login(page, base);
+      if (width <= 850) await page.locator(".panel-menu-toggle").click();
+      await page.locator('#panel-navigation [data-view="consultants"]').click();
+      await page.locator("#consultant-list").getByText("Pendiente de activar").waitFor();
+      await page
+        .locator('#invite-consultant-form [name="email"]')
+        .fill("invitado@ovb.es");
+      await page.locator("#invite-consultant-button").click();
+      await page.waitForFunction(() =>
+        document
+          .querySelector("#invite-notice")
+          .textContent.includes("Invitación enviada"),
+      );
+      assert.equal(data.invites, 1);
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        false,
+      );
       if (width <= 850) await page.locator(".panel-menu-toggle").click();
       await page.locator('#panel-navigation [data-view="profile"]').click();
       await page.locator('#profile-form [name="first_name"]').fill("Nombre actualizado");
@@ -201,6 +230,10 @@ async function login(page, base) {
     await page.locator("#panel-screen").waitFor();
     assert.equal(data.passwordChanges, 1);
     assert.equal(data.requestReads, 0);
+    assert.equal(
+      await page.locator('#panel-navigation [data-view="consultants"]').isVisible(),
+      false,
+    );
     assert.equal(
       await page.locator('#panel-navigation [data-view="requests"]').isVisible(),
       false,

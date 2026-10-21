@@ -9,7 +9,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=profile1" />
+    <link rel="stylesheet" href="../css/panel.css?v=consultants1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -79,6 +79,10 @@
           </button>
           <button type="button" data-view="requests" data-admin-only>
             Solicitudes
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="consultants" data-admin-only>
+            Consultores
             <span>↗</span>
           </button>
           <button type="button" data-view="profile">
@@ -165,6 +169,35 @@
               Siguiente →
             </button>
           </div>
+        </section>
+        <section id="consultants-view" aria-label="Consultores" hidden>
+          <div class="profile-card">
+            <p class="eyebrow">Tu equipo</p>
+            <h2>Invitar a un consultor</h2>
+            <p>
+              Recibirá un enlace para completar su perfil y crear su propia contraseña. Su
+              acceso no incluye las solicitudes de clientes.
+            </p>
+            <form id="invite-consultant-form">
+              <label>
+                Correo corporativo
+                <input
+                  type="email"
+                  name="email"
+                  autocomplete="off"
+                  maxlength="254"
+                  placeholder="nombre@ovb.es"
+                  required
+                />
+              </label>
+              <button type="submit" class="btn" id="invite-consultant-button">
+                Enviar invitación ↗
+              </button>
+            </form>
+            <p id="invite-notice" class="panel-notice" role="status" hidden></p>
+          </div>
+          <div class="panel-section-heading"><h2>Consultores invitados</h2></div>
+          <div id="consultant-list" class="panel-request-list"></div>
         </section>
         <section id="profile-view" aria-label="Mi perfil" hidden>
           <p id="profile-setup-notice" class="panel-notice" hidden></p>
@@ -298,8 +331,8 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=profile1" defer></script>
+    <script src="../js/backend.js?v=consultants1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/panel.js?v=profile1" defer></script>
+    <script src="../js/panel.js?v=consultants1" defer></script>
   </body>
 </html>

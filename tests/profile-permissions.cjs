@@ -26,7 +26,7 @@ const path = require("node:path");
     await db.exec(`
       create role anon; create role authenticated;
       create schema auth;
-      create table auth.users (id uuid primary key, email text, invited_at timestamptz, encrypted_password text default '');
+      create table auth.users (id uuid primary key, email text, invited_at timestamptz, created_at timestamptz default now(), encrypted_password text default '');
       create function auth.uid() returns uuid language sql stable as
         $$select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid$$;
     `);
@@ -44,6 +44,9 @@ const path = require("node:path");
       "utf8",
     );
     await db.exec(migration);
+    await db.exec(
+      fs.readFileSync(path.join(__dirname, "../database/consultants-setup.sql"), "utf8"),
+    );
     await db.exec(migration); // La migración es reutilizable sin perder perfiles ni permisos.
     await db.query(
       "insert into auth.users (id,email,invited_at) values ($1,'member@example.invalid',now())",
@@ -60,6 +63,13 @@ const path = require("node:path");
     await denied("select * from public.consultant_profiles");
     await denied("select public.panel_access()");
 
+    await asUser(owner);
+    assert.equal(
+      (await db.query("select public.list_consultants() as team")).rows[0].team.length,
+      1,
+    );
+    await asUser(member);
+    await assert.rejects(() => db.query("select public.list_consultants()"));
     await asUser(unknown);
     assert.equal(await access(), null);
     assert.equal(

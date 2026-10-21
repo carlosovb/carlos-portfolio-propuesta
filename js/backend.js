@@ -123,6 +123,20 @@
       return accessDetails ? structuredClone(accessDetails) : null;
     },
     getPanelAccess: readAccess,
+    async listConsultants() {
+      const response = await authenticated("/rest/v1/rpc/list_consultants", {
+        method: "POST",
+        body: "{}",
+      });
+      return response.json();
+    },
+    async inviteConsultant(email) {
+      const response = await authenticated("/functions/v1/invite-consultant", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+      return response.json();
+    },
     async saveProfile(fields) {
       const response = await authenticated("/rest/v1/rpc/save_my_profile", {
         method: "POST",

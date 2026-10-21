@@ -1,0 +1,2 @@
+[functions.invite-consultant]
+verify_jwt = true

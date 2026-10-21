@@ -102,10 +102,49 @@
     get("login-form").reset();
     get("profile-form").reset();
     get("password-form").reset();
+    get("invite-consultant-form").reset();
+    get("consultant-list").replaceChildren();
+    notice("invite-notice", "");
     account = null;
     notice("login-notice", message);
     await backend.signOut();
   }
+
+  get("invite-consultant-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!active || account?.role !== "admin" || mutationPending) return;
+    const snapshot = epoch;
+    const button = get("invite-consultant-button");
+    const email = event.currentTarget.elements.email.value.trim().toLowerCase();
+    if (!/^[^\s@]+@ovb\.es$/.test(email)) {
+      notice("invite-notice", "Introduce un correo corporativo @ovb.es.");
+      return;
+    }
+    mutationPending = true;
+    button.disabled = true;
+    notice("invite-notice", "Enviando invitación…");
+    try {
+      await backend.inviteConsultant(email);
+      if (!active || epoch !== snapshot) return;
+      get("invite-consultant-form").reset();
+      notice(
+        "invite-notice",
+        "Invitación enviada. El consultor podrá crear su contraseña desde el enlace recibido.",
+      );
+      await load();
+    } catch (error) {
+      if (!active || epoch !== snapshot) return;
+      notice(
+        "invite-notice",
+        error.status === 404
+          ? "Falta desplegar la función de invitaciones en Supabase."
+          : "No se ha confirmado el envío. Comprueba el correo de salida y si la cuenta ya existe antes de volver a intentarlo.",
+      );
+    } finally {
+      mutationPending = false;
+      button.disabled = false;
+    }
+  });
 
   function row(item) {
     const button = document.createElement("button");
@@ -142,9 +181,35 @@
     const version = ++loadingVersion;
     const valid = () => active && epoch === snapshot && version === loadingVersion;
     get("refresh-button").disabled = true;
-    notice("panel-notice", "Cargando solicitudes…");
+    notice("panel-notice", "Actualizando…");
     try {
-      if (view === "profile") {
+      if (view === "consultants") {
+        get("consultant-list").replaceChildren();
+        const members = await backend.listConsultants();
+        if (!valid()) return;
+        if (!members.length)
+          get("consultant-list").textContent =
+            "Todavía no has invitado a ningún consultor.";
+        members.forEach((member) => {
+          const row = document.createElement("article");
+          row.className = "request-row";
+          const identity = document.createElement("span");
+          const name = document.createElement("strong");
+          name.textContent = member.name || member.email;
+          const email = document.createElement("small");
+          email.textContent = member.email;
+          identity.append(name, email);
+          const state = document.createElement("span");
+          state.className = "request-status";
+          state.textContent = !member.enabled
+            ? "Acceso desactivado"
+            : member.complete
+              ? "Perfil completado"
+              : "Pendiente de activar";
+          row.append(identity, state);
+          get("consultant-list").append(row);
+        });
+      } else if (view === "profile") {
         const details = await backend.getPanelAccess();
         if (!valid()) return;
         account = details;
@@ -188,9 +253,10 @@
         // No mantener resultados antiguos en pantalla si la actualización falla.
         get("recent-requests").replaceChildren();
         get("request-list").replaceChildren();
+        get("consultant-list").replaceChildren();
         notice(
           "panel-notice",
-          "No se han podido cargar las solicitudes. Puedes volver a intentarlo con Actualizar.",
+          "No se ha podido cargar este apartado. Comprueba su configuración en Supabase y vuelve a intentarlo con Actualizar.",
         );
       }
     } finally {
@@ -199,21 +265,25 @@
   }
 
   function setView(next) {
-    if (!active || !["home", "requests", "profile"].includes(next)) return;
+    if (!active || !["home", "requests", "profile", "consultants"].includes(next)) return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
-    if (next === "requests" && account?.role !== "admin") next = "home";
+    if (["requests", "consultants"].includes(next) && account?.role !== "admin")
+      next = "home";
     view = next;
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";
     get("profile-view").hidden = view !== "profile";
+    get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "profile"
-        ? "Mi perfil."
-        : view === "requests"
-          ? "Tus solicitudes."
-          : account?.profile?.first_name
-            ? `Hola, ${account.profile.first_name}.`
-            : "Tu espacio de trabajo.";
+      view === "consultants"
+        ? "Tu equipo."
+        : view === "profile"
+          ? "Mi perfil."
+          : view === "requests"
+            ? "Tus solicitudes."
+            : account?.profile?.first_name
+              ? `Hola, ${account.profile.first_name}.`
+              : "Tu espacio de trabajo.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");

@@ -48,7 +48,7 @@ Los enlaces se leen en memoria y se retiran de la dirección inmediatamente. El 
 
 ## 5. Dar de alta un consultor
 
-En Authentication > Users > Add user > Invite user, introducir el correo corporativo. Utilizar **Invite user**, no crear una cuenta con contraseña provisional. Esto lo realiza Carlos desde Supabase por ahora; la gestión de invitaciones desde el propio panel requerirá una función administrativa en el servidor.
+En Authentication > Users > Add user > Invite user, introducir el correo corporativo. Utilizar **Invite user**, no crear una cuenta con contraseña provisional. También puedes invitar desde Consultores en tu panel tras completar INVITACIONES.md; utiliza la misma activación segura.
 
 El consultor abre el enlace, valida la invitación, rellena sus datos y crea su contraseña. El cambio de contraseña se registra desde un trigger del servidor, no desde un campo de perfil editable. Su panel solo muestra Inicio y Mi perfil; los recursos de RED siguen pendientes de implementación.
 
