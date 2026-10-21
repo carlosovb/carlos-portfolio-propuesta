@@ -348,14 +348,15 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     for (const width of [320, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       const open = page.locator("#clients-list .client-action button").first();
-      await open.scrollIntoViewIfNeeded();
+      const target = page.locator("#clients-list .client-identity").first();
+      await target.scrollIntoViewIfNeeded();
       const before = await page.evaluate(() => window.scrollY);
-      await open.click();
+      await target.click();
       assert.ok(
         Math.abs((await page.evaluate(() => window.scrollY)) - before) < 2,
         "Abrir la ficha no debe desplazar la página",
       );
-      assert.equal(await page.locator("#client-detail-fields .client-field").count(), 12);
+      assert.equal(await page.locator("#client-detail-fields .client-field").count(), 6);
       assert.equal(await page.locator("#client-detail-demo").isVisible(), true);
       assert.equal(
         await page
@@ -378,6 +379,26 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         "Cerrar la ficha debe conservar la posición",
       );
     }
+    const selectClient = page.locator("#clients-list input[type=checkbox]").first();
+    await selectClient.check();
+    assert.equal(
+      await page.locator("#client-detail-dialog").evaluate((d) => d.open),
+      false,
+      "La selección masiva no abre la ficha",
+    );
+    await selectClient.uncheck();
+    for (const selector of [".client-contact", ".client-locality", ".client-state"]) {
+      await page
+        .locator("#clients-list " + selector)
+        .first()
+        .click();
+      await page.locator("#client-detail-dialog").waitFor();
+      await page.locator("#client-detail-close").click();
+    }
+    await page.locator("#clients-list .client-action button").first().focus();
+    await page.keyboard.press("Enter");
+    await page.locator("#client-detail-dialog").waitFor();
+    await page.keyboard.press("Escape");
     await page.locator("#clients-demo-toggle").click();
     await page.locator("#clients-empty").waitFor();
     const upload = () =>
@@ -450,6 +471,25 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         "Ficha productos responsive",
       );
     }
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+      for (const width of [320, 768, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert(
+          await page
+            .locator("#client-detail-dialog")
+            .evaluate((d) => d.scrollWidth <= d.clientWidth),
+          "Nueva ficha responsive",
+        );
+        await page
+          .locator("#client-detail-dialog")
+          .screenshot({
+            path: path.join(process.env.TEMP, `client-file-${theme}-${width}.png`),
+          });
+      }
+    }
+    assert.equal(await page.locator(".contract-company").count(), 1);
+    assert.equal(await page.locator(".contract-company-heading h4").textContent(), "AXA");
     await page.screenshot({
       path: path.join(process.env.TEMP, "client-products.png"),
       fullPage: true,

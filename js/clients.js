@@ -20,6 +20,11 @@
     searchTimer;
   let operation = 0;
   let dialogScroll = null;
+  const compactClient = matchMedia("(max-width: 850px)");
+  compactClient.addEventListener("change", (event) => {
+    const additional = get("client-detail-fields").querySelector(".client-additional");
+    if (additional) additional.open = !event.matches;
+  });
   const category = (row) =>
     row.category ||
     (parser.normalize(row.client_type) === "cliente"
@@ -108,30 +113,63 @@
     get("clients-select-all").indeterminate =
       selection.size > 0 && selection.size < rows.length;
   }
-  function detail(row) {
+  function detail(row, opener = document.activeElement) {
     if (!visible || !account) return;
     dialogScroll = {
       x: window.scrollX,
       y: window.scrollY,
-      opener: document.activeElement,
+      opener,
     };
     get("client-detail-name").textContent = name(row);
     get("client-detail-demo").hidden = !demo;
     const fields = get("client-detail-fields");
     fields.replaceChildren();
-    parser.fields.forEach(([key, label]) => {
-      const group = el("div", "client-field");
-      group.append(
-        el("dt", "", label),
-        el(
-          "dd",
-          "",
-          key === "birth_date" ? formatDate(row[key]) : row[key] || "Sin indicar",
-        ),
-      );
-      fields.append(group);
+    get("client-detail-category").textContent =
+      category(row) === "client"
+        ? "Cliente"
+        : category(row) === "interested"
+          ? "Interesado"
+          : row.client_type || "Ficha personal";
+    get("client-detail-status").textContent = row.status || "Estado sin indicar";
+    const groups = [
+      [
+        "Contacto",
+        [
+          ["Teléfono", row.phone],
+          ["Correo electrónico", row.email],
+        ],
+      ],
+      ["Datos personales", [["Fecha de nacimiento", formatDate(row.birth_date)]]],
+      [
+        "Dirección",
+        [
+          [
+            "Domicilio",
+            [row.street_type, row.street, row.street_number].filter(Boolean).join(" "),
+          ],
+          ["Localidad", row.locality],
+          ["Código postal", row.postal_code],
+        ],
+      ],
+    ];
+    const additional = el("details", "client-additional");
+    additional.open = !compactClient.matches;
+    additional.append(el("summary", "", "Datos personales y dirección"));
+    groups.forEach(([title, values], index) => {
+      const section = el("section", "client-info-section");
+      section.append(el("h3", "", title));
+      const dl = el("dl");
+      values.forEach(([label, value]) => {
+        const line = el("div", "client-field");
+        line.append(el("dt", "", label), el("dd", "", value || "Sin indicar"));
+        dl.append(line);
+      });
+      section.append(dl);
+      (index === 0 ? fields : additional).append(section);
     });
+    fields.append(additional);
     get("client-detail-dialog").showModal();
+    get("client-detail-dialog").scrollTop = 0;
     window.ClientProducts.open(row, demo);
     get("client-detail-close").focus({ preventScroll: true });
     window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
@@ -198,7 +236,15 @@
       const open = el("button", "panel-text-button", "Ver ficha ↗");
       open.type = "button";
       open.setAttribute("aria-label", "Ver ficha de " + name(row));
-      open.addEventListener("click", () => detail(row));
+      open.addEventListener("click", () => detail(row, open));
+      tr.addEventListener("click", (event) => {
+        if (
+          event.target.closest("button,input,label,a,select,textarea") ||
+          window.getSelection()?.toString()
+        )
+          return;
+        detail(row, open);
+      });
       action.append(open);
       tr.append(selectCell, identity, contact, locality, status, action);
       get("clients-list").append(tr);

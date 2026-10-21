@@ -96,7 +96,7 @@
     const heading = node("div", undefined, "client-products-heading");
     heading.append(
       node("div", "PRODUCTOS CONTRATADOS", "eyebrow"),
-      node("h3", "Lo que tiene contratado."),
+      node("h3", "Compañías y productos."),
     );
     host.append(heading);
     const note = node("p");
@@ -183,7 +183,29 @@
     }
     host.append(controls);
     const list = node("div", undefined, "contract-list");
+    const companies = new Map();
     rows.forEach((row) => {
+      const label = window.PortfolioCompanies.label(row.company);
+      if (!companies.has(label)) {
+        const section = node("section", undefined, "contract-company");
+        const heading = node("header", undefined, "contract-company-heading");
+        const company = window.PortfolioCompanies.find(label);
+        if (company) {
+          const logo = node("img");
+          logo.src = "../assets/companies/" + company.logo;
+          logo.alt = "";
+          logo.dataset.company = company.id;
+          heading.append(logo);
+        }
+        heading.append(node("h4", label));
+        const count = rows.filter(
+          (r) => window.PortfolioCompanies.label(r.company) === label,
+        ).length;
+        heading.append(node("small", count + (count === 1 ? " producto" : " productos")));
+        section.append(heading);
+        list.append(section);
+        companies.set(label, section);
+      }
       const card = node("article", undefined, "contract-card"),
         check = node("input");
       check.type = "checkbox";
@@ -194,7 +216,7 @@
         bulk.hidden = !selected.size;
       });
       const copy = node("div", undefined, "contract-copy");
-      copy.append(node("small", row.company), node("h4", row.product));
+      copy.append(node("h5", row.product));
       const dl = node("dl");
       [
         ["Cartera de fondos", row.portfolio || "Sin indicar"],
@@ -229,7 +251,7 @@
           editor();
         }),
       );
-      list.append(card);
+      companies.get(window.PortfolioCompanies.label(row.company)).append(card);
     });
     host.append(list);
     if (!rows.length)
