@@ -199,6 +199,7 @@ const server = http.createServer((req, res) => {
       ],
     );
     assert.equal(await page.locator(".resource-company").count(), 2);
+    assert.equal(await page.locator("#resource-admin").isVisible(), false);
     assert(
       await page
         .locator(".resource-company img")
@@ -230,8 +231,17 @@ const server = http.createServer((req, res) => {
     await page.evaluate(() => {
       navigator.clipboard.writeText = window.testCopy;
     });
+    if (!(await page.locator("#resource-admin").isVisible()))
+      await page.locator('.resource-company[data-company="axa"]').click();
     await page.locator("#resource-admin summary").click();
-    await page.locator('#resource-form [name="company"]').fill("Compañía de ejemplo");
+    assert.equal(
+      await page.locator('#resource-form [name="company"]').inputValue(),
+      "AXA",
+    );
+    assert.equal(
+      await page.locator('#resource-form [name="company"]').getAttribute("readonly"),
+      "",
+    );
     await page.locator('#resource-form [name="product"]').fill("Producto de ejemplo");
     await page.locator('#resource-form [name="title"]').fill("Guía de ejemplo");
     await page.locator("#resource-kind").selectOption("link");
@@ -250,7 +260,10 @@ const server = http.createServer((req, res) => {
       .click();
     await page.getByRole("heading", { name: "Documentación disponible" }).waitFor();
     await page.locator("#resource-admin summary").click();
-    await page.locator('#resource-form [name="company"]').fill("Compañía de ejemplo");
+    assert.equal(
+      await page.locator('#resource-form [name="company"]').inputValue(),
+      "AXA",
+    );
     await page.locator('#resource-form [name="product"]').fill("Producto de ejemplo");
     await page.locator('#resource-form [name="title"]').fill("PDF de ejemplo");
     await page.locator("#resource-file").setInputFiles({
@@ -300,7 +313,7 @@ const server = http.createServer((req, res) => {
     );
     assert.equal(await page.locator("#resource-admin").isVisible(), false);
     assert.equal(await page.locator("#resource-bulk").isVisible(), false);
-    await page.getByRole("button", { name: "Compañía de ejemplo", exact: false }).click();
+    await page.getByRole("button", { name: "AXA", exact: false }).click();
     await page.getByRole("button", { name: "Producto de ejemplo", exact: false }).click();
     assert.equal(await page.locator(".resource-document").count(), 2);
     assert.equal(
@@ -311,7 +324,7 @@ const server = http.createServer((req, res) => {
     role = "admin";
     await login();
     await page.locator('#panel-navigation [data-view="resources"]').click();
-    await page.getByRole("button", { name: "Compañía de ejemplo", exact: false }).click();
+    await page.getByRole("button", { name: "AXA", exact: false }).click();
     await page.getByRole("button", { name: "Producto de ejemplo", exact: false }).click();
     await page.locator("#resource-select-all").check();
     await page.locator("#resource-delete-selected").click();

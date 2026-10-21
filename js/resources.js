@@ -35,6 +35,7 @@
     selection.clear();
     get("resources-browser").replaceChildren();
     get("resource-form").reset();
+    get("resource-admin").hidden = true;
     syncKind();
     get("resource-delete-selected").disabled = true;
     say("");
@@ -57,7 +58,7 @@
     account = details;
     const ticket = version;
     say("Cargando tus recursos…");
-    get("resource-admin").hidden = details?.role !== "admin";
+    get("resource-admin").hidden = true;
     try {
       const [list, me] = await Promise.all([
         backend.listResources(),
@@ -92,6 +93,11 @@
     const host = get("resources-browser");
     host.replaceChildren();
     selection.clear();
+    get("resource-admin").hidden = account?.role !== "admin" || !company;
+    if (!company) get("resource-admin").open = false;
+    const companyInput = get("resource-form").elements.namedItem("company");
+    companyInput.value = company || "";
+    companyInput.readOnly = true;
     get("resource-delete-selected").disabled = true;
     get("resource-select-all").checked = false;
     const nav = node("div", undefined, "resource-breadcrumb");
@@ -281,9 +287,9 @@
   get("resource-kind").addEventListener("change", syncKind);
   get("resource-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (busy || account?.role !== "admin" || !active) return;
+    if (busy || account?.role !== "admin" || !active || !company) return;
     const fields = Object.fromEntries(new FormData(event.currentTarget));
-    fields.company = window.PortfolioCompanies.label(fields.company);
+    fields.company = company;
     fields.product = fields.product.trim();
     fields.title = fields.title.trim();
     fields.url = fields.url.trim();
