@@ -234,6 +234,13 @@
     window.TeamPanel?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
+    get("request-initials").textContent = "";
+    get("request-current-status").textContent = "";
+    get("request-current-status").removeAttribute("data-status");
+    get("request-total").textContent = "";
+    Object.keys(statuses).forEach(
+      (status) => (get("requests-" + status + "-count").textContent = "—"),
+    );
     get("request-search").value = "";
     get("recent-requests").replaceChildren();
     get("request-list").replaceChildren();
@@ -323,21 +330,55 @@
     }
   });
 
+  const initials = (name) =>
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+
   function row(item) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "request-row";
+    button.className = "request-row request-client-row";
+    button.dataset.status = item.status;
+    const portrait = document.createElement("span");
+    portrait.className = "request-monogram";
+    portrait.textContent = initials(item.full_name);
+    portrait.setAttribute("aria-hidden", "true");
     const text = document.createElement("span");
+    text.className = "request-row-content";
+    const heading = document.createElement("span");
+    heading.className = "request-row-heading";
     const name = document.createElement("strong");
     name.textContent = item.full_name;
-    const subtitle = document.createElement("small");
-    subtitle.textContent = `${date(item.created_at)} · ${item.reasons.join(" · ") || "Consulta general"}`;
-    text.append(name, subtitle);
     const badge = document.createElement("span");
     badge.className = "request-status";
     badge.textContent = statuses[item.status];
     badge.dataset.status = item.status;
-    button.append(text, badge);
+    heading.append(name, badge);
+    const subtitle = document.createElement("span");
+    subtitle.className = "request-reason";
+    subtitle.textContent = item.reasons.join(" · ") || "Consulta general";
+    const contact = document.createElement("span");
+    contact.className = "request-contact-preview";
+    [item.phone, item.email].filter(Boolean).forEach((value) => {
+      const detail = document.createElement("span");
+      detail.textContent = value;
+      contact.append(detail);
+    });
+    const footer = document.createElement("span");
+    footer.className = "request-row-footer";
+    const received = document.createElement("span");
+    received.textContent = "Recibida el " + date(item.created_at);
+    const hint = document.createElement("span");
+    hint.className = "request-open-hint";
+    hint.textContent = "Ver solicitud ↗";
+    footer.append(received, hint);
+    text.append(heading, subtitle, contact, footer);
+    button.append(portrait, text);
     button.addEventListener("click", () => openRequest(item));
     return button;
   }
@@ -475,17 +516,21 @@
         get("scheduled-count").textContent = counts.scheduled;
         renderList("recent-requests", latest.rows);
       } else {
-        const result = await backend.listRequests({
-          name: get("request-search").value,
-          page,
-        });
+        const [result, counts] = await Promise.all([
+          backend.listRequests({ name: get("request-search").value, page }),
+          backend.counts(),
+        ]);
         if (!valid()) return;
         if (page > 0 && !result.rows.length) {
           page--;
           return load();
         }
+        Object.keys(statuses).forEach((status) => {
+          get("requests-" + status + "-count").textContent = counts[status];
+        });
         renderList("request-list", result.rows);
-        get("request-total").textContent = `${result.total} solicitudes`;
+        get("request-total").textContent =
+          `${result.total} ${result.total === 1 ? "solicitud" : "solicitudes"}`;
         get("page-label").textContent = `Página ${page + 1}`;
         get("previous-page").disabled = page === 0;
         get("next-page").disabled = (page + 1) * 25 >= result.total;
@@ -499,6 +544,10 @@
         // No mantener resultados antiguos en pantalla si la actualización falla.
         get("recent-requests").replaceChildren();
         get("request-list").replaceChildren();
+        Object.keys(statuses).forEach(
+          (status) => (get("requests-" + status + "-count").textContent = "—"),
+        );
+        get("request-total").textContent = "";
         get("consultant-list").replaceChildren();
         notice(
           "panel-notice",
@@ -550,6 +599,9 @@
     if (mutationPending) return;
     selected = item;
     get("request-title").textContent = item.full_name;
+    get("request-initials").textContent = initials(item.full_name);
+    get("request-current-status").textContent = statuses[item.status];
+    get("request-current-status").dataset.status = item.status;
     const details = get("request-details");
     details.replaceChildren();
     const fields = [
@@ -561,12 +613,16 @@
       ["Recibida", date(item.created_at)],
       ["Caduca", date(item.expires_at)],
     ];
-    fields.forEach(([label, value]) => {
+    fields.forEach(([label, value], index) => {
+      const group = document.createElement("div");
+      group.className = "request-detail-field";
+      if ([2, 3, 4].includes(index)) group.classList.add("request-detail-wide");
       const term = document.createElement("dt"),
         description = document.createElement("dd");
       term.textContent = label;
       description.textContent = value;
-      details.append(term, description);
+      group.append(term, description);
+      details.append(group);
     });
     get("request-status")
       .querySelectorAll("input")

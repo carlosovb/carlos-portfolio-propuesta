@@ -39,7 +39,7 @@ async function mock(context, state) {
       route.fulfill({
         status,
         contentType: "application/json",
-        headers,
+        headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
         body: JSON.stringify(result),
       });
     const access = () => ({
@@ -173,8 +173,19 @@ async function mock(context, state) {
     if (url.pathname.includes("contact_requests")) {
       state.requestReads++;
       assert.equal(state.role, "admin", "Un consultor intentó consultar solicitudes");
-      if (request.method() === "HEAD")
-        return route.fulfill({ status: 200, headers: { "Content-Range": "*/0" } });
+      if (request.method() === "HEAD") {
+        const status = url.searchParams.get("status")?.replace("eq.", "");
+        const count = (state.requests || []).filter(
+          (item) => !status || item.status === status,
+        ).length;
+        return route.fulfill({
+          status: 200,
+          headers: {
+            "Content-Range": "*/" + count,
+            "Access-Control-Expose-Headers": "Content-Range",
+          },
+        });
+      }
       if (request.method() === "DELETE") {
         const id = url.searchParams.get("id").slice(3);
         if (id === state.deleteFail) return json({}, 500);
@@ -396,6 +407,46 @@ async function login(page, base) {
         false,
       );
     }
+    await statusPage.locator('#panel-navigation [data-view="requests"]').click();
+    await statusPage.locator("#request-list .request-row").waitFor();
+    await statusPage.waitForFunction(
+      () => document.querySelector("#requests-pending-count").textContent === "1",
+    );
+    assert.equal(
+      await statusPage.locator("#requests-scheduled-count").textContent(),
+      "0",
+    );
+    assert.equal(
+      await statusPage.locator("#request-list .request-contact-preview").textContent(),
+      "000000000test@example.invalid",
+    );
+    for (const width of [320, 768, 1440]) {
+      await statusPage.setViewportSize({ width, height: 1000 });
+      for (const theme of ["light", "dark"]) {
+        await statusPage.evaluate(
+          (theme) => (document.documentElement.dataset.theme = theme),
+          theme,
+        );
+        assert.equal(
+          await statusPage.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+          true,
+          "El listado de solicitudes debe ajustarse a la pantalla",
+        );
+      }
+      if (width === 320 && process.env.REQUESTS_MOBILE_SCREENSHOT)
+        await statusPage.screenshot({
+          path: process.env.REQUESTS_MOBILE_SCREENSHOT,
+          fullPage: true,
+        });
+    }
+    if (process.env.REQUESTS_SCREENSHOT)
+      await statusPage.screenshot({
+        path: process.env.REQUESTS_SCREENSHOT,
+        fullPage: true,
+      });
+    await statusPage.locator('#panel-navigation [data-view="home"]').click();
     await statusPage.locator("#recent-requests .request-row").click();
     assert.equal(
       await statusPage.locator('#request-status input[value="pending"]').isChecked(),
@@ -431,7 +482,9 @@ async function login(page, base) {
       () => !document.querySelector("#request-dialog").open,
     );
     assert.equal(statusData.requests[0].status, "scheduled");
-    await statusPage.locator('#recent-requests [data-status="scheduled"]').waitFor();
+    await statusPage
+      .locator('#recent-requests .request-status[data-status="scheduled"]')
+      .waitFor();
     statusData.requests.push({
       ...statusData.requests[0],
       id: "test-request-2",
@@ -671,6 +724,15 @@ async function login(page, base) {
       document.querySelector("#team-notice").textContent.includes("actualizados"),
     );
     assert.equal(treeData.assignmentSaved.p_position_code, "team_manager");
+    treeData.teamUserId = "ee1355b0-7a6c-4559-87a6-fa72a7d8f73b";
+    treeData.photoUploaded = true;
+    await treePage.locator('#panel-navigation [data-view="profile"]').click();
+    await treePage.locator('#my-team-photo img[src="../assets/carlos.png"]').waitFor();
+    assert.equal(
+      await treePage.locator("#my-team-photo img").count(),
+      1,
+      "El perfil de Carlos debe usar el mismo retrato sin fondo que el equipo",
+    );
     await treeContext.close();
     console.log(
       "Equipo: centrado propio, navegación, ficha, foto y edición exclusiva de administrador comprobados.",

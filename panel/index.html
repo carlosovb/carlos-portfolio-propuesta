@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/team.css?v=myprofile7" />
+    <link rel="stylesheet" href="../css/team.css?v=requests8" />
+    <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -177,17 +178,53 @@
           </div>
         </section>
         <section id="requests-view" aria-label="Listado de solicitudes" hidden>
-          <label class="panel-search">
-            Buscar por nombre
-            <input
-              type="search"
-              id="request-search"
-              placeholder="Nombre del cliente"
-              autocomplete="off"
-              maxlength="120"
-            />
-          </label>
-          <p id="request-total" class="panel-muted"></p>
+          <div class="requests-overview">
+            <div class="requests-intro">
+              <p class="eyebrow">Cada conversación empieza aquí</p>
+              <h2>
+                De la primera llamada
+                <br />
+                a la primera reunión.
+              </h2>
+              <p>
+                Consulta los datos de cada persona y actualiza el estado de su solicitud.
+              </p>
+            </div>
+            <div class="requests-metrics" aria-label="Resumen de todas las solicitudes">
+              <article data-status="pending">
+                <span class="requests-metric-symbol" aria-hidden="true">◷</span>
+                <strong id="requests-pending-count">—</strong>
+                <span>Pendientes de contactar</span>
+              </article>
+              <article data-status="contacted">
+                <span class="requests-metric-symbol" aria-hidden="true">↗</span>
+                <strong id="requests-contacted-count">—</strong>
+                <span>Contactados</span>
+              </article>
+              <article data-status="scheduled">
+                <span class="requests-metric-symbol" aria-hidden="true">✓</span>
+                <strong id="requests-scheduled-count">—</strong>
+                <span>Citas acordadas</span>
+              </article>
+            </div>
+          </div>
+          <div class="requests-list-heading">
+            <div>
+              <p class="eyebrow">Tu agenda de contactos</p>
+              <h2>Solicitudes recibidas</h2>
+              <p id="request-total" class="panel-muted" aria-live="polite"></p>
+            </div>
+            <label class="panel-search">
+              Buscar por nombre
+              <input
+                type="search"
+                id="request-search"
+                placeholder="Nombre del cliente"
+                autocomplete="off"
+                maxlength="120"
+              />
+            </label>
+          </div>
           <div
             class="bulk-toolbar"
             data-bulk-toolbar="request-list"
@@ -645,7 +682,16 @@
         <p class="eyebrow">Primera reunión</p>
         <button type="button" id="close-dialog" aria-label="Cerrar ficha">✕</button>
       </div>
-      <h2 id="request-title"></h2>
+      <div class="request-detail-hero">
+        <span id="request-initials" class="request-monogram" aria-hidden="true"></span>
+        <div>
+          <span id="request-current-status" class="request-status"></span>
+          <h2 id="request-title"></h2>
+          <p class="request-detail-help">
+            Los datos para preparar vuestra primera conversación.
+          </p>
+        </div>
+      </div>
       <dl id="request-details"></dl>
       <fieldset id="request-status" class="status-picker">
         <legend>Estado de la solicitud</legend>
@@ -692,7 +738,7 @@
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/team.js?v=myprofile7" defer></script>
-    <script src="../js/panel.js?v=myprofile7" defer></script>
+    <script src="../js/team.js?v=requests8" defer></script>
+    <script src="../js/panel.js?v=requests8" defer></script>
   </body>
 </html>

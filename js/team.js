@@ -365,7 +365,7 @@
         : mine?.manager_name || "Responsable principal";
       await fetchPhotos(mine ? [mine] : [], snapshot);
       if (snapshot !== revision) return;
-      avatar(get("my-team-photo"), { ...details.profile, user_id: mine?.user_id });
+      avatar(get("my-team-photo"), { ...details.profile, user_id: mine?.user_id }, true);
       get("team-photo-remove").hidden = !mine?.avatar_path;
       get("team-photo-adjust").hidden = !mine?.avatar_path;
       notice("team-profile-notice", "");
