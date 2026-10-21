@@ -89,6 +89,38 @@
         );
     }
   }
+  let companyScroll = 0,
+    companyOpener = null;
+  function navigateCompany(next) {
+    const ticket = version;
+    if (next) {
+      companyScroll = window.scrollY;
+      companyOpener = next;
+    }
+    const change = () => {
+      if (!active || ticket !== version) return;
+      company = next;
+      product = null;
+      render();
+      if (next)
+        get("resource-company-heading").scrollIntoView({
+          block: "start",
+          behavior: "instant",
+        });
+      else {
+        window.scrollTo({ top: companyScroll, behavior: "instant" });
+        [...document.querySelectorAll(".resource-company")]
+          .find((n) => n.querySelector("strong")?.textContent === companyOpener)
+          ?.focus({ preventScroll: true });
+      }
+    };
+    if (
+      document.startViewTransition &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      document.startViewTransition(change);
+    else change();
+  }
   function render() {
     document.querySelector(".resource-personal").hidden = !!company;
     const host = get("resources-browser");
@@ -101,38 +133,33 @@
     companyInput.readOnly = true;
     get("resource-delete-selected").disabled = true;
     get("resource-select-all").checked = false;
-    const nav = node("div", undefined, "resource-breadcrumb");
-    nav.append(
-      button(
-        "Todas las compañías",
-        () => {
-          company = null;
-          product = null;
-          render();
-        },
-        "panel-text-button",
-      ),
-    );
-    if (company)
-      nav.append(
-        node("span", "/"),
-        button(
-          company,
-          () => {
-            product = null;
-            render();
-          },
-          "panel-text-button",
-        ),
+    const heading = get("resource-company-heading");
+    heading.replaceChildren();
+    heading.hidden = !company;
+    document.querySelector("#resources-view .panel-section-heading").hidden = !!company;
+    if (company) {
+      heading.append(
+        button("← Todas las compañías", () => navigateCompany(null), "panel-secondary"),
       );
-    if (product) nav.append(node("span", "/"), node("strong", product));
-    host.append(nav);
-    const list = rows.filter(
-      (r) => (!company || r.company === company) && (!product || r.product === product),
-    );
-    get("resource-bulk").hidden =
-      account?.role !== "admin" || !company || !product || !list.length;
-    if (!company || !product) {
+      const identity = node("div", undefined, "resource-company-identity"),
+        brand = window.PortfolioCompanies.find(company);
+      if (brand) {
+        const img = node("img");
+        img.src = new URL("assets/companies/" + brand.logo, applicationRoot).href;
+        img.alt = "";
+        img.style.viewTransitionName = "company-logo-" + brand.id;
+        identity.dataset.company = brand.id;
+        identity.append(img);
+      }
+      identity.append(
+        node("h2", company),
+        node("p", "Documentos y enlaces de la compañía."),
+      );
+      heading.append(identity);
+    }
+    const list = rows.filter((r) => !company || r.company === company);
+    get("resource-bulk").hidden = account?.role !== "admin" || !company || !list.length;
+    if (!company) {
       const grid = node("div", undefined, "resource-grid"),
         key = company ? "product" : "company";
       [
@@ -147,8 +174,7 @@
           const card = button(
             "",
             () => {
-              company ? (product = name) : (company = name);
-              render();
+              navigateCompany(name);
             },
             company ? "resource-folder" : "resource-company",
           );
@@ -157,6 +183,7 @@
             const img = node("img");
             img.src = new URL("assets/companies/" + brand.logo, applicationRoot).href;
             img.alt = "";
+            img.style.viewTransitionName = "company-logo-" + brand.id;
             img.width = brand.id === "axa" ? 160 : 280;
             img.height = 80;
             card.append(img);
@@ -180,6 +207,10 @@
         );
       return;
     }
+    if (!list.length)
+      host.append(
+        node("p", "Todavía no hay documentos en esta compañía.", "workspace-empty"),
+      );
     [false, true].forEach((archived) => {
       const group = list.filter((r) => r.archived === archived);
       if (!group.length) return;
@@ -207,7 +238,10 @@
           }
           const text = node("div");
           text.append(
-            node("small", row.kind === "file" ? "PDF" : "ENLACE EXTERNO"),
+            node(
+              "small",
+              row.product + " · " + (row.kind === "file" ? "PDF" : "ENLACE EXTERNO"),
+            ),
             node("strong", row.title),
             node(
               "span",

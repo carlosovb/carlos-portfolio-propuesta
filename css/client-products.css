@@ -143,7 +143,9 @@
   isolation: isolate;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .resource-company:is(:hover, :focus-visible) {
@@ -189,7 +191,10 @@
   padding: 10px 18px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  transition: color 0.25s ease, border-color 0.25s ease, transform 0.3s ease;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.3s ease;
 }
 .resource-company .resource-eyebrow {
   display: none;
@@ -239,6 +244,68 @@ html[data-theme="dark"] .resource-company[data-company="axa"] img {
 }
 
 @media (prefers-reduced-motion: reduce) {
- .resource-company, .resource-company img, .resource-company small, .resource-company strong { transition: none; }
- .resource-company:is(:hover, :focus-visible), .resource-company:is(:hover, :focus-visible) img, .resource-company:is(:hover, :focus-visible) small { transform: none; }
+  .resource-company,
+  .resource-company img,
+  .resource-company small,
+  .resource-company strong {
+    transition: none;
+  }
+  .resource-company:is(:hover, :focus-visible),
+  .resource-company:is(:hover, :focus-visible) img,
+  .resource-company:is(:hover, :focus-visible) small {
+    transform: none;
+  }
+}
+
+.resource-company-heading {
+  margin: 0 0 30px;
+  scroll-margin-top: 24px;
+}
+.resource-company-identity {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 30px;
+  align-items: center;
+  padding: 36px 0 24px;
+  border-bottom: 1px solid var(--line);
+}
+.resource-company-identity img {
+  grid-row: span 2;
+  width: 200px;
+  max-height: 80px;
+  object-fit: contain;
+}
+.resource-company-identity[data-company="axa"] img {
+  width: 80px;
+}
+.resource-company-identity h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 34px);
+}
+.resource-company-identity p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+html[data-theme="dark"] .resource-company-identity img {
+  filter: brightness(0) invert(1);
+}
+::view-transition-group(*) {
+  animation-duration: 320ms;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+@media (max-width: 600px) {
+  .resource-company-identity {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .resource-company-identity img {
+    grid-row: auto;
+  }
+  .resource-company-identity p {
+    margin: 0;
+  }
 }
