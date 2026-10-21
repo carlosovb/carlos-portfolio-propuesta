@@ -16,6 +16,7 @@
     "Revisar y enviar",
   ];
   const content = get("premeeting-content");
+  const C = window.PremeetingControls;
   function el(tag, text, cls) {
     const n = document.createElement(tag);
     if (text !== undefined) n.textContent = text;
@@ -51,45 +52,76 @@
     input.value = obj[key];
     if (options.autocomplete) input.autocomplete = options.autocomplete;
     input.addEventListener("input", () => (obj[key] = input.value));
-    wrap.append(input);
+    wrap.append(options.options ? C.selectControl(input, label) : input);
     parent.append(wrap);
     return input;
   }
   function money(parent, label, obj, key, months = false) {
-    const wrap = el("label", undefined, "premeeting-field premeeting-money");
-    wrap.append(el("span", label));
-    const controls = el("div", undefined, "premeeting-money-controls"),
-      select = el("select"),
-      input = el("input");
-    Object.entries(M.statuses).forEach(([key, text]) => {
-      const o = el("option", text);
-      o.value = key;
-      select.append(o);
-    });
-    select.value = obj[key].status;
-    select.setAttribute("aria-label", `${label} · opción`);
+    const wrap = el("div", undefined, "premeeting-field premeeting-money");
+    const heading = el("div", undefined, "premeeting-money-heading");
+    heading.append(
+      C.icon(months ? "clock" : key === "mortgage" || key === "rent" ? "home" : "wallet"),
+      el("span", label),
+    );
+    wrap.append(heading);
+    const input = el("input");
     input.type = "number";
     input.inputMode = months ? "numeric" : "decimal";
     input.min = "0";
     input.max = months ? "1200" : "100000000";
     input.step = months ? "1" : "0.01";
-    input.placeholder = months ? "Meses aproximados" : "Importe en €";
+    input.placeholder = "0";
     input.setAttribute("aria-label", label);
     input.value = obj[key].value ?? "";
-    input.disabled = select.value !== "known";
-    input.required = !input.disabled;
-    select.addEventListener("change", () => {
-      obj[key] = { status: select.value, value: null };
-      input.value = "";
-      input.disabled = select.value !== "known";
-      input.required = !input.disabled;
+    const entry = el("div", undefined, "premeeting-amount-entry");
+    entry.append(input, el("span", months ? "meses" : "€"));
+    const options = el("div", undefined, "premeeting-money-options");
+    options.setAttribute("role", "group");
+    options.setAttribute("aria-label", `${label} · opción`);
+    const hint = el("p", undefined, "premeeting-money-hint");
+    const buttons = [];
+    function refresh() {
+      const known = obj[key].status === "known";
+      input.disabled = !known;
+      input.required = known;
+      entry.hidden = !known;
+      hint.hidden = known;
+      hint.textContent =
+        obj[key].status === "meeting"
+          ? "Lo veremos juntos en la reunión."
+          : "No pasa nada si no tienes esta cifra a mano.";
+      wrap.dataset.status = obj[key].status;
+      buttons.forEach(([value, btn]) =>
+        btn.setAttribute("aria-pressed", String(value === obj[key].status)),
+      );
+    }
+    [
+      ["known", months ? "Indicar meses" : "Indicar importe"],
+      ["unknown", "No lo sé"],
+      ["meeting", "En la reunión"],
+    ].forEach(([value, text]) => {
+      const btn = button(
+        text,
+        () => {
+          if (obj[key].status !== value) {
+            obj[key] = { status: value, value: null };
+            input.value = "";
+          }
+          refresh();
+          if (value === "known") input.focus({ preventScroll: true });
+        },
+        "premeeting-option",
+      );
+      btn.title = M.statuses[value];
+      buttons.push([value, btn]);
+      options.append(btn);
     });
     input.addEventListener(
       "input",
       () => (obj[key].value = input.value === "" ? null : Number(input.value)),
     );
-    controls.append(select, input);
-    wrap.append(controls);
+    wrap.append(options, entry, hint);
+    refresh();
     parent.append(wrap);
   }
   function group(title) {
@@ -104,46 +136,133 @@
     if (shared && data.mode === "couple")
       fn(group("Compartido · indicar una sola vez"), data.shared);
   }
-  function goals(parent, g) {
-    const list = el("div");
-    g.goals.forEach((goal, index) => {
-      const row = el("div", undefined, "premeeting-repeater");
-      const grid = el("div", undefined, "premeeting-grid");
-      field(grid, "Objetivo", goal, "label", { required: true, max: 120 });
-      field(grid, "Prioridad (opcional)", goal, "priority", {
-        options: ["", "Alta", "Media", "Baja"],
-      });
-      row.append(
-        grid,
-        button("Quitar objetivo", () => {
-          g.goals.splice(index, 1);
-          render();
-        }),
+  const goalLooks = [
+    ["shield", "mint", "Un respaldo para lo inesperado"],
+    ["savings", "copper", "Dar el primer paso, a tu ritmo"],
+    ["chart", "blue", "Saber dónde está tu dinero"],
+    ["sun", "lavender", "Pensar en tu yo del futuro"],
+    ["home", "copper", "Un espacio para tu próxima etapa"],
+    ["debt", "blue", "Ganar tranquilidad mes a mes"],
+    ["heart", "rose", "Cuidar de quienes más importan"],
+    ["children", "mint", "Acompañar su futuro desde hoy"],
+  ];
+  function priorities(parent, goal) {
+    const priorities = el("div", undefined, "premeeting-priorities");
+    priorities.setAttribute("role", "group");
+    priorities.setAttribute(
+      "aria-label",
+      `Prioridad de ${goal.label || "tu objetivo"} (opcional)`,
+    );
+    const title = el("span", "Tu prioridad", "premeeting-priority-label");
+    priorities.append(title);
+    ["Alta", "Media", "Baja"].forEach((priority) => {
+      const btn = button(
+        priority,
+        () => {
+          goal.priority = goal.priority === priority ? "" : priority;
+          update();
+        },
+        "premeeting-priority",
       );
-      list.append(row);
+      btn.dataset.priority = priority;
+      function update() {
+        [...priorities.querySelectorAll("button")].forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.textContent === goal.priority)),
+        );
+      }
+      priorities.append(btn);
+      update();
     });
-    parent.append(list);
-    const choices = el("div", undefined, "premeeting-choices");
-    M.goals
-      .filter((label) => !g.goals.some((g) => g.label === label))
-      .forEach((label) =>
-        choices.append(
-          button(`+ ${label}`, () => {
-            if (g.goals.length < 12) {
-              g.goals.push({ label, priority: "" });
-              render();
-            }
-          }),
-        ),
+    parent.append(priorities);
+  }
+  function goals(parent, g) {
+    const groupIndex = [...content.querySelectorAll(".premeeting-person")].indexOf(
+      parent,
+    );
+    const header = el("div", undefined, "premeeting-goals-heading");
+    header.append(
+      el("p", "¿Qué te gustaría conseguir?"),
+      el("span", `${g.goals.length} seleccionados`, "premeeting-selected-count"),
+    );
+    parent.append(header);
+    const grid = el("div", undefined, "premeeting-goal-grid");
+    M.goals.forEach((label, i) => {
+      const goal = g.goals.find((x) => x.label === label),
+        [icon, tone, description] = goalLooks[i];
+      const card = el("article", undefined, "premeeting-goal-card");
+      card.dataset.tone = tone;
+      card.dataset.selected = String(!!goal);
+      const pick = button(
+        "",
+        () => {
+          if (goal) g.goals.splice(g.goals.indexOf(goal), 1);
+          else if (g.goals.length < 12) g.goals.push({ label, priority: "" });
+          render();
+          [...content.querySelectorAll(".premeeting-person")][groupIndex]
+            ?.querySelectorAll(".premeeting-goal-pick")
+            [i]?.focus({ preventScroll: true });
+        },
+        "premeeting-goal-pick",
       );
-    parent.append(choices);
-    parent.append(
-      button("+ Añadir otro objetivo", () => {
+      pick.setAttribute("aria-label", label);
+      pick.setAttribute("aria-pressed", String(!!goal));
+      pick.disabled = !goal && g.goals.length >= 12;
+      const badge = el("span", undefined, "premeeting-goal-icon");
+      badge.append(C.icon(icon));
+      const copy = el("span", undefined, "premeeting-goal-copy");
+      copy.append(el("strong", label), el("small", description));
+      const state = el("span", undefined, "premeeting-goal-check");
+      state.append(C.icon(goal ? "check" : "plus"));
+      pick.append(badge, copy, state);
+      card.append(pick);
+      if (goal) priorities(card, goal);
+      grid.append(card);
+    });
+    parent.append(grid);
+    g.goals
+      .filter((goal) => !M.goals.includes(goal.label))
+      .forEach((goal) => {
+        const card = el("article", undefined, "premeeting-custom-goal");
+        const heading = el("div", undefined, "premeeting-row-heading");
+        heading.append(C.icon("plus"), el("h4", "Tu propio objetivo"));
+        card.append(heading);
+        field(card, "¿Qué quieres conseguir?", goal, "label", {
+          required: true,
+          max: 120,
+        });
+        priorities(card, goal);
+        card.append(
+          button(
+            "Quitar objetivo",
+            () => {
+              g.goals.splice(g.goals.indexOf(goal), 1);
+              render();
+            },
+            "premeeting-remove",
+          ),
+        );
+        parent.append(card);
+      });
+    const add = button(
+      "+ Añadir otro objetivo",
+      () => {
         if (g.goals.length < 12) {
           g.goals.push({ label: "", priority: "" });
           render();
+          const inputs = content.querySelectorAll(".premeeting-custom-goal input");
+          inputs[inputs.length - 1]?.focus({ preventScroll: true });
         }
-      }),
+      },
+      "premeeting-add",
+    );
+    add.disabled = g.goals.length >= 12;
+    parent.append(add);
+    parent.append(
+      el(
+        "p",
+        "No necesitas elegirlos todos. Puedes cambiar una prioridad o desmarcarla pulsando de nuevo.",
+        "premeeting-helper",
+      ),
     );
   }
   function expenses(parent, g) {
@@ -153,9 +272,19 @@
         "Incluye aquí solo los gastos de este apartado. La financiación del coche va en préstamos, no en transporte. La hipoteca va en vivienda, no se repite como préstamo.",
       ),
     );
-    const expenseGrid = el("div", undefined, "premeeting-grid");
-    M.expenses.forEach(([key, label]) => money(expenseGrid, label, g.expenses, key));
-    parent.append(expenseGrid);
+    const sections = [
+      ["Vivienda y hogar", ["rent", "mortgage", "utilities", "food"]],
+      ["Tu día a día", ["transport", "insurance", "subscriptions", "leisure"]],
+      ["Familia y otros gastos", ["education", "other"]],
+    ];
+    sections.forEach(([title, keys]) => {
+      parent.append(el("h3", title));
+      const expenseGrid = el("div", undefined, "premeeting-grid");
+      M.expenses
+        .filter(([key]) => keys.includes(key))
+        .forEach(([key, label]) => money(expenseGrid, label, g.expenses, key));
+      parent.append(expenseGrid);
+    });
     money(parent, "Hipoteca · meses pendientes aproximados", g, "mortgage_months", true);
     parent.append(el("h3", "Préstamos y financiación"));
     parent.append(
@@ -166,6 +295,9 @@
     );
     g.loans.forEach((loan, i) => {
       const row = el("div", undefined, "premeeting-repeater");
+      const heading = el("div", undefined, "premeeting-row-heading");
+      heading.append(C.icon("debt"), el("h4", `Préstamo ${i + 1}`));
+      row.append(heading);
       field(row, "Tipo o nombre del préstamo", loan, "label", { required: true });
       money(row, "Cuota mensual", loan, "payment");
       money(row, "Meses aproximados pendientes", loan, "months", true);
@@ -207,6 +339,9 @@
     if (g.assets_skipped) return;
     g.assets.forEach((a, i) => {
       const row = el("div", undefined, "premeeting-repeater");
+      const heading = el("div", undefined, "premeeting-row-heading");
+      heading.append(C.icon("savings"), el("h4", `Cuenta o producto ${i + 1}`));
+      row.append(heading);
       field(row, "Qué producto tienes", a, "product", {
         options: M.products,
         required: true,
@@ -231,6 +366,7 @@
     );
   }
   function render() {
+    C.close();
     content.replaceChildren();
     get("premeeting-error").hidden = true;
     const progress = get("premeeting-progress");
@@ -242,6 +378,13 @@
       if (i === step) b.setAttribute("aria-current", "step");
       progress.append(b);
     });
+    document.body.dataset.step = String(step);
+    const sectionLabel = el(
+      "p",
+      `TU PUNTO DE PARTIDA / ${String(step + 1).padStart(2, "0")}`,
+      "premeeting-section-label",
+    );
+    content.append(sectionLabel);
     const title = el("h2", steps[step]);
     title.tabIndex = -1;
     content.append(title);
@@ -394,6 +537,14 @@
     const fields = [...content.querySelectorAll("input,select")];
     const invalid = fields.find((input) => !input.checkValidity());
     if (invalid) {
+      const custom = invalid.closest(".premeeting-select");
+      if (custom) {
+        custom.querySelector('[role="combobox"]').focus();
+        get("premeeting-error").textContent =
+          "Selecciona una opción en el campo indicado para continuar.";
+        get("premeeting-error").hidden = false;
+        return false;
+      }
       invalid.reportValidity();
       invalid.focus();
       return false;

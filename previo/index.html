@@ -10,7 +10,8 @@
     <script src="../js/theme-init.js"></script>
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/styles.css" />
-    <link rel="stylesheet" href="../css/premeeting.css?v=previo1" />
+    <link rel="stylesheet" href="../css/premeeting.css?v=previo2" />
+    <link rel="stylesheet" href="../css/premeeting-visual.css?v=previo2" />
   </head>
   <body class="premeeting-page">
     <main class="premeeting-shell">
@@ -42,7 +43,15 @@
         </p>
       </div>
       <div id="premeeting-workspace">
-        <nav id="premeeting-progress" aria-label="Pasos del formulario"></nav>
+        <aside class="premeeting-route">
+          <p class="premeeting-route-title">Tu mapa financiero</p>
+          <nav id="premeeting-progress" aria-label="Pasos del formulario"></nav>
+          <div class="premeeting-route-note">
+            <span>Un paso cada vez.</span>
+            <p>No necesitas tener todas las respuestas. Para eso está nuestra reunión.</p>
+            <small>Privado · Sin compromiso</small>
+          </div>
+        </aside>
         <form id="premeeting-form" novalidate>
           <div id="premeeting-content"></div>
           <p id="premeeting-error" role="alert" hidden></p>
@@ -95,6 +104,7 @@
     <script src="../js/backend-config.js"></script>
     <script src="../js/premeeting-model.js?v=previo1"></script>
     <script src="../js/premeeting-summary.js?v=previo1"></script>
-    <script src="../js/premeeting.js?v=previo1"></script>
+    <script src="../js/premeeting-controls.js?v=previo2"></script>
+    <script src="../js/premeeting.js?v=previo2"></script>
   </body>
 </html>

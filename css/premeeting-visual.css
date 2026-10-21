@@ -1,0 +1,735 @@
+/* Dirección visual del formulario. Aislada del panel privado y de la portada. */
+.premeeting-page {
+  --pm-mint: #80d6bf;
+  --pm-blue: #9cc7f5;
+  --pm-lavender: #c2adee;
+  --pm-rose: #eda8b8;
+  background-image:
+    radial-gradient(ellipse at 90% 8%, #7596c315, transparent 40%),
+    radial-gradient(ellipse at 0 50%, #9c74470c, transparent 40%);
+}
+html[data-theme="light"] .premeeting-page {
+  --pm-mint: #16765d;
+  --pm-blue: #255fa0;
+  --pm-lavender: #7050a3;
+  --pm-rose: #a73e60;
+}
+.premeeting-page .premeeting-shell {
+  width: min(1360px, calc(100% - 80px));
+  padding-top: 32px;
+}
+.premeeting-page .premeeting-top {
+  margin-bottom: 48px;
+}
+.premeeting-page #premeeting-intro {
+  max-width: 900px;
+  margin-bottom: 44px;
+}
+.premeeting-page #premeeting-intro h1 {
+  font-size: clamp(40px, 5vw, 66px);
+}
+.premeeting-page #premeeting-intro > p:not(.eyebrow) {
+  max-width: 720px;
+}
+.premeeting-page #premeeting-workspace {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 24px 44px;
+  align-items: start;
+}
+.premeeting-route {
+  position: sticky;
+  top: 28px;
+  min-width: 0;
+}
+.premeeting-route-title {
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 4px 0 20px;
+}
+.premeeting-page #premeeting-progress {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+.premeeting-page #premeeting-progress button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  padding: 14px 12px;
+  min-width: 0;
+  text-align: left;
+  font-size: 13px;
+  background: transparent;
+  line-height: 1.4;
+}
+.premeeting-page #premeeting-progress button strong {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.premeeting-page #premeeting-progress button[aria-current] {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.premeeting-page #premeeting-progress button[aria-current] strong {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.premeeting-route-note {
+  padding: 22px 12px;
+  margin-top: 26px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+.premeeting-route-note span {
+  font-size: 16px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.premeeting-route-note small {
+  display: block;
+  color: var(--accent);
+  margin-top: 20px;
+  font-size: 11px;
+}
+.premeeting-page #premeeting-form {
+  padding: clamp(22px, 3vw, 44px);
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--panel) 96%, var(--accent)),
+    var(--panel) 40%
+  );
+}
+.premeeting-page .premeeting-section-label {
+  margin: 0 0 16px;
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+.premeeting-page #premeeting-form h2 {
+  font-size: clamp(29px, 4vw, 43px);
+  margin-bottom: 18px;
+}
+.premeeting-page #premeeting-content > p:not(.premeeting-section-label) {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+  margin-bottom: 30px;
+}
+.premeeting-page .premeeting-person {
+  margin: 38px 0 0;
+  padding: 0;
+}
+.premeeting-page .premeeting-person + .premeeting-person {
+  border-top: 1px solid var(--line);
+  padding-top: 32px;
+  margin-top: 40px;
+}
+.premeeting-page .premeeting-person legend {
+  margin-bottom: 24px;
+  padding: 0 14px 0 0;
+  font-size: 21px;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+}
+.premeeting-page .premeeting-person legend::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 12px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.premeeting-page .premeeting-grid {
+  gap: 22px;
+}
+.premeeting-page .premeeting-field {
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.premeeting-page .premeeting-field input {
+  min-height: 52px;
+  border-radius: 14px;
+  padding: 13px 16px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.premeeting-icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.premeeting-page .premeeting-goals-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin: 0 0 20px;
+}
+.premeeting-goals-heading p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.premeeting-selected-count {
+  font-size: 11px;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--accent);
+}
+.premeeting-goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.premeeting-goal-card {
+  --tone: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 21px;
+  min-width: 0;
+  background: color-mix(in srgb, var(--bg) 48%, transparent);
+  transition:
+    border-color 0.2s,
+    transform 0.2s,
+    background 0.2s;
+}
+.premeeting-goal-card[data-tone="mint"] {
+  --tone: var(--pm-mint);
+}
+.premeeting-goal-card[data-tone="blue"] {
+  --tone: var(--pm-blue);
+}
+.premeeting-goal-card[data-tone="lavender"] {
+  --tone: var(--pm-lavender);
+}
+.premeeting-goal-card[data-tone="rose"] {
+  --tone: var(--pm-rose);
+}
+.premeeting-goal-card:hover {
+  border-color: var(--tone);
+  transform: translateY(-3px);
+}
+.premeeting-goal-card[data-selected="true"] {
+  border-color: var(--tone);
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, var(--tone) 11%, var(--bg)),
+    color-mix(in srgb, var(--bg) 65%, transparent)
+  );
+}
+.premeeting-goal-pick {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 22px;
+  gap: 13px;
+  align-items: start;
+  width: 100%;
+  min-height: 140px;
+  padding: 22px 18px;
+  border: 0;
+  border-radius: 21px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+.premeeting-goal-icon {
+  color: var(--tone);
+  width: 44px;
+  height: 48px;
+  border-radius: 14px 14px 14px 4px;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  display: grid;
+  place-items: center;
+}
+.premeeting-goal-icon .premeeting-icon {
+  width: 27px;
+  height: 27px;
+}
+.premeeting-goal-copy {
+  display: grid;
+  gap: 9px;
+}
+.premeeting-goal-copy strong {
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 650;
+  letter-spacing: -0.15px;
+}
+.premeeting-goal-copy small {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  font-weight: 400;
+}
+.premeeting-goal-check {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+}
+.premeeting-goal-check .premeeting-icon {
+  width: 13px;
+  height: 13px;
+}
+[data-selected="true"] .premeeting-goal-check {
+  color: var(--bg);
+  background: var(--tone);
+  border-color: var(--tone);
+}
+.premeeting-priorities {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-top: 1px solid color-mix(in srgb, var(--tone, var(--accent)) 20%, var(--line));
+}
+.premeeting-priority-label {
+  flex-basis: 100%;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.premeeting-priority {
+  --priority-color: var(--pm-mint);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  min-height: 38px;
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 11px;
+  transition: background 0.2s;
+}
+.premeeting-priority[data-priority="Alta"] {
+  --priority-color: var(--pm-rose);
+}
+.premeeting-priority[data-priority="Media"] {
+  --priority-color: var(--accent);
+}
+.premeeting-priority[aria-pressed="true"] {
+  border-color: var(--priority-color);
+  background: color-mix(in srgb, var(--priority-color) 17%, var(--bg));
+  color: var(--priority-color);
+  box-shadow: inset 0 0 0 1px var(--priority-color);
+}
+.premeeting-page .premeeting-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin: 24px 0 0;
+  padding: 12px 20px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 60%, var(--line));
+  border-radius: 14px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+.premeeting-page .premeeting-helper {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 18px 0 0;
+}
+.premeeting-page .premeeting-custom-goal,
+.premeeting-page .premeeting-repeater {
+  margin: 24px 0 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
+  display: grid;
+  gap: 20px;
+}
+.premeeting-row-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--accent);
+}
+.premeeting-row-heading h4 {
+  color: var(--ink);
+  margin: 0;
+}
+.premeeting-page .premeeting-custom-goal .premeeting-priorities {
+  padding: 18px 0 0;
+}
+.premeeting-page .premeeting-remove {
+  justify-self: start;
+  min-height: 40px;
+  background: transparent;
+  color: var(--pm-rose);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 0;
+  font-size: 12px;
+}
+.premeeting-page .premeeting-repeater > .premeeting-secondary {
+  justify-self: start;
+  margin-top: 4px;
+}
+.premeeting-page .premeeting-person > h3 {
+  margin: 34px 0 12px;
+  font-size: 20px;
+}
+.premeeting-page .premeeting-person > p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin: 0 0 24px;
+}
+.premeeting-page .premeeting-person > .premeeting-secondary {
+  margin-top: 24px;
+}
+.premeeting-page .premeeting-money {
+  margin: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  min-width: 0;
+}
+.premeeting-money-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 42px;
+  line-height: 1.6;
+}
+.premeeting-money-heading svg {
+  color: var(--pm-mint);
+  width: 21px;
+  height: 21px;
+}
+.premeeting-money-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.premeeting-page .premeeting-option {
+  flex: 1;
+  min-width: max-content;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 9px;
+}
+.premeeting-page .premeeting-option[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+.premeeting-page .premeeting-money-hint {
+  margin: 0;
+  min-height: 48px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  font-weight: 400;
+}
+.premeeting-amount-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.premeeting-amount-entry > span {
+  font-size: 19px;
+  color: var(--accent);
+  flex: none;
+}
+.premeeting-page .premeeting-amount-entry input {
+  font-size: 27px;
+  min-height: 56px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 4px 0;
+  box-shadow: none;
+  width: 100%;
+  appearance: textfield;
+}
+.premeeting-page .premeeting-amount-entry input::-webkit-inner-spin-button,
+.premeeting-page .premeeting-amount-entry input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.premeeting-page .premeeting-amount-entry input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+  box-shadow: 0 2px 0 var(--accent);
+}
+.premeeting-page .premeeting-person > .premeeting-money {
+  margin-top: 22px;
+}
+.premeeting-page .premeeting-select {
+  position: relative;
+  min-width: 0;
+}
+.premeeting-page .premeeting-select-trigger {
+  display: block;
+  position: relative;
+  width: 100%;
+  text-align: left;
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 13px 42px 13px 16px;
+  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 500;
+}
+.premeeting-select-trigger::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 22px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--accent);
+  border-bottom: 1.5px solid var(--accent);
+  transform: rotate(45deg);
+}
+.premeeting-select-trigger[aria-expanded="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.premeeting-select-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 7px;
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background: var(--bg);
+  box-shadow: 0 16px 48px #0004;
+}
+.premeeting-select.opens-up .premeeting-select-menu {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+.premeeting-page .premeeting-select-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: 43px;
+  white-space: normal;
+  border: 0;
+  background: transparent;
+  border-radius: 9px;
+  color: var(--ink);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 400;
+}
+.premeeting-page .premeeting-select-menu button:hover,
+.premeeting-page .premeeting-select-menu button.is-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.premeeting-page .premeeting-select-menu button[aria-selected="true"] {
+  color: var(--accent);
+  font-weight: 650;
+}
+.premeeting-page .premeeting-actions {
+  margin-top: 38px;
+  padding-top: 28px;
+  gap: 16px;
+}
+.premeeting-page .premeeting-primary {
+  min-height: 52px;
+  border-radius: 15px;
+  padding: 14px 25px;
+  font-size: 13px;
+}
+.premeeting-page .premeeting-secondary {
+  font-size: 12px;
+}
+.premeeting-page .premeeting-footnote {
+  grid-column: 2;
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 0;
+}
+.premeeting-page .premeeting-consent {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  line-height: 1.8;
+  font-weight: 400;
+  font-size: 12px;
+  margin: 24px 0;
+}
+.premeeting-page .premeeting-summary {
+  gap: 12px;
+}
+.premeeting-page .premeeting-summary details {
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 18px;
+  margin: 0;
+  background: color-mix(in srgb, var(--bg) 35%, transparent);
+}
+.premeeting-page .premeeting-summary summary {
+  font-size: 13px;
+}
+.premeeting-page .premeeting-summary dl {
+  font-size: 12px;
+}
+.premeeting-page .premeeting-summary .premeeting-secondary {
+  margin-top: 18px;
+}
+.premeeting-page #premeeting-success {
+  max-width: 800px;
+  padding: 48px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--panel);
+}
+@media (min-width: 1100px) {
+  .premeeting-page:not([data-step="0"]) #premeeting-intro h1 {
+    font-size: 37px;
+  }
+  .premeeting-page:not([data-step="0"]) #premeeting-intro h1 br {
+    display: none;
+  }
+  .premeeting-page:not([data-step="0"]) #premeeting-intro .premeeting-note {
+    display: none;
+  }
+}
+@media (max-width: 1100px) {
+  .premeeting-page .premeeting-shell {
+    width: calc(100% - 40px);
+  }
+  .premeeting-page #premeeting-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .premeeting-route {
+    position: static;
+  }
+  .premeeting-route-title,
+  .premeeting-route-note {
+    display: none;
+  }
+  .premeeting-page #premeeting-progress {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 0 0 12px;
+  }
+  .premeeting-page #premeeting-progress button {
+    min-width: 145px;
+  }
+  .premeeting-page .premeeting-footnote {
+    grid-column: 1;
+  }
+  .premeeting-page #premeeting-intro {
+    margin-bottom: 28px;
+  }
+}
+@media (max-width: 680px) {
+  .premeeting-page .premeeting-shell {
+    width: calc(100% - 28px);
+    padding-top: 24px;
+  }
+  .premeeting-page .premeeting-top {
+    margin-bottom: 34px;
+  }
+  .premeeting-goal-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .premeeting-page .premeeting-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .premeeting-page #premeeting-form {
+    padding: 23px 18px;
+  }
+  .premeeting-page .premeeting-person {
+    margin-top: 30px;
+  }
+  .premeeting-page .premeeting-repeater,
+  .premeeting-page .premeeting-custom-goal {
+    padding: 18px;
+  }
+  .premeeting-goal-pick {
+    min-height: 120px;
+  }
+  .premeeting-page .premeeting-money {
+    padding: 18px;
+  }
+  .premeeting-page #premeeting-intro h1 {
+    font-size: 39px;
+  }
+  .premeeting-page .premeeting-person legend {
+    font-size: 19px;
+  }
+  .premeeting-page .premeeting-goals-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .premeeting-page #premeeting-success {
+    padding: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .premeeting-goal-card {
+    transition: none;
+  }
+  .premeeting-goal-card:hover {
+    transform: none;
+  }
+}

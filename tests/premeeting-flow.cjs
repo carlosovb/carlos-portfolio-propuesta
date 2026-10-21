@@ -146,7 +146,23 @@ const root = path.resolve(__dirname, ".."),
       await p.getByLabel("Apellidos *").fill("Prueba");
       await p.getByLabel("Edad *").fill("30");
       await p.getByLabel("Ocupación *").fill("Profesional");
-      await p.getByLabel("Situación laboral *").selectOption("Por cuenta ajena");
+      const employment = p.getByRole("combobox", {
+        name: "Situación laboral *",
+        exact: true,
+      });
+      if (i === 0) {
+        await employment.focus();
+        await employment.press("ArrowDown");
+        await employment.press("ArrowDown");
+        await employment.press("Enter");
+        assert.match(await employment.textContent(), /Por cuenta ajena/);
+        await employment.click();
+        await employment.press("Escape");
+        assert.equal(await employment.getAttribute("aria-expanded"), "false");
+      } else {
+        await employment.click();
+        await p.getByRole("option", { name: "Por cuenta ajena", exact: true }).click();
+      }
     }
     await page.getByLabel("Correo electrónico *").fill("ana@example.invalid");
     await page.getByLabel("Teléfono *").fill("000000000");
@@ -168,16 +184,39 @@ const root = path.resolve(__dirname, ".."),
     await page
       .locator(".premeeting-person")
       .first()
-      .getByRole("button", { name: "+ Crear un colchón de emergencia", exact: true })
+      .getByRole("button", { name: "Crear un colchón de emergencia", exact: true })
       .click();
     await page
       .locator(".premeeting-person")
       .first()
-      .getByLabel("Prioridad (opcional)")
-      .selectOption("Alta");
+      .getByRole("button", { name: "Alta", exact: true })
+      .click();
+    assert.equal(
+      await page
+        .locator('.premeeting-priority[data-priority="Alta"]')
+        .first()
+        .getAttribute("aria-pressed"),
+      "true",
+    );
+    for (const width of [320, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const theme of ["light", "dark"]) {
+        await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+        assert(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+        );
+      }
+    }
+    await page.screenshot({
+      path: path.join(process.env.TEMP || "/tmp", "premeeting-goals-visual.png"),
+      fullPage: true,
+    });
     await next();
     async function amount(group, label, value) {
-      await group.getByLabel(label + " · opción", { exact: true }).selectOption("known");
+      await group
+        .getByRole("group", { name: label + " · opción", exact: true })
+        .getByRole("button", { name: /^Indicar/ })
+        .click();
       await group
         .getByRole("spinbutton", { name: label, exact: true })
         .fill(String(value));
@@ -186,6 +225,17 @@ const root = path.resolve(__dirname, ".."),
     await amount(persons.nth(0), "Ingreso neto mensual habitual", 2000);
     await amount(persons.nth(0), "Pagas extra · total anual (opcional)", 2400);
     await amount(persons.nth(1), "Ingreso neto mensual habitual", 1500);
+    for (const width of [320, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+        "Ingresos sin desbordar",
+      );
+    }
+    await page.screenshot({
+      path: path.join(process.env.TEMP || "/tmp", "premeeting-income-visual.png"),
+      fullPage: true,
+    });
     await next();
     await amount(persons.nth(2), "Cuota mensual de hipoteca", 700);
     await persons
@@ -195,16 +245,33 @@ const root = path.resolve(__dirname, ".."),
     await persons.nth(0).getByLabel("Tipo o nombre del préstamo").fill("Coche");
     await amount(persons.nth(0), "Cuota mensual", 200);
     await amount(persons.nth(0), "Meses aproximados pendientes", 24);
+    for (const width of [320, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+        "Gastos y préstamos sin desbordar",
+      );
+    }
     await next();
+    await page.setViewportSize({ width: 320, height: 1000 });
     await persons
       .nth(0)
       .getByRole("button", { name: "+ Añadir cuenta o producto" })
       .click();
     await persons
       .nth(0)
-      .getByLabel("Qué producto tienes")
-      .selectOption("No sé qué producto tengo");
+      .getByRole("combobox", { name: "Qué producto tienes", exact: true })
+      .click();
+    await persons
+      .nth(0)
+      .getByRole("option", { name: "No sé qué producto tengo", exact: true })
+      .click();
     await amount(persons.nth(0), "Cantidad depositada o valor actual aproximado", 5000);
+    assert.equal(
+      await page.locator("select:visible").count(),
+      0,
+      "Los selectores visibles deben usar el diseño de la web",
+    );
     await persons.nth(0).getByRole("checkbox").check();
     await persons.nth(1).getByRole("checkbox").check();
     await persons.nth(2).getByRole("checkbox").check();
