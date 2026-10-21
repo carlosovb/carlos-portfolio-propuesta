@@ -63,6 +63,52 @@ const fs = require("fs"),
     const migration = fs.readFileSync("database/resources-setup.sql", "utf8");
     await db.exec(migration);
     await db.exec(migration);
+    const htmlMigration = fs.readFileSync("database/resources-html.sql", "utf8");
+    await db.exec(htmlMigration);
+    await db.exec(htmlMigration);
+    await as(owner);
+    const htmlId = crypto.randomUUID(),
+      webId = crypto.randomUUID();
+    await db.query(
+      "insert into public.team_resources(id,company,product,title,kind,storage_path) values($1,'AXA','Presentaciones','HTML de prueba','html',$2)",
+      [htmlId, htmlId + ".html"],
+    );
+    await db.query(
+      "insert into public.team_resources(id,company,product,title,kind,url) values($1,'AXA','Presentaciones','Web de prueba','web','https://example.invalid/presentacion')",
+      [webId],
+    );
+    await db.query(
+      "insert into storage.objects(bucket_id,name) values('team-resources',$1)",
+      [htmlId + ".html"],
+    );
+    await assert.rejects(
+      db.query(
+        "insert into public.team_resources(id,company,product,title,kind,storage_path) values(gen_random_uuid(),'A','B','C','html','incorrecto.html')",
+      ),
+    );
+    await assert.rejects(
+      db.query(
+        "insert into public.team_resources(id,company,product,title,kind,url) values(gen_random_uuid(),'A','B','C','web','javascript:alert(1)')",
+      ),
+    );
+    await as(member);
+    assert.equal((await db.query("select * from public.team_resources")).rows.length, 2);
+    assert.equal(
+      (await db.query("select * from storage.objects where name=$1", [htmlId + ".html"]))
+        .rows.length,
+      1,
+    );
+    await assert.rejects(
+      db.query(
+        "insert into storage.objects(bucket_id,name) values('team-resources','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.html')",
+      ),
+    );
+    await as(owner);
+    await db.query("delete from public.team_resources where id in ($1,$2)", [
+      htmlId,
+      webId,
+    ]);
+    await db.query("delete from storage.objects where name=$1", [htmlId + ".html"]);
     await as("", "anon");
     const lookup = (await db.query("select public.premeeting_consultant($1) x", [member]))
       .rows[0].x;

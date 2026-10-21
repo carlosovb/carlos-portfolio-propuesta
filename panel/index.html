@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
     <link rel="stylesheet" href="../css/workspace.css?v=products1" />
     <link rel="stylesheet" href="../css/clipboard.css?v=products1" />
-    <link rel="stylesheet" href="../css/client-products.css?v=companies5" />
+    <link rel="stylesheet" href="../css/client-products.css?v=documents1" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -413,10 +413,12 @@
                 <select id="resource-kind" name="kind">
                   <option value="file">Documento PDF</option>
                   <option value="link">Enlace externo</option>
+                  <option value="web">Presentación web · enlace</option>
+                  <option value="html">Presentación HTML · archivo</option>
                 </select>
               </label>
               <label id="resource-file-label">
-                PDF · máximo 10 MB
+                <span id="resource-file-description">PDF · máximo 10 MB</span>
                 <input
                   type="file"
                   id="resource-file"
@@ -431,6 +433,10 @@
               <button type="submit" class="btn" id="resource-save">
                 Publicar para el equipo ↗
               </button>
+              <p class="resource-upload-help">
+                Para HTML, sube un archivo autónomo con sus imágenes y estilos incluidos,
+                o utiliza el enlace a la presentación publicada.
+              </p>
             </form>
           </details>
           <div class="bulk-toolbar" id="resource-bulk" hidden>
@@ -1160,7 +1166,7 @@
     <script src="../js/clipboard.js?v=products1" defer></script>
     <script src="../js/companies.js?v=products1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=products1" defer></script>
+    <script src="../js/backend.js?v=documents1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/client-products.js?v=products1" defer></script>
@@ -1171,7 +1177,7 @@
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=hub1" defer></script>
-    <script src="../js/resources.js?v=companies5" defer></script>
+    <script src="../js/resources.js?v=documents1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
     <script src="../js/panel.js?v=products1" defer></script>
   </body>

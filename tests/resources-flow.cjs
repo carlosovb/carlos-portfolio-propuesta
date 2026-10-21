@@ -141,8 +141,10 @@ const server = http.createServer((req, res) => {
       reads++;
       return route.fulfill({
         status: 200,
-        contentType: "application/pdf",
-        body: "%PDF-1.4\n%%EOF",
+        contentType: url.pathname.endsWith(".html") ? "text/html" : "application/pdf",
+        body: url.pathname.endsWith(".html")
+          ? '<!doctype html><html><body><h1>Presentación de prueba</h1><script>try{parent.document.body.dataset.compromised="true";document.body.dataset.isolated="false"}catch{document.body.dataset.isolated="true"}</script></body></html>'
+          : "%PDF-1.4\n%%EOF",
       });
     }
     throw Error("Unexpected " + req.method() + " " + url.pathname);
@@ -293,12 +295,79 @@ const server = http.createServer((req, res) => {
     await page
       .locator(".resource-document")
       .filter({ hasText: "PDF de ejemplo" })
-      .getByRole("button", { name: "Abrir ↗", exact: true })
+      .getByRole("button", { name: "Ver PDF ↗", exact: true })
       .click();
     const popup = await popupPromise;
     await popup.waitForURL("blob:**");
     assert.equal(reads, 1);
     await popup.close();
+    assert.match(
+      await page.locator(".resource-document").first().locator("h4").textContent(),
+      /PDF de ejemplo/,
+    );
+    assert.match(
+      await page
+        .locator(".resource-document")
+        .first()
+        .locator(".resource-product")
+        .textContent(),
+      /Producto de ejemplo/,
+    );
+    assert(
+      await page.locator(".resource-document time").first().getAttribute("datetime"),
+    );
+    await page.locator("#resource-admin summary").click();
+    await page.locator("#resource-form [name=product]").fill("Presentaciones");
+    await page.locator("#resource-form [name=title]").fill("HTML de ejemplo");
+    await page.locator("#resource-kind").selectOption("html");
+    assert.equal(
+      await page.locator("#resource-file").getAttribute("accept"),
+      "text/html,.html,.htm",
+    );
+    await page
+      .locator("#resource-file")
+      .setInputFiles({
+        name: "presentacion.html",
+        mimeType: "text/html",
+        buffer: Buffer.from("<!doctype html><html><body>Prueba</body></html>"),
+      });
+    await page.locator("#resource-save").click();
+    await page.getByRole("heading", { name: "HTML de ejemplo", exact: true }).waitFor();
+    assert.equal(uploads, 2);
+    assert.equal(resources.find((r) => r.title === "HTML de ejemplo").kind, "html");
+    const htmlPopupPromise = page.waitForEvent("popup");
+    await page
+      .locator(".resource-document")
+      .filter({ hasText: "HTML de ejemplo" })
+      .getByRole("button", { name: "Ver presentación ↗", exact: true })
+      .click();
+    const htmlPopup = await htmlPopupPromise;
+    await htmlPopup.locator("iframe").waitFor();
+    assert.equal(
+      await htmlPopup.locator("iframe").getAttribute("sandbox"),
+      "allow-scripts allow-presentation",
+    );
+    await htmlPopup
+      .frameLocator("iframe")
+      .getByRole("heading", { name: "Presentación de prueba" })
+      .waitFor();
+    assert.equal(
+      await htmlPopup
+        .frameLocator("iframe")
+        .locator("body")
+        .getAttribute("data-isolated"),
+      "true",
+    );
+    assert.equal(await htmlPopup.locator("body").getAttribute("data-compromised"), null);
+    await htmlPopup.close();
+    await page.locator("#resource-admin summary").click();
+    await page.locator("#resource-form [name=product]").fill("Presentaciones");
+    await page.locator("#resource-form [name=title]").fill("Web de ejemplo");
+    await page.locator("#resource-kind").selectOption("web");
+    await page.locator("#resource-url").fill("https://docs.example.invalid/presentacion");
+    await page.locator("#resource-save").click();
+    await page.getByRole("heading", { name: "Web de ejemplo", exact: true }).waitFor();
+    assert.equal(resources.find((r) => r.title === "Web de ejemplo").kind, "web");
     for (const width of [320, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert(
@@ -306,6 +375,11 @@ const server = http.createServer((req, res) => {
         "Recursos responsive",
       );
     }
+    await page.setViewportSize({width:320,height:900});
+    await page.evaluate(()=>document.documentElement.dataset.theme='light');
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Tarjetas en móvil y tema claro');
+    await page.screenshot({path:path.join(process.env.TEMP,'resources-mobile-light.png'),fullPage:true});
+    await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>document.documentElement.dataset.theme='dark');
     await page.screenshot({
       path: path.join(process.env.TEMP, "workspace-resources.png"),
       fullPage: true,
@@ -330,7 +404,7 @@ const server = http.createServer((req, res) => {
     assert.equal(await page.locator("#resource-bulk").isVisible(), false);
     await page.getByRole("button", { name: "AXA", exact: false }).click();
     await page.locator(".resource-document").first().waitFor();
-    assert.equal(await page.locator(".resource-document").count(), 2);
+    assert.equal(await page.locator(".resource-document").count(), 4);
     assert.equal(
       await page.getByRole("button", { name: "Archivar", exact: true }).count(),
       0,

@@ -309,3 +309,113 @@ html[data-theme="dark"] .resource-company-identity img {
     margin: 0;
   }
 }
+
+/* Documentos: producto, título y fecha con jerarquías independientes. */
+.resource-document {
+  position: relative;
+  gap: 22px;
+  padding: 28px;
+  border-radius: 24px;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+  border-left: 3px solid var(--accent);
+}
+.resource-document:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+.resource-document .resource-document-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 60px;
+  height: 74px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--accent);
+  font-size: 26px;
+  background: var(--bg);
+}
+.resource-document[data-format="html"],
+.resource-document[data-format="web"] {
+  border-left-color: #78bfb5;
+}
+.resource-document[data-format="html"] .resource-document-icon,
+.resource-document[data-format="web"] .resource-document-icon {
+  color: #78bfb5;
+}
+.resource-document .resource-document-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.resource-document .resource-product {
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--accent);
+  font-weight: 650;
+}
+.resource-document .resource-format {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.resource-document h4 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 23px);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.resource-document-date {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 9px;
+}
+.resource-document .panel-secondary {
+  flex: none;
+  border-radius: 999px;
+  min-height: 46px;
+}
+.resource-upload-help {
+  grid-column: 1/-1;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .resource-document {
+    padding: 22px 18px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .resource-document .resource-document-icon {
+    width: 42px;
+    height: 54px;
+    font-size: 20px;
+  }
+  .resource-document > .resource-document-content {
+    flex-basis: calc(100% - 100px);
+  }
+  .resource-document .panel-secondary {
+    margin-left: auto;
+  }
+  .resource-document .resource-document-meta {
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .resource-document {
+    transition: none;
+  }
+  .resource-document:hover {
+    transform: none;
+  }
+}

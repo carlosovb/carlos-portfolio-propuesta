@@ -139,18 +139,24 @@
       };
       const id = crypto.randomUUID();
       let path = null;
-      if (fields.kind === "file") {
+      if (["file", "html"].includes(fields.kind)) {
+        const html = fields.kind === "html";
         if (
           !file ||
           file.size > 10485760 ||
           file.size < 5 ||
-          new TextDecoder().decode(await file.slice(0, 5).arrayBuffer()) !== "%PDF-"
+          (html
+            ? !/\.html?$/i.test(file.name) ||
+              !/<(?:!doctype\s+html|html|head|body)[\s>]/i.test(
+                await file.slice(0, 8192).text(),
+              )
+            : new TextDecoder().decode(await file.slice(0, 5).arrayBuffer()) !== "%PDF-")
         )
-          throw Error("Selecciona un PDF válido de hasta 10 MB.");
-        path = id + ".pdf";
+          throw Error("Selecciona un PDF o HTML válido de hasta 10 MB.");
+        path = id + (html ? ".html" : ".pdf");
         await scoped("/storage/v1/object/team-resources/" + path, {
           method: "POST",
-          headers: { "Content-Type": "application/pdf" },
+          headers: { "Content-Type": html ? "text/html" : "application/pdf" },
           body: file,
         });
       }
@@ -163,7 +169,7 @@
             product: fields.product,
             title: fields.title,
             kind: fields.kind,
-            url: fields.kind === "link" ? fields.url : null,
+            url: ["link", "web"].includes(fields.kind) ? fields.url : null,
             storage_path: path,
           }),
         });
@@ -179,12 +185,14 @@
         throw error;
       }
     },
-    async resourcePdf(path) {
-      if (!/^[0-9a-f-]{36}\.pdf$/i.test(path)) throw Error("Documento no válido.");
+    async resourceFile(path) {
+      if (!/^[0-9a-f-]{36}\.(pdf|html)$/i.test(path)) throw Error("Documento no válido.");
       const response = await authenticated(
         "/storage/v1/object/authenticated/team-resources/" + path,
       );
-      return new Blob([await response.arrayBuffer()], { type: "application/pdf" });
+      return new Blob([await response.arrayBuffer()], {
+        type: path.endsWith(".html") ? "text/html" : "application/pdf",
+      });
     },
     async archiveResource(id, archived) {
       if (!/^[0-9a-f-]{36}$/i.test(id)) throw Error("Recurso no válido.");
@@ -201,10 +209,12 @@
         return request(route, options, identity);
       };
       if (!/^[0-9a-f-]{36}$/i.test(row.id)) throw Error("Recurso no válido.");
-      if (row.kind === "file")
+      if (["file", "html"].includes(row.kind))
         await scoped("/storage/v1/object/team-resources", {
           method: "DELETE",
-          body: JSON.stringify({ prefixes: [row.id + ".pdf"] }),
+          body: JSON.stringify({
+            prefixes: [row.id + (row.kind === "html" ? ".html" : ".pdf")],
+          }),
         });
       const response = await scoped(
         "/rest/v1/team_resources?id=eq." + row.id + "&select=id",

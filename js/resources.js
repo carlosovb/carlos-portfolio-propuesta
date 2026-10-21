@@ -236,20 +236,39 @@
             });
             card.append(check);
           }
-          const text = node("div");
-          text.append(
-            node(
-              "small",
-              row.product + " · " + (row.kind === "file" ? "PDF" : "ENLACE EXTERNO"),
-            ),
-            node("strong", row.title),
-            node(
-              "span",
-              "Subido el " + new Date(row.created_at).toLocaleDateString("es-ES"),
-            ),
+          const format = {
+            file: ["PDF", "▤"],
+            html: ["HTML", "〈/〉"],
+            web: ["WEB", "↗"],
+            link: ["ENLACE", "↗"],
+          }[row.kind] || ["ENLACE", "↗"];
+          card.dataset.format = row.kind;
+          const icon = node("span", format[1], "resource-document-icon");
+          icon.setAttribute("aria-hidden", "true");
+          card.append(icon);
+          const text = node("div", undefined, "resource-document-content");
+          const meta = node("div", undefined, "resource-document-meta");
+          meta.append(
+            node("span", row.product, "resource-product"),
+            node("small", format[0], "resource-format"),
           );
+          text.append(meta, node("h4", row.title));
+          const date = node(
+            "time",
+            "Subido el " + new Date(row.created_at).toLocaleDateString("es-ES"),
+            "resource-document-date",
+          );
+          date.dateTime = row.created_at;
+          text.append(date);
           card.append(text);
-          const open = button("Abrir ↗", () => openResource(row, open));
+          const open = button(
+            row.kind === "file"
+              ? "Ver PDF ↗"
+              : row.kind === "html" || row.kind === "web"
+                ? "Ver presentación ↗"
+                : "Abrir enlace ↗",
+            () => openResource(row, open),
+          );
           card.append(open);
           if (account.role === "admin")
             card.append(
@@ -279,7 +298,7 @@
       : "Eliminar seleccionados";
   }
   async function openResource(row, button) {
-    if (row.kind === "link") {
+    if (["link", "web"].includes(row.kind)) {
       try {
         const url = new URL(row.url);
         if (url.protocol !== "https:") return;
@@ -289,37 +308,64 @@
     }
     const tab = window.open("about:blank", "_blank");
     if (!tab) {
-      say("Permite abrir una pestaña para ver el PDF.");
+      say("Permite abrir una pestaña para ver el documento.");
       return;
     }
     tab.opener = null;
     const ticket = version;
     button.disabled = true;
     try {
-      const blob = await backend.resourcePdf(row.storage_path);
+      const blob = await backend.resourceFile(row.storage_path);
       if (!active || ticket !== version) {
         tab.close();
         return;
       }
-      const url = URL.createObjectURL(blob);
-      blobs.add(url);
-      tab.location.replace(url);
+      if (row.kind === "html") {
+        const doc = tab.document;
+        doc.title = row.title;
+        const style = doc.createElement("style");
+        style.textContent =
+          "html,body{margin:0;width:100%;height:100%;background:#101e2d}iframe{display:block;width:100%;height:100%;border:0}";
+        doc.head.append(style);
+        const frame = doc.createElement("iframe");
+        frame.title = row.title;
+        frame.setAttribute("sandbox", "allow-scripts allow-presentation");
+        frame.referrerPolicy = "no-referrer";
+        frame.srcdoc = await blob.text();
+        if (!active || ticket !== version) {
+          tab.close();
+          return;
+        }
+        doc.body.replaceChildren(frame);
+      } else {
+        const url = URL.createObjectURL(blob);
+        blobs.add(url);
+        tab.location.replace(url);
+      }
     } catch {
       tab.close();
       if (active && ticket === version)
-        say("No se ha podido abrir el PDF. Comprueba tu sesión.");
+        say("No se ha podido abrir el documento. Comprueba tu sesión.");
     } finally {
       button.disabled = false;
     }
   }
   function syncKind() {
-    const file = get("resource-kind").value === "file";
+    const html = get("resource-kind").value === "html";
+    const file = ["file", "html"].includes(get("resource-kind").value);
+    get("resource-file-description").textContent = html
+      ? "HTML · máximo 10 MB"
+      : "PDF · máximo 10 MB";
+    get("resource-file").accept = html ? "text/html,.html,.htm" : "application/pdf,.pdf";
     get("resource-file-label").hidden = !file;
     get("resource-url-label").hidden = file;
     get("resource-file").required = file;
     get("resource-url").required = !file;
   }
-  get("resource-kind").addEventListener("change", syncKind);
+  get("resource-kind").addEventListener("change", () => {
+    get("resource-file").value = "";
+    syncKind();
+  });
   get("resource-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (busy || account?.role !== "admin" || !active || !company) return;
@@ -328,7 +374,7 @@
     fields.product = fields.product.trim();
     fields.title = fields.title.trim();
     fields.url = fields.url.trim();
-    if (fields.kind === "link") {
+    if (["link", "web"].includes(fields.kind)) {
       try {
         const u = new URL(fields.url);
         if (u.protocol !== "https:" || u.username || u.password) throw Error();
@@ -355,7 +401,7 @@
     } catch {
       if (active && ticket === version)
         say(
-          "No se ha podido guardar. Comprueba los datos y utiliza un PDF válido de hasta 10 MB.",
+          "No se ha podido guardar. Comprueba los datos y utiliza un PDF o HTML válido de hasta 10 MB.",
         );
     } finally {
       busy = false;
