@@ -32,7 +32,9 @@ async function mock(context, state) {
   await context.route("https://*.supabase.co/**", async (route) => {
     const request = route.request(),
       url = new URL(request.url());
-    const body = request.postDataJSON();
+    const body = request.headers()["content-type"]?.includes("application/json")
+      ? request.postDataJSON()
+      : null;
     const json = (result, status = 200, headers = {}) =>
       route.fulfill({
         status,
@@ -86,6 +88,50 @@ async function mock(context, state) {
         phone: body.p_phone,
       };
       return json(access());
+    }
+    if (url.pathname.endsWith("/rpc/get_my_team_profile")) {
+      const member = state.team?.find(
+        (person) =>
+          person.user_id === (state.teamUserId || "22222222-2222-4222-8222-222222222222"),
+      );
+      return json({
+        user_id: state.teamUserId || "22222222-2222-4222-8222-222222222222",
+        position_code: member?.position_code || null,
+        position: member?.position || null,
+        multiplier: member?.multiplier || null,
+        manager_id: member?.manager_id || null,
+        manager_name: "Responsable de prueba",
+        avatar_path: state.photoUploaded
+          ? "22222222-2222-4222-8222-222222222222/portrait.webp"
+          : null,
+      });
+    }
+    if (url.pathname.endsWith("/rpc/get_team_directory")) return json(state.team || []);
+    if (url.pathname.endsWith("/rpc/save_team_assignment")) {
+      assert.equal(state.role, "admin");
+      state.assignmentSaved = body;
+      const member = state.team.find((person) => person.user_id === body.p_user_id);
+      member.position_code = body.p_position_code;
+      member.manager_id = body.p_manager_id;
+      return json(null);
+    }
+    if (url.pathname.startsWith("/storage/v1/object/")) {
+      if (request.method() === "POST") {
+        state.photoUploaded = true;
+        return json({});
+      }
+      if (request.method() === "DELETE") {
+        state.photoUploaded = false;
+        return json({});
+      }
+      return route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9hsAAAAASUVORK5CYII=",
+          "base64",
+        ),
+      });
     }
     if (url.pathname.endsWith("/rpc/list_consultants")) {
       assert.equal(state.role, "admin");
@@ -430,6 +476,126 @@ async function login(page, base) {
     assert.equal(statusData.members[0].user_id, "active-test");
     await statusContext.close();
     console.log("Estados: selección horizontal, guardado y tamaños comprobados.");
+
+    const treeContext = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      reducedMotion: "reduce",
+    });
+    const treeData = state("consultant");
+    treeData.team = [
+      {
+        user_id: "11111111-1111-4111-8111-111111111111",
+        first_name: "Responsable",
+        last_name: "De prueba",
+        position_code: "team_manager",
+        position: "Gestor de Equipo",
+        multiplier: 3.5,
+        manager_id: null,
+      },
+      {
+        user_id: "22222222-2222-4222-8222-222222222222",
+        first_name: "Consultor",
+        last_name: "De prueba",
+        position_code: "financial_consultant",
+        position: "Financial Consultant",
+        multiplier: 2.5,
+        manager_id: "11111111-1111-4111-8111-111111111111",
+      },
+      {
+        user_id: "33333333-3333-4333-8333-333333333333",
+        first_name: "Compañera",
+        last_name: "De prueba",
+        position_code: "financial_trainee",
+        position: "Financial Trainee",
+        multiplier: 2,
+        manager_id: "22222222-2222-4222-8222-222222222222",
+      },
+    ];
+    await mock(treeContext, treeData);
+    const treePage = await treeContext.newPage();
+    await login(treePage, base);
+    await treePage.locator(".panel-menu-toggle").click();
+    await treePage.locator('#panel-navigation [data-view="team"]').click();
+    await treePage.locator(".team-node-self").waitFor();
+    assert.equal(await treePage.locator(".team-node").count(), 3);
+    assert.equal(treeData.requestReads, 0);
+    for (const width of [320, 768, 1440]) {
+      await treePage.setViewportSize({ width, height: 900 });
+      await treePage.locator("#team-locate").click();
+      assert.equal(
+        await treePage.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        false,
+      );
+      const centered = await treePage.evaluate(() => {
+        const viewport = document.querySelector("#team-viewport").getBoundingClientRect(),
+          self = document.querySelector(".team-node-self").getBoundingClientRect();
+        return (
+          self.left >= viewport.left &&
+          self.right <= viewport.right &&
+          self.top < viewport.bottom &&
+          self.bottom > viewport.top
+        );
+      });
+      assert.equal(centered, true, "El árbol debe situarse en el puesto del usuario");
+    }
+    if (process.env.TEAM_SCREENSHOT)
+      await treePage.screenshot({ path: process.env.TEAM_SCREENSHOT });
+    await treePage.locator(".team-node-self").click();
+    await treePage.locator("#team-member-dialog").waitFor();
+    assert.equal(await treePage.locator("#team-assignment-form").isVisible(), false);
+    assert.equal(await treePage.locator("#team-member-multiplier").textContent(), "×2,5");
+    await treePage.locator("#team-member-close").click();
+    await treePage.locator("#team-zoom-out").click();
+    assert.equal(await treePage.locator("#team-zoom-label").textContent(), "90 %");
+    await treePage.locator('#panel-navigation [data-view="profile"]').click();
+    await treePage.waitForFunction(
+      () => !document.querySelector("#refresh-button").disabled,
+    );
+    assert.equal(await treePage.locator("#my-team-position").isDisabled(), true);
+    assert.equal(
+      await treePage.locator("#my-team-position").inputValue(),
+      "financial_consultant",
+    );
+    const photo = await treePage.evaluate(() => {
+      const c = document.createElement("canvas");
+      c.width = 32;
+      c.height = 32;
+      return c.toDataURL("image/png").split(",")[1];
+    });
+    await treePage.locator("#team-photo-input").setInputFiles({
+      name: "test.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(photo, "base64"),
+    });
+    await treePage.waitForFunction(() =>
+      document
+        .querySelector("#team-profile-notice")
+        .textContent.includes("Foto actualizada"),
+    );
+    assert.equal(treeData.photoUploaded, true);
+    await treePage.locator("#team-photo-remove").click();
+    await treePage.waitForFunction(
+      () => document.querySelector("#team-photo-remove").hidden,
+    );
+    assert.equal(treeData.photoUploaded, false);
+    treeData.role = "admin";
+    await treePage.locator("#logout-button").click();
+    await login(treePage, base);
+    await treePage.locator('#panel-navigation [data-view="team"]').click();
+    await treePage.locator(".team-node-self").click();
+    await treePage.locator("#team-assignment-form").waitFor();
+    await treePage
+      .locator('#team-assignment-form [name="position"]')
+      .selectOption("team_manager");
+    await treePage.locator("#team-save-assignment").click();
+    await treePage.waitForFunction(() =>
+      document.querySelector("#team-notice").textContent.includes("actualizados"),
+    );
+    assert.equal(treeData.assignmentSaved.p_position_code, "team_manager");
+    await treeContext.close();
+    console.log(
+      "Equipo: centrado propio, navegación, ficha, foto y edición exclusiva de administrador comprobados.",
+    );
 
     const recoveryContext = await browser.newContext();
     const recoveryData = state();

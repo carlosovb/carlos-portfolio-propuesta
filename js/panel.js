@@ -165,7 +165,13 @@
     get("panel-screen").hidden = false;
     resetInactivity();
     renderIdentity();
-    setView(account?.profile_complete === false ? "profile" : "home");
+    setView(
+      account?.profile_complete === false
+        ? "profile"
+        : account?.role === "consultant"
+          ? "team"
+          : "home",
+    );
   }
 
   function renderIdentity() {
@@ -218,6 +224,7 @@
     clearTimeout(searchTimer);
     selected = null;
     get("request-dialog").close();
+    window.TeamPanel?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
     get("request-search").value = "";
@@ -351,7 +358,9 @@
     get("refresh-button").disabled = true;
     notice("panel-notice", "Actualizando…");
     try {
-      if (view === "consultants") {
+      if (view === "team") {
+        await window.TeamPanel.load(account);
+      } else if (view === "consultants") {
         get("consultant-list").replaceChildren();
         const members = await backend.listConsultants();
         if (!valid()) return;
@@ -443,6 +452,7 @@
         account = details;
         renderIdentity();
         renderProfile();
+        await window.TeamPanel.loadProfile(account);
       } else if (view === "home" && account?.role !== "admin") {
         if (!valid()) return;
         renderIdentity();
@@ -494,7 +504,8 @@
 
   function setView(next) {
     if (bulkRunning) return;
-    if (!active || !["home", "requests", "profile", "consultants"].includes(next)) return;
+    if (!active || !["home", "requests", "profile", "consultants", "team"].includes(next))
+      return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
     if (["requests", "consultants"].includes(next) && account?.role !== "admin")
       next = "home";
@@ -503,17 +514,20 @@
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";
     get("profile-view").hidden = view !== "profile";
+    get("team-view").hidden = view !== "team";
     get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "consultants"
-        ? "Tu equipo."
-        : view === "profile"
-          ? "Mi perfil."
-          : view === "requests"
-            ? "Tus solicitudes."
-            : account?.profile?.first_name
-              ? `Hola, ${account.profile.first_name}.`
-              : "Tu espacio de trabajo.";
+      view === "team"
+        ? "Nuestro equipo."
+        : view === "consultants"
+          ? "Tu equipo."
+          : view === "profile"
+            ? "Mi perfil."
+            : view === "requests"
+              ? "Tus solicitudes."
+              : account?.profile?.first_name
+                ? `Hola, ${account.profile.first_name}.`
+                : "Tu espacio de trabajo.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");

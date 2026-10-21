@@ -52,19 +52,36 @@ async function handleInvite(req) {
     } catch {
       return reply(400, "Invalid request");
     }
-    if (input?.action === 'delete_pending') {
-      if (typeof input.user_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.user_id)) return reply(400, 'Invalid user');
-      const claim = await call('/rest/v1/rpc/cancel_pending_invitation', {
-        method: 'POST', body: JSON.stringify({ p_user_id: input.user_id }),
+    if (input?.action === "delete_pending") {
+      if (
+        typeof input.user_id !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          input.user_id,
+        )
+      )
+        return reply(400, "Invalid user");
+      const claim = await call("/rest/v1/rpc/cancel_pending_invitation", {
+        method: "POST",
+        body: JSON.stringify({ p_user_id: input.user_id }),
       });
-      if (!claim.ok || await claim.json() !== true) return reply(409, 'Invitation is not pending');
-      const removed = await call('/auth/v1/admin/users/' + input.user_id, {
-        method: 'DELETE', headers: { Authorization: 'Bearer ' + secret },
+      if (!claim.ok || (await claim.json()) !== true)
+        return reply(409, "Invitation is not pending");
+      // Una activación incompleta puede haber añadido su foto. Limpiarla antes de
+      // borrar Auth evita dejar objetos privados huérfanos o bloquear la eliminación.
+      const photo = await call("/storage/v1/object/consultant-avatars", {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + secret },
+        body: JSON.stringify({ prefixes: [input.user_id + "/portrait.webp"] }),
       });
-      if (!removed.ok) return reply(503, 'Access revoked; deletion not confirmed');
-      return reply(200, 'Invitation deleted');
+      if (!photo.ok) return reply(503, "Access revoked; photo cleanup not confirmed");
+      const removed = await call("/auth/v1/admin/users/" + input.user_id, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + secret },
+      });
+      if (!removed.ok) return reply(503, "Access revoked; deletion not confirmed");
+      return reply(200, "Invitation deleted");
     }
-    if (input?.action && input.action !== 'invite') return reply(400, 'Invalid action');
+    if (input?.action && input.action !== "invite") return reply(400, "Invalid action");
     const email =
       typeof input?.email === "string" ? input.email.trim().toLowerCase() : "";
     if (email.length > 254 || !/^[^\s@]+@ovb\.es$/.test(email))
@@ -81,10 +98,20 @@ async function handleInvite(req) {
     if (!result.ok)
       return reply(result.status === 429 ? 429 : 502, "Invitation not confirmed");
     const data = await result.json();
-    if (data.verification_type !== 'invite' || typeof data.hashed_token !== 'string' || !data.hashed_token)
-      return reply(502, 'Invalid invitation response');
+    if (
+      data.verification_type !== "invite" ||
+      typeof data.hashed_token !== "string" ||
+      !data.hashed_token
+    )
+      return reply(502, "Invalid invitation response");
     // Solo el enlace de activación necesario; no devolver usuarios, OTP ni tokens de sesión.
-    return reply(200, { invitation_url: redirectTo + '#token_hash=' + encodeURIComponent(data.hashed_token) + '&type=invite' });
+    return reply(200, {
+      invitation_url:
+        redirectTo +
+        "#token_hash=" +
+        encodeURIComponent(data.hashed_token) +
+        "&type=invite",
+    });
   } catch {
     return reply(503, "Service unavailable");
   }

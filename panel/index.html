@@ -10,7 +10,8 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=bulk-delete1" />
+    <link rel="stylesheet" href="../css/panel.css?v=team1" />
+    <link rel="stylesheet" href="../css/team.css?v=team1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -84,6 +85,10 @@
           </button>
           <button type="button" data-view="consultants" data-admin-only>
             Consultores
+            <span>↗</span>
+          </button>
+          <button type="button" data-view="team">
+            Equipo
             <span>↗</span>
           </button>
           <button type="button" data-view="profile">
@@ -301,8 +306,117 @@
           </div>
           <div id="consultant-list" class="panel-request-list"></div>
         </section>
+        <section id="team-view" aria-label="Árbol del equipo" hidden>
+          <div class="team-intro">
+            <div>
+              <p class="eyebrow">Cada persona, una parte del equipo</p>
+              <h2>Conectados para crecer.</h2>
+              <p>
+                Tu puesto, tus compañeros y las conexiones de tu equipo, en una sola
+                vista.
+              </p>
+            </div>
+            <button class="panel-secondary" id="team-locate" type="button">
+              ◎ Volver a mi puesto
+            </button>
+          </div>
+          <div class="team-legend">
+            <span>
+              Financial Trainee
+              <b>×2</b>
+            </span>
+            <span>
+              Financial Consultant
+              <b>×2,5</b>
+            </span>
+            <span>
+              Gestor de Equipo
+              <b>×3,5</b>
+            </span>
+          </div>
+          <p id="team-notice" class="panel-notice" role="status" hidden></p>
+          <div class="team-explorer">
+            <div class="team-map-controls" aria-label="Ampliación del árbol">
+              <button type="button" id="team-zoom-out" aria-label="Alejar árbol">
+                −
+              </button>
+              <span id="team-zoom-label">100 %</span>
+              <button type="button" id="team-zoom-in" aria-label="Acercar árbol">
+                +
+              </button>
+              <button
+                type="button"
+                id="team-locate-mini"
+                aria-label="Volver a mi puesto"
+                title="Volver a mi puesto"
+              >
+                ◎
+              </button>
+            </div>
+            <div
+              id="team-viewport"
+              class="team-viewport"
+              tabindex="0"
+              aria-label="Árbol del equipo. Desplázate para explorar y pulsa una tarjeta para ver su ficha."
+            >
+              <div id="team-stage"><div id="team-canvas"></div></div>
+            </div>
+            <p class="team-map-hint">
+              Desplázate para explorar · Pulsa una persona para conocer su puesto
+            </p>
+          </div>
+        </section>
         <section id="profile-view" aria-label="Mi perfil" hidden>
           <p id="profile-setup-notice" class="panel-notice" hidden></p>
+          <div class="profile-card team-profile-card">
+            <div>
+              <p class="eyebrow">Tu lugar en el equipo</p>
+              <h2>Tu perfil profesional.</h2>
+              <p>Tu puesto y responsable los asigna el administrador.</p>
+            </div>
+            <div class="team-profile-content">
+              <div class="team-photo-editor">
+                <div id="my-team-photo" class="team-avatar team-avatar-large"></div>
+                <label class="panel-secondary team-upload-label">
+                  Cambiar foto
+                  <input
+                    id="team-photo-input"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                  />
+                </label>
+                <button
+                  type="button"
+                  id="team-photo-remove"
+                  class="panel-text-button"
+                  hidden
+                >
+                  Quitar foto
+                </button>
+                <small>JPG, PNG o WebP · Máximo 5 MB</small>
+              </div>
+              <div class="team-position-fields">
+                <label>
+                  Puesto
+                  <select id="my-team-position" disabled>
+                    <option value="">Pendiente de asignar</option>
+                    <option value="financial_trainee">Financial Trainee</option>
+                    <option value="financial_consultant">Financial Consultant</option>
+                    <option value="team_manager">Gestor de Equipo</option>
+                  </select>
+                </label>
+                <label>
+                  Multiplicador
+                  <input id="my-team-multiplier" readonly />
+                </label>
+                <label>
+                  Responsable
+                  <input id="my-team-manager" readonly />
+                </label>
+              </div>
+            </div>
+            <p id="team-profile-notice" class="panel-notice" role="status" hidden></p>
+          </div>
           <div class="profile-grid">
             <article class="profile-card">
               <p class="eyebrow">Datos personales</p>
@@ -408,6 +522,53 @@
       </main>
     </div>
 
+    <dialog id="team-member-dialog" aria-labelledby="team-member-name">
+      <div class="team-modal-shell">
+        <button
+          type="button"
+          id="team-member-close"
+          class="team-modal-close"
+          aria-label="Cerrar ficha"
+        >
+          ✕
+        </button>
+        <p class="eyebrow">Conoce a tu equipo</p>
+        <div id="team-member-photo" class="team-avatar team-avatar-large"></div>
+        <h2 id="team-member-name"></h2>
+        <p id="team-member-position" class="team-modal-position"></p>
+        <strong id="team-member-multiplier" class="team-modal-multiplier"></strong>
+        <dl class="team-member-facts">
+          <div>
+            <dt>Responsable</dt>
+            <dd id="team-member-manager"></dd>
+          </div>
+          <div>
+            <dt>Equipo directo</dt>
+            <dd id="team-member-reports"></dd>
+          </div>
+        </dl>
+        <form id="team-assignment-form" hidden>
+          <p class="eyebrow">Administración del equipo</p>
+          <label>
+            Puesto
+            <select name="position">
+              <option value="">Pendiente de asignar</option>
+              <option value="financial_trainee">Financial Trainee</option>
+              <option value="financial_consultant">Financial Consultant</option>
+              <option value="team_manager">Gestor de Equipo</option>
+            </select>
+          </label>
+          <label>
+            Depende de
+            <select name="manager"></select>
+          </label>
+          <button type="submit" class="btn" id="team-save-assignment">
+            Guardar puesto y responsable
+          </button>
+        </form>
+        <p id="team-member-notice" class="panel-notice" role="status" hidden></p>
+      </div>
+    </dialog>
     <dialog id="request-dialog" aria-labelledby="request-title">
       <div class="dialog-heading">
         <p class="eyebrow">Primera reunión</p>
@@ -459,6 +620,7 @@
     <script src="../js/backend-config.js?v=panel1" defer></script>
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/panel.js?v=bulk-delete1" defer></script>
+    <script src="../js/team.js?v=team1" defer></script>
+    <script src="../js/panel.js?v=team1" defer></script>
   </body>
 </html>

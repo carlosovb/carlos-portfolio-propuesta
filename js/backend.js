@@ -32,7 +32,8 @@
     if (!ready) throw new Error("El almacenamiento privado todavía no está conectado.");
     const headers = { apikey: key, ...options.headers };
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-    if (options.body) headers["Content-Type"] = "application/json";
+    if (options.body && !headers["Content-Type"])
+      headers["Content-Type"] = "application/json";
     const response = await fetch(`${url}${route}`, {
       ...options,
       headers,
@@ -123,6 +124,59 @@
       return accessDetails ? structuredClone(accessDetails) : null;
     },
     getPanelAccess: readAccess,
+    async getMyTeamProfile() {
+      return (
+        await authenticated("/rest/v1/rpc/get_my_team_profile", {
+          method: "POST",
+          body: "{}",
+        })
+      ).json();
+    },
+    async listTeam() {
+      return (
+        await authenticated("/rest/v1/rpc/get_team_directory", {
+          method: "POST",
+          body: "{}",
+        })
+      ).json();
+    },
+    async saveTeamAssignment(userId, position, managerId) {
+      await authenticated("/rest/v1/rpc/save_team_assignment", {
+        method: "POST",
+        body: JSON.stringify({
+          p_user_id: userId,
+          p_position_code: position || null,
+          p_manager_id: managerId || null,
+        }),
+      });
+    },
+    async readTeamPhoto(path) {
+      if (!/^[0-9a-f-]{36}\/portrait\.webp$/i.test(path))
+        throw new Error("Foto no válida.");
+      const response = await authenticated(
+        "/storage/v1/object/authenticated/consultant-avatars/" + path,
+      );
+      return response.blob();
+    },
+    async uploadTeamPhoto(blob) {
+      const me = await this.getMyTeamProfile();
+      if (!me?.user_id) throw new Error("Perfil no disponible.");
+      await authenticated(
+        "/storage/v1/object/consultant-avatars/" + me.user_id + "/portrait.webp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "image/webp", "x-upsert": "true" },
+          body: blob,
+        },
+      );
+    },
+    async removeTeamPhoto() {
+      const me = await this.getMyTeamProfile();
+      await authenticated("/storage/v1/object/consultant-avatars", {
+        method: "DELETE",
+        body: JSON.stringify({ prefixes: [me.user_id + "/portrait.webp"] }),
+      });
+    },
     async listConsultants() {
       const response = await authenticated("/rest/v1/rpc/list_consultants", {
         method: "POST",
@@ -131,8 +185,9 @@
       return response.json();
     },
     async deletePendingInvitation(userId) {
-      const response = await authenticated('/functions/v1/invite-consultant', {
-        method: 'POST', body: JSON.stringify({ action: 'delete_pending', user_id: userId }),
+      const response = await authenticated("/functions/v1/invite-consultant", {
+        method: "POST",
+        body: JSON.stringify({ action: "delete_pending", user_id: userId }),
       });
       return response.json();
     },
