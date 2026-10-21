@@ -77,7 +77,7 @@
     if (active)
       inactivityTimer = setTimeout(
         () => logout("La sesión se ha cerrado por inactividad."),
-        15 * 60 * 1000,
+        30 * 60 * 1000,
       );
   }
 
