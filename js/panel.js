@@ -286,9 +286,20 @@
   });
 
   const themeButton = document.querySelector(".theme");
+  let selectedTheme = document.documentElement.dataset.theme;
   themeButton.addEventListener("click", () => {
-    const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = theme;
+    const theme = selectedTheme === "dark" ? "light" : "dark";
+    selectedTheme = theme;
+    const render = () => {
+      document.documentElement.dataset.theme = theme;
+      themeButton.textContent = theme === "dark" ? "☀" : "☾";
+      themeButton.setAttribute(
+        "aria-label",
+        theme === "dark" ? "Activar modo claro" : "Activar modo oscuro",
+      );
+    };
+    if (window.transitionPortfolioTheme) window.transitionPortfolioTheme(render);
+    else render();
     try {
       localStorage.setItem("carlos-theme", theme);
     } catch {}

@@ -1,0 +1,30 @@
+/* Cambio suave de paleta, sin animar la carga inicial de la página. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 380ms;
+  animation-timing-function: ease-in-out;
+}
+
+html.theme-colors-changing,
+html.theme-colors-changing *,
+html.theme-colors-changing *::before,
+html.theme-colors-changing *::after {
+  transition-property:
+    background-color, color, border-color, box-shadow, fill, stroke !important;
+  transition-duration: 350ms !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  html.theme-colors-changing,
+  html.theme-colors-changing *,
+  html.theme-colors-changing *::before,
+  html.theme-colors-changing *::after {
+    transition: none !important;
+  }
+}

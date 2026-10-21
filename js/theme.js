@@ -7,28 +7,33 @@ try {
 } catch {}
 if (!["light", "dark"].includes(chosen)) chosen = null;
 const themeButton = document.querySelector(".theme");
-function theme() {
+function theme(animate = false) {
   const dark = (chosen || (preference.matches ? "dark" : "light")) === "dark";
-  root.dataset.theme = dark ? "dark" : "light";
-  themeButton.textContent = dark ? "☀" : "☾";
-  themeButton.setAttribute(
-    "aria-label",
-    dark ? "Activar modo claro" : "Activar modo oscuro",
-  );
-  themeButton.title = dark ? "Activar modo claro" : "Activar modo oscuro";
-  themeButton.setAttribute("aria-pressed", String(dark));
-  document
-    .querySelector("meta[name=theme-color]")
-    ?.setAttribute("content", dark ? "#101c2c" : "#f6f1e8");
+  const render = () => {
+    root.dataset.theme = dark ? "dark" : "light";
+    themeButton.textContent = dark ? "☀" : "☾";
+    themeButton.setAttribute(
+      "aria-label",
+      dark ? "Activar modo claro" : "Activar modo oscuro",
+    );
+    themeButton.title = dark ? "Activar modo claro" : "Activar modo oscuro";
+    themeButton.setAttribute("aria-pressed", String(dark));
+    document
+      .querySelector("meta[name=theme-color]")
+      ?.setAttribute("content", dark ? "#101c2c" : "#f6f1e8");
+  };
+  if (animate === true && window.transitionPortfolioTheme)
+    window.transitionPortfolioTheme(render);
+  else render();
 }
 theme();
 preference.addEventListener("change", theme);
 themeButton.addEventListener("click", () => {
-  chosen = root.dataset.theme === "dark" ? "light" : "dark";
+  chosen = (chosen || root.dataset.theme) === "dark" ? "light" : "dark";
   try {
     localStorage.setItem("carlos-theme", chosen);
   } catch {}
-  theme();
+  theme(true);
 });
 addEventListener("storage", (e) => {
   if (e.key === "carlos-theme") {
