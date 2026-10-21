@@ -75,6 +75,7 @@
     clearPhotos();
     places.clear();
     get("team-member-dialog").close();
+    window.PhotoCrop?.cancel();
     get("team-canvas").replaceChildren();
     get("team-assignment-form").reset();
     get("team-photo-input").value = "";
@@ -116,7 +117,9 @@
     places.clear();
     const byId = new Map(members.map((member) => [member.user_id, member]));
     const children = (id) => members.filter((member) => member.manager_id === id);
-    const roots = members.filter((member) => !byId.has(member.manager_id));
+    const roots = members.filter(
+      (member) => member.is_root || !byId.has(member.manager_id),
+    );
     const viewport = get("team-viewport");
     const paddingX = Math.max(40, viewport.clientWidth / 2 - 120);
     const paddingY = Math.max(48, viewport.clientHeight / 2 - 103);
@@ -231,21 +234,31 @@
       member.position || "Puesto pendiente de asignar";
     get("team-member-multiplier").textContent = multiplier(member.multiplier);
     const manager = members.find((person) => person.user_id === member.manager_id);
-    get("team-member-manager").textContent = manager
-      ? fullName(manager)
-      : "Sin responsable asignado";
+    get("team-member-manager").textContent = member.is_root
+      ? "Responsable principal · Raíz del equipo"
+      : manager
+        ? fullName(manager)
+        : "Responsable principal";
     get("team-member-reports").textContent = childrenCount(member.user_id) + " personas";
     avatar(get("team-member-photo"), member);
     const form = get("team-assignment-form");
     form.hidden = account?.role !== "admin";
     form.elements.position.value = member.position_code || "";
-    form.elements.manager.replaceChildren(new Option("Sin responsable asignado", ""));
+    form.elements.manager.replaceChildren(
+      new Option("Responsable principal (por defecto)", ""),
+    );
     members
       .filter((person) => person.user_id !== member.user_id)
       .forEach((person) =>
         form.elements.manager.add(new Option(fullName(person), person.user_id)),
       );
     form.elements.manager.value = member.manager_id || "";
+    form.elements.manager.disabled = !!member.is_root;
+    if (member.is_root) {
+      form.elements.manager.replaceChildren(
+        new Option("Este perfil · Responsable principal", ""),
+      );
+    }
     notice("team-member-notice", "");
     const dialog = get("team-member-dialog");
     dialog.showModal();
@@ -321,12 +334,17 @@
       if (snapshot !== revision) return;
       me = mine;
       get("my-team-position").value = mine?.position_code || "";
+      get("my-team-position").disabled = details.role !== "admin";
+      get("team-save-own-position").hidden = details.role !== "admin";
       get("my-team-multiplier").value = multiplier(mine?.multiplier);
-      get("my-team-manager").value = mine?.manager_name || "Sin responsable asignado";
+      get("my-team-manager").value = mine?.is_root
+        ? "Tú · Responsable principal"
+        : mine?.manager_name || "Responsable principal";
       await fetchPhotos(mine ? [mine] : [], snapshot);
       if (snapshot !== revision) return;
       avatar(get("my-team-photo"), { ...details.profile, user_id: mine?.user_id });
       get("team-photo-remove").hidden = !mine?.avatar_path;
+      get("team-photo-adjust").hidden = !mine?.avatar_path;
       notice("team-profile-notice", "");
     } catch {
       if (snapshot === revision)
@@ -336,55 +354,19 @@
         );
     }
   }
-  async function croppedPhoto(file) {
-    if (
-      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
-      file.size > 5 * 1024 * 1024
-    )
-      throw new Error("Selecciona un JPG, PNG o WebP de hasta 5 MB.");
-    const bitmap = await createImageBitmap(file);
-    try {
-      const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 512;
-      const side = Math.min(bitmap.width, bitmap.height);
-      canvas
-        .getContext("2d")
-        .drawImage(
-          bitmap,
-          (bitmap.width - side) / 2,
-          (bitmap.height - side) / 2,
-          side,
-          side,
-          0,
-          0,
-          512,
-          512,
-        );
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/webp", 0.86),
-      );
-      if (!blob || blob.type !== "image/webp")
-        throw new Error("No se ha podido preparar la foto.");
-      return blob;
-    } finally {
-      bitmap.close();
-    }
-  }
-  get("team-photo-input").addEventListener("change", async (event) => {
-    const file = event.target.files[0];
-    if (!file || saving || !account) return;
+  async function editPhoto(file) {
+    if (saving || !account) return;
     const snapshot = revision;
     saving = true;
-    event.target.disabled = true;
-    notice("team-profile-notice", "Guardando tu foto…");
+    get("team-photo-input").disabled = true;
     try {
-      const blob = await croppedPhoto(file);
-      if (snapshot !== revision || !account) return;
+      const blob = await window.PhotoCrop.open(file);
+      if (!blob || snapshot !== revision || !account) return;
+      notice("team-profile-notice", "Guardando el encuadre…");
       await backend.uploadTeamPhoto(blob);
       if (snapshot !== revision || !account) return;
       await loadProfile(account);
-      notice("team-profile-notice", "Foto actualizada. Será visible para el equipo.");
+      notice("team-profile-notice", "Foto y encuadre actualizados.");
     } catch (error) {
       if (snapshot === revision)
         notice(
@@ -393,8 +375,56 @@
         );
     } finally {
       saving = false;
-      event.target.disabled = false;
-      event.target.value = "";
+      get("team-photo-input").disabled = false;
+      get("team-photo-input").value = "";
+    }
+  }
+  get("team-photo-input").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) editPhoto(file);
+  });
+  get("team-photo-adjust").addEventListener("click", async () => {
+    if (saving || !me?.avatar_path) return;
+    const snapshot = revision;
+    try {
+      const blob = await backend.readTeamPhoto(me.avatar_path);
+      if (snapshot === revision && account)
+        await editPhoto(new File([blob], "perfil.webp", { type: "image/webp" }));
+    } catch {
+      if (snapshot === revision)
+        notice("team-profile-notice", "No se ha podido abrir la foto.");
+    }
+  });
+  const positionFactors = {
+    financial_trainee: 2,
+    financial_consultant: 2.5,
+    team_manager: 3.5,
+  };
+  get("my-team-position").addEventListener("change", () => {
+    get("my-team-multiplier").value = multiplier(
+      positionFactors[get("my-team-position").value],
+    );
+  });
+  get("team-save-own-position").addEventListener("click", async () => {
+    if (saving || account?.role !== "admin" || !me?.user_id) return;
+    const snapshot = revision;
+    saving = true;
+    get("team-save-own-position").disabled = true;
+    try {
+      await backend.saveTeamAssignment(
+        me.user_id,
+        get("my-team-position").value,
+        me.is_root ? null : me.manager_id,
+      );
+      if (snapshot !== revision || !account) return;
+      await loadProfile(account);
+      notice("team-profile-notice", "Tu puesto y multiplicador están actualizados.");
+    } catch {
+      if (snapshot === revision)
+        notice("team-profile-notice", "No se ha podido guardar tu puesto.");
+    } finally {
+      saving = false;
+      get("team-save-own-position").disabled = false;
     }
   });
   get("team-photo-remove").addEventListener("click", async () => {
@@ -421,7 +451,7 @@
       await backend.saveTeamAssignment(
         selected.user_id,
         event.target.elements.position.value,
-        event.target.elements.manager.value,
+        selected.is_root ? null : event.target.elements.manager.value,
       );
       if (snapshot !== revision || !account) return;
       closeMember();
@@ -489,6 +519,9 @@
   viewport.addEventListener("pointerup", stopDrag);
   viewport.addEventListener("pointercancel", stopDrag);
   get("team-locate").addEventListener("click", locate);
+  get("team-open-profile").addEventListener("click", () =>
+    document.querySelector('#panel-navigation [data-view="profile"]').click(),
+  );
   get("team-locate-mini").addEventListener("click", locate);
   get("team-zoom-in").addEventListener("click", () => {
     scale = Math.min(1.4, Math.round((scale + 0.1) * 10) / 10);

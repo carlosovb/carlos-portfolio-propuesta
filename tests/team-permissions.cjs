@@ -46,6 +46,13 @@ const assert = require("node:assert/strict");
     await db.exec("reset role; set role anon");
     await assert.rejects(() => db.query("select public.get_team_directory()"));
     await as(member);
+    const initial = (await db.query("select public.get_my_team_profile() as data"))
+      .rows[0].data;
+    assert.equal(
+      initial.manager_id,
+      owner,
+      "Las incorporaciones directas dependen del administrador",
+    );
     const directory = (await db.query("select public.get_team_directory() as data"))
       .rows[0].data;
     assert.equal(directory.length, 3);
@@ -74,6 +81,12 @@ const assert = require("node:assert/strict");
     await assert.rejects(() =>
       db.query("select public.save_team_assignment($1,'financial_trainee',$1)", [member]),
     );
+    await db.query("select public.save_team_assignment($1,'team_manager',$1)", [owner]);
+    const root = (await db.query("select public.get_my_team_profile() as data")).rows[0]
+      .data;
+    assert.equal(root.is_root, true);
+    assert.equal(root.manager_id, null);
+    assert.equal(root.multiplier, 3.5);
     await as(member);
     const mine = (await db.query("select public.get_my_team_profile() as data")).rows[0]
       .data;

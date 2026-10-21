@@ -233,6 +233,7 @@
     ["pending-count", "contacted-count", "scheduled-count"].forEach((id) => {
       get(id).textContent = "—";
     });
+    document.body.classList.remove("team-workspace");
     get("panel-screen").hidden = true;
     get("login-screen").hidden = false;
     get("login-form").reset();
@@ -511,6 +512,7 @@
       next = "home";
     if (next !== "consultants") clearInvitation();
     view = next;
+    document.body.classList.toggle("team-workspace", view === "team");
     get("home-view").hidden = view !== "home";
     get("requests-view").hidden = view !== "requests";
     get("profile-view").hidden = view !== "profile";

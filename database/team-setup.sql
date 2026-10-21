@@ -27,7 +27,10 @@ revoke all on private.team_assignments from public, anon, authenticated;
 create or replace function private.register_team_assignment()
 returns trigger language plpgsql security definer set search_path='' as $fn$
 begin
-  insert into private.team_assignments(user_id) values(new.user_id) on conflict do nothing;
+  insert into private.team_assignments(user_id,manager_id)
+  values(new.user_id,case when exists(select 1 from private.panel_owners where user_id=new.user_id) then null
+    else (select user_id from private.panel_owners order by user_id limit 1) end)
+  on conflict(user_id) do update set manager_id=case when exists(select 1 from private.panel_owners where user_id=new.user_id) then null else private.team_assignments.manager_id end;
   return new;
 end;
 $fn$;
@@ -41,6 +44,10 @@ for each row execute function private.register_team_assignment();
 insert into private.team_assignments(user_id)
 select user_id from private.panel_owners union select user_id from private.panel_members
 on conflict do nothing;
+-- El administrador es la raíz; las incorporaciones directas dependen de él.
+update private.team_assignments a set manager_id=null where exists(select 1 from private.panel_owners o where o.user_id=a.user_id);
+update private.team_assignments a set manager_id=(select user_id from private.panel_owners order by user_id limit 1)
+where a.manager_id is null and not exists(select 1 from private.panel_owners o where o.user_id=a.user_id);
 
 create or replace function public.team_view_allowed()
 returns boolean language sql stable security definer set search_path='' as $fn$
@@ -53,7 +60,7 @@ create or replace function public.get_my_team_profile()
 returns jsonb language plpgsql stable security definer set search_path='' as $fn$
 begin
  if auth.uid() is null or public.panel_access() is null then raise exception 'Not authorized'; end if;
- return (select jsonb_build_object('user_id',a.user_id,'position_code',a.position_code,
+ return (select jsonb_build_object('user_id',a.user_id,'is_root',exists(select 1 from private.panel_owners o where o.user_id=a.user_id),'position_code',a.position_code,
    'position',r.label,'multiplier',r.multiplier,'manager_id',a.manager_id,
    'manager_name',nullif(trim(coalesce(p.first_name,'')||' '||coalesce(p.last_name,'')),''),
    'avatar_path',case when exists(select 1 from storage.objects o where o.bucket_id='consultant-avatars' and o.name=a.user_id::text||'/portrait.webp') then a.user_id::text||'/portrait.webp' else null end)
@@ -68,7 +75,7 @@ create or replace function public.get_team_directory()
 returns jsonb language plpgsql stable security definer set search_path='' as $fn$
 begin
  if not public.team_view_allowed() then raise exception 'Not authorized'; end if;
- return coalesce((select jsonb_agg(jsonb_build_object('user_id',a.user_id,
+ return coalesce((select jsonb_agg(jsonb_build_object('user_id',a.user_id,'is_root',exists(select 1 from private.panel_owners o where o.user_id=a.user_id),
    'first_name',p.first_name,'last_name',p.last_name,'position_code',a.position_code,
    'position',r.label,'multiplier',r.multiplier,'manager_id',a.manager_id,
    'avatar_path',case when exists(select 1 from storage.objects o where o.bucket_id='consultant-avatars' and o.name=a.user_id::text||'/portrait.webp') then a.user_id::text||'/portrait.webp' else null end)
@@ -90,6 +97,12 @@ begin
  perform pg_advisory_xact_lock(782193601);
  if not exists(select 1 from private.team_assignments where user_id=p_user_id) then raise exception 'Unknown member'; end if;
  if p_position_code is not null and not exists(select 1 from public.team_roles where code=p_position_code) then raise exception 'Invalid position'; end if;
+ if exists(select 1 from private.panel_owners where user_id=p_user_id) then
+   if p_manager_id is not null and p_manager_id <> p_user_id then raise exception 'Root manager cannot change'; end if;
+   p_manager_id := null;
+ elsif p_manager_id is null then
+   p_manager_id := (select user_id from private.panel_owners order by user_id limit 1);
+ end if;
  if p_manager_id is not null then
    if p_manager_id=p_user_id or not exists(select 1 from private.team_assignments where user_id=p_manager_id) then raise exception 'Invalid manager'; end if;
    if exists(with recursive parents as (

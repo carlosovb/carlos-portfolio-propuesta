@@ -383,3 +383,370 @@
 .team-node[data-position="team_manager"] .team-avatar {
   border-color: #2c8a60;
 }
+
+/* Equipo como espacio de trabajo completo, con controles flotantes. */
+.team-workspace .panel-main {
+  position: relative;
+  height: 100dvh;
+  min-height: 600px;
+  padding: 0;
+  overflow: hidden;
+}
+.team-workspace #team-view {
+  height: 100%;
+  position: relative;
+}
+.team-workspace .panel-heading {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 6;
+  margin: 0;
+  padding: 0;
+}
+.team-workspace .panel-heading > div:first-child {
+  display: none;
+}
+.team-workspace .panel-retention {
+  display: none;
+}
+.team-workspace #panel-notice:not([hidden]) {
+  position: absolute;
+  z-index: 8;
+  top: 100px;
+  right: 24px;
+  max-width: min(380px, calc(100% - 48px));
+}
+.team-workspace .team-intro {
+  position: absolute;
+  z-index: 3;
+  left: 32px;
+  top: 28px;
+  margin: 0;
+  pointer-events: none;
+}
+.team-workspace .team-intro .eyebrow {
+  font-size: 10px;
+  margin: 0 0 10px;
+}
+.team-workspace .team-intro h2 {
+  font-size: clamp(24px, 2.5vw, 34px);
+  margin: 0;
+}
+.team-workspace .team-intro p:not(.eyebrow),
+.team-workspace .team-intro #team-locate {
+  display: none;
+}
+.team-workspace .team-explorer {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+}
+.team-workspace .team-viewport {
+  height: 100%;
+  max-height: none;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(
+      color-mix(in srgb, var(--line) 65%, transparent) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      ellipse at center,
+      color-mix(in srgb, var(--accent) 6%, transparent),
+      transparent 70%
+    );
+  background-size:
+    24px 24px,
+    100% 100%;
+}
+.team-workspace .team-map-controls {
+  top: auto;
+  left: auto;
+  right: 24px;
+  bottom: 24px;
+  box-shadow: 0 8px 24px #00000012;
+  border-radius: 16px;
+  padding: 8px;
+}
+.team-workspace .team-map-controls button {
+  border-radius: 10px;
+}
+.team-workspace .team-map-hint {
+  position: absolute;
+  z-index: 2;
+  bottom: 90px;
+  left: 32px;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  pointer-events: none;
+  font-size: 11px;
+}
+.team-workspace .team-legend {
+  position: absolute;
+  z-index: 3;
+  bottom: 24px;
+  left: 24px;
+  margin: 0;
+  gap: 8px;
+}
+.team-workspace .team-legend > span {
+  gap: 10px;
+  padding: 11px 14px;
+  background: var(--panel);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px #00000008;
+}
+.team-legend abbr {
+  text-decoration: none;
+  font-weight: 600;
+}
+.team-workspace #team-open-profile {
+  position: absolute;
+  z-index: 5;
+  right: 24px;
+  top: 91px;
+  font-size: 12px;
+  min-height: 40px;
+  border-radius: 12px;
+  background: var(--panel);
+}
+.team-workspace #team-notice:not([hidden]) {
+  position: absolute;
+  z-index: 3;
+  top: 150px;
+  left: 32px;
+  max-width: min(480px, calc(100% - 64px));
+  background: var(--panel);
+}
+.team-workspace .team-node {
+  border-radius: 24px;
+  box-shadow: 0 12px 36px #00000012;
+  background: var(--panel);
+}
+.team-workspace .team-node-self {
+  box-shadow:
+    0 0 0 7px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 20px 44px #0000001a;
+}
+.team-workspace .team-avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 21px;
+}
+.team-workspace .team-connections path {
+  stroke: color-mix(in srgb, var(--accent) 35%, var(--line));
+  stroke-width: 2;
+}
+.team-workspace .team-node-factor {
+  font-size: 25px;
+}
+#team-save-own-position {
+  justify-self: start;
+  font-size: 13px;
+}
+@media (max-width: 850px) {
+  .team-workspace .panel-main {
+    height: calc(100dvh - 91px);
+    min-height: 480px;
+  }
+  .team-workspace .panel-heading {
+    top: 18px;
+    right: 14px;
+  }
+  .team-workspace .team-intro {
+    top: 22px;
+    left: 18px;
+    max-width: calc(100% - 135px);
+  }
+  .team-workspace .team-intro .eyebrow {
+    display: none;
+  }
+  .team-workspace .team-intro h2 {
+    font-size: 22px;
+  }
+  .team-workspace #team-open-profile {
+    top: 75px;
+    right: 14px;
+  }
+  .team-workspace .team-legend {
+    bottom: 82px;
+    left: 14px;
+  }
+  .team-workspace .team-legend > span {
+    padding: 8px 11px;
+    font-size: 11px;
+  }
+  .team-workspace .team-legend b {
+    font-size: 16px;
+  }
+  .team-workspace .team-map-controls {
+    right: 14px;
+    bottom: 14px;
+  }
+  .team-workspace .team-map-hint {
+    display: none;
+  }
+}
+/* Encuadre de la foto antes de subirla. */
+#photo-crop-dialog {
+  width: min(520px, calc(100vw - 24px));
+  max-height: 94dvh;
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--bg);
+  color: var(--ink);
+}
+#photo-crop-dialog::backdrop {
+  background: #07111de0;
+  backdrop-filter: blur(8px);
+}
+.photo-crop-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+.photo-crop-heading h2 {
+  font-size: 27px;
+  margin: 0;
+  letter-spacing: -0.7px;
+}
+.photo-crop-heading .eyebrow {
+  font-size: 10px;
+  margin: 0 0 10px;
+}
+#photo-crop-dialog > .panel-muted {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 16px 0 22px;
+}
+.photo-crop-preview {
+  width: min(320px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  overflow: hidden;
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 10%, transparent);
+  background: var(--panel);
+}
+#photo-crop-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+#photo-crop-canvas:active {
+  cursor: grabbing;
+}
+.photo-zoom-label {
+  display: grid;
+  gap: 12px;
+  font-size: 13px;
+}
+.panel-page #photo-crop-zoom {
+  appearance: auto;
+  accent-color: var(--accent);
+  width: 100%;
+  padding: 0;
+  min-height: 24px;
+  border: 0;
+  background: transparent;
+}
+.photo-crop-tools,
+.photo-crop-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 20px;
+}
+.photo-crop-actions {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.photo-crop-tools button,
+.photo-crop-actions button {
+  font-size: 13px;
+}
+@media (max-width: 500px) {
+  #photo-crop-dialog {
+    padding: 22px 18px;
+  }
+  .photo-crop-heading h2 {
+    font-size: 23px;
+  }
+  .photo-crop-actions .btn {
+    flex: 1;
+  }
+}
+
+.team-workspace .panel-controls {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.team-workspace .team-explorer::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 138px;
+  background: linear-gradient(
+    var(--bg),
+    color-mix(in srgb, var(--bg) 85%, transparent) 50%,
+    transparent
+  );
+  pointer-events: none;
+}
+@media (max-width: 850px) {
+  .team-workspace .panel-shell {
+    grid-template-rows: 76px minmax(0, 1fr);
+  }
+  .team-workspace .panel-sidebar {
+    min-height: 76px;
+    padding: 12px 16px;
+    position: relative;
+    z-index: 20;
+  }
+  .team-workspace .panel-sidebar .panel-mark {
+    font-size: 24px;
+    line-height: 1.2;
+    padding: 6px 10px;
+    margin: 0;
+  }
+  .team-workspace .panel-sidebar p,
+  .team-workspace .panel-sidebar .session-note,
+  .team-workspace .panel-sidebar .panel-logout {
+    display: none;
+  }
+  .team-workspace .panel-sidebar.menu-open .panel-logout {
+    display: block;
+  }
+  .team-workspace .panel-sidebar.menu-open {
+    align-self: start;
+    box-shadow: 0 16px 32px #00000020;
+  }
+  .team-workspace .panel-main {
+    height: calc(100dvh - 76px);
+    min-height: 0;
+  }
+  .team-workspace .panel-controls {
+    gap: 7px;
+  }
+  .team-workspace .team-intro h2 {
+    font-size: 0;
+  }
+  .team-workspace .team-intro h2::after {
+    content: "Equipo";
+    font-size: 23px;
+  }
+}

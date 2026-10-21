@@ -10,8 +10,8 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=team1" />
-    <link rel="stylesheet" href="../css/team.css?v=team1" />
+    <link rel="stylesheet" href="../css/panel.css?v=team2" />
+    <link rel="stylesheet" href="../css/team.css?v=team2" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -310,7 +310,7 @@
           <div class="team-intro">
             <div>
               <p class="eyebrow">Cada persona, una parte del equipo</p>
-              <h2>Conectados para crecer.</h2>
+              <h2>Tu equipo, conectado.</h2>
               <p>
                 Tu puesto, tus compañeros y las conexiones de tu equipo, en una sola
                 vista.
@@ -320,21 +320,24 @@
               ◎ Volver a mi puesto
             </button>
           </div>
-          <div class="team-legend">
+          <div class="team-legend" aria-label="Puestos y multiplicadores">
             <span>
-              Financial Trainee
+              <abbr title="Financial Trainee">FT</abbr>
               <b>×2</b>
             </span>
             <span>
-              Financial Consultant
+              <abbr title="Financial Consultant">FC</abbr>
               <b>×2,5</b>
             </span>
             <span>
-              Gestor de Equipo
+              <abbr title="Gestor de Equipo">GE</abbr>
               <b>×3,5</b>
             </span>
           </div>
           <p id="team-notice" class="panel-notice" role="status" hidden></p>
+          <button type="button" id="team-open-profile" class="panel-secondary">
+            Mi puesto ↗
+          </button>
           <div class="team-explorer">
             <div class="team-map-controls" aria-label="Ampliación del árbol">
               <button type="button" id="team-zoom-out" aria-label="Alejar árbol">
@@ -387,6 +390,14 @@
                 </label>
                 <button
                   type="button"
+                  id="team-photo-adjust"
+                  class="panel-text-button"
+                  hidden
+                >
+                  Ajustar foto
+                </button>
+                <button
+                  type="button"
                   id="team-photo-remove"
                   class="panel-text-button"
                   hidden
@@ -409,6 +420,14 @@
                   Multiplicador
                   <input id="my-team-multiplier" readonly />
                 </label>
+                <button
+                  type="button"
+                  class="panel-secondary"
+                  id="team-save-own-position"
+                  hidden
+                >
+                  Guardar mi puesto
+                </button>
                 <label>
                   Responsable
                   <input id="my-team-manager" readonly />
@@ -522,6 +541,52 @@
       </main>
     </div>
 
+    <dialog id="photo-crop-dialog" aria-labelledby="photo-crop-title">
+      <div class="photo-crop-heading">
+        <div>
+          <p class="eyebrow">Tu foto de perfil</p>
+          <h2 id="photo-crop-title">Encuentra tu encuadre.</h2>
+        </div>
+        <button
+          type="button"
+          id="photo-crop-close"
+          class="panel-secondary"
+          aria-label="Cancelar ajuste de foto"
+        >
+          ✕
+        </button>
+      </div>
+      <p class="panel-muted">
+        Arrastra la imagen y ajusta el zoom. Solo se guardará el encuadre que ves.
+      </p>
+      <div class="photo-crop-preview">
+        <canvas
+          id="photo-crop-canvas"
+          width="512"
+          height="512"
+          aria-label="Vista previa de la foto ajustada"
+        ></canvas>
+      </div>
+      <label class="photo-zoom-label">
+        Zoom
+        <input id="photo-crop-zoom" type="range" min="1" max="3" step="0.01" value="1" />
+      </label>
+      <div class="photo-crop-tools">
+        <button type="button" class="panel-secondary" id="photo-crop-rotate">
+          Girar 90° ↻
+        </button>
+        <button type="button" class="panel-text-button" id="photo-crop-reset">
+          Restablecer
+        </button>
+      </div>
+      <p id="photo-crop-notice" role="status" hidden></p>
+      <div class="photo-crop-actions">
+        <button type="button" class="panel-secondary" id="photo-crop-cancel">
+          Cancelar
+        </button>
+        <button type="button" class="btn" id="photo-crop-save">Usar este encuadre</button>
+      </div>
+    </dialog>
     <dialog id="team-member-dialog" aria-labelledby="team-member-name">
       <div class="team-modal-shell">
         <button
@@ -620,7 +685,8 @@
     <script src="../js/backend-config.js?v=panel1" defer></script>
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/team.js?v=team1" defer></script>
-    <script src="../js/panel.js?v=team1" defer></script>
+    <script src="../js/photo-crop.js?v=team2" defer></script>
+    <script src="../js/team.js?v=team2" defer></script>
+    <script src="../js/panel.js?v=team2" defer></script>
   </body>
 </html>

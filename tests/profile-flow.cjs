@@ -96,6 +96,7 @@ async function mock(context, state) {
       );
       return json({
         user_id: state.teamUserId || "22222222-2222-4222-8222-222222222222",
+        is_root: member?.is_root || false,
         position_code: member?.position_code || null,
         position: member?.position || null,
         multiplier: member?.multiplier || null,
@@ -112,12 +113,23 @@ async function mock(context, state) {
       state.assignmentSaved = body;
       const member = state.team.find((person) => person.user_id === body.p_user_id);
       member.position_code = body.p_position_code;
+      member.position = {
+        financial_trainee: "Financial Trainee",
+        financial_consultant: "Financial Consultant",
+        team_manager: "Gestor de Equipo",
+      }[body.p_position_code];
+      member.multiplier = {
+        financial_trainee: 2,
+        financial_consultant: 2.5,
+        team_manager: 3.5,
+      }[body.p_position_code];
       member.manager_id = body.p_manager_id;
       return json(null);
     }
     if (url.pathname.startsWith("/storage/v1/object/")) {
       if (request.method() === "POST") {
         state.photoUploaded = true;
+        state.photoBytes = request.postDataBuffer();
         return json({});
       }
       if (request.method() === "DELETE") {
@@ -126,11 +138,13 @@ async function mock(context, state) {
       }
       return route.fulfill({
         status: 200,
-        contentType: "image/png",
-        body: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9hsAAAAASUVORK5CYII=",
-          "base64",
-        ),
+        contentType: state.photoBytes ? "image/webp" : "image/png",
+        body:
+          state.photoBytes ||
+          Buffer.from(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9hsAAAAASUVORK5CYII=",
+            "base64",
+          ),
       });
     }
     if (url.pathname.endsWith("/rpc/list_consultants")) {
@@ -485,6 +499,7 @@ async function login(page, base) {
     treeData.team = [
       {
         user_id: "11111111-1111-4111-8111-111111111111",
+        is_root: true,
         first_name: "Responsable",
         last_name: "De prueba",
         position_code: "team_manager",
@@ -521,7 +536,7 @@ async function login(page, base) {
     assert.equal(treeData.requestReads, 0);
     for (const width of [320, 768, 1440]) {
       await treePage.setViewportSize({ width, height: 900 });
-      await treePage.locator("#team-locate").click();
+      await treePage.locator("#team-locate-mini").click();
       assert.equal(
         await treePage.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
@@ -537,6 +552,8 @@ async function login(page, base) {
         );
       });
       assert.equal(centered, true, "El árbol debe situarse en el puesto del usuario");
+      if (width === 320 && process.env.TEAM_MOBILE_SCREENSHOT)
+        await treePage.screenshot({ path: process.env.TEAM_MOBILE_SCREENSHOT });
     }
     if (process.env.TEAM_SCREENSHOT)
       await treePage.screenshot({ path: process.env.TEAM_SCREENSHOT });
@@ -558,8 +575,13 @@ async function login(page, base) {
     );
     const photo = await treePage.evaluate(() => {
       const c = document.createElement("canvas");
-      c.width = 32;
-      c.height = 32;
+      c.width = 160;
+      c.height = 80;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#ed5948";
+      ctx.fillRect(0, 0, 80, 80);
+      ctx.fillStyle = "#246ecc";
+      ctx.fillRect(80, 0, 80, 80);
       return c.toDataURL("image/png").split(",")[1];
     });
     await treePage.locator("#team-photo-input").setInputFiles({
@@ -567,20 +589,63 @@ async function login(page, base) {
       mimeType: "image/png",
       buffer: Buffer.from(photo, "base64"),
     });
+    await treePage.locator("#photo-crop-dialog").waitFor();
+    assert.equal(treeData.photoUploaded, undefined, "No se sube antes de confirmar");
+    await treePage.locator("#photo-crop-zoom").evaluate((input) => {
+      input.value = "1.6";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const beforePan = await treePage
+      .locator("#photo-crop-canvas")
+      .evaluate((canvas) =>
+        Array.from(canvas.getContext("2d").getImageData(256, 256, 1, 1).data),
+      );
+    await treePage.locator("#photo-crop-canvas").focus();
+    await treePage.keyboard.press("ArrowRight");
+    const afterPan = await treePage
+      .locator("#photo-crop-canvas")
+      .evaluate((canvas) =>
+        Array.from(canvas.getContext("2d").getImageData(256, 256, 1, 1).data),
+      );
+    assert.notDeepEqual(beforePan, afterPan, "El desplazamiento cambia el encuadre real");
+    await treePage.locator("#photo-crop-rotate").click();
+    if (process.env.PHOTO_SCREENSHOT)
+      await treePage.screenshot({ path: process.env.PHOTO_SCREENSHOT });
+    await treePage.locator("#photo-crop-save").click();
     await treePage.waitForFunction(() =>
       document
         .querySelector("#team-profile-notice")
-        .textContent.includes("Foto actualizada"),
+        .textContent.includes("encuadre actualizados"),
     );
     assert.equal(treeData.photoUploaded, true);
+    await treePage.locator("#team-photo-adjust").click();
+    await treePage.locator("#photo-crop-dialog").waitFor();
+    await treePage.locator("#photo-crop-cancel").click();
+    assert.equal(treeData.photoUploaded, true, "Cancelar conserva la foto");
     await treePage.locator("#team-photo-remove").click();
     await treePage.waitForFunction(
       () => document.querySelector("#team-photo-remove").hidden,
     );
     assert.equal(treeData.photoUploaded, false);
     treeData.role = "admin";
+    treeData.teamUserId = "11111111-1111-4111-8111-111111111111";
     await treePage.locator("#logout-button").click();
     await login(treePage, base);
+    await treePage.locator('#panel-navigation [data-view="profile"]').click();
+    await treePage.waitForFunction(
+      () => !document.querySelector("#refresh-button").disabled,
+    );
+    assert.equal(await treePage.locator("#my-team-position").isEnabled(), true);
+    await treePage.locator("#my-team-position").selectOption("financial_trainee");
+    assert.equal(await treePage.locator("#my-team-multiplier").inputValue(), "×2");
+    await treePage.locator("#team-save-own-position").click();
+    await treePage.waitForFunction(() =>
+      document.querySelector("#team-profile-notice").textContent.includes("Tu puesto"),
+    );
+    assert.equal(
+      treeData.assignmentSaved.p_user_id,
+      "11111111-1111-4111-8111-111111111111",
+    );
     await treePage.locator('#panel-navigation [data-view="team"]').click();
     await treePage.locator(".team-node-self").click();
     await treePage.locator("#team-assignment-form").waitFor();
