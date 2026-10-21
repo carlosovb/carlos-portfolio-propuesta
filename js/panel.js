@@ -183,6 +183,7 @@
     const badge = document.createElement("span");
     badge.className = "request-status";
     badge.textContent = statuses[item.status];
+    badge.dataset.status = item.status;
     button.append(text, badge);
     button.addEventListener("click", () => openRequest(item));
     return button;
@@ -372,7 +373,9 @@
       description.textContent = value;
       details.append(term, description);
     });
-    get("request-status").value = item.status;
+    get('request-status').querySelectorAll('input').forEach(input => {
+      input.checked = input.value === item.status;
+    });
     notice("dialog-notice", "");
     get("request-dialog").showModal();
   }
@@ -387,7 +390,7 @@
     get("delete-request").disabled = true;
     try {
       if (remove) await backend.deleteRequest(id);
-      else await backend.updateStatus(id, get("request-status").value);
+      else await backend.updateStatus(id, get("request-status").querySelector("input:checked").value);
       if (snapshot !== epoch || !active) return;
       selected = null;
       get("request-dialog").close();

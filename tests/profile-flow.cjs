@@ -104,7 +104,11 @@ async function mock(context, state) {
       assert.equal(state.role, "admin", "Un consultor intentó consultar solicitudes");
       if (request.method() === "HEAD")
         return route.fulfill({ status: 200, headers: { "Content-Range": "*/0" } });
-      return json([], 200, { "Content-Range": "*/0" });
+      if (request.method() === 'PATCH' && state.requests?.length) {
+        state.requests[0].status = body.status;
+        return json([{ id: state.requests[0].id }]);
+      }
+      return json(state.requests || [], 200, { "Content-Range": '*/' + (state.requests?.length || 0) });
     }
     throw new Error(`Petición no prevista: ${request.method()} ${url.pathname}`);
   });
@@ -258,6 +262,32 @@ async function login(page, base) {
       "Invitación: datos, contraseña, entrada directa y aislamiento de solicitudes comprobados.",
     );
     await context.close();
+
+    const statusContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const statusData = state();
+    statusData.requests = [{ id: 'test-request', full_name: 'Solicitud ficticia', phone: '000000000', email: 'test@example.invalid', reasons: [], call_time: 'indiferente', status: 'pending', created_at: '2026-10-21T00:00:00Z', expires_at: '2026-12-20T00:00:00Z' }];
+    await mock(statusContext, statusData);
+    const statusPage = await statusContext.newPage();
+    await login(statusPage, base);
+    await statusPage.locator('#recent-requests .request-row').click();
+    assert.equal(await statusPage.locator('#request-status input[value="pending"]').isChecked(), true);
+    for (const width of [320, 768, 1440]) {
+      await statusPage.setViewportSize({ width, height: 900 });
+      for (const theme of ['light', 'dark']) {
+        await statusPage.evaluate(theme => document.documentElement.dataset.theme = theme, theme);
+        assert.equal(await statusPage.evaluate(() => document.querySelector('#request-dialog').scrollWidth > document.querySelector('#request-dialog').clientWidth), false);
+      }
+    }
+    await statusPage.locator('#request-status label[data-status="scheduled"]').click();
+    assert.equal(await statusPage.locator('#request-status input[value="scheduled"]').isChecked(), true);
+    await statusPage.waitForTimeout(500);
+    if (process.env.STATUS_SCREENSHOT) await statusPage.screenshot({ path: process.env.STATUS_SCREENSHOT });
+    await statusPage.locator('#save-status').click();
+    await statusPage.waitForFunction(() => !document.querySelector('#request-dialog').open);
+    assert.equal(statusData.requests[0].status, 'scheduled');
+    await statusPage.locator('#recent-requests [data-status="scheduled"]').waitFor();
+    await statusContext.close();
+    console.log('Estados: selección horizontal, guardado y tamaños comprobados.');
 
     const recoveryContext = await browser.newContext();
     const recoveryData = state();

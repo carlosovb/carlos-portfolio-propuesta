@@ -10,7 +10,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=invitation-button2" />
+    <link rel="stylesheet" href="../css/panel.css?v=request-status1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -329,14 +329,23 @@
       </div>
       <h2 id="request-title"></h2>
       <dl id="request-details"></dl>
-      <label>
-        Estado de la solicitud
-        <select id="request-status">
-          <option value="pending">Pendiente de contactar</option>
-          <option value="contacted">Contactado</option>
-          <option value="scheduled">Cita acordada</option>
-        </select>
-      </label>
+      <fieldset id="request-status" class="status-picker">
+        <legend>Estado de la solicitud</legend>
+        <div class="status-options">
+          <label class="status-option" data-status="pending">
+            <input type="radio" name="request-status" value="pending" />
+            <span class="status-choice"><span class="status-symbol" aria-hidden="true">◷</span><span>Pendiente</span><span class="status-selected" aria-hidden="true">✓</span></span>
+          </label>
+          <label class="status-option" data-status="contacted">
+            <input type="radio" name="request-status" value="contacted" />
+            <span class="status-choice"><span class="status-symbol" aria-hidden="true">↗</span><span>Contactado</span><span class="status-selected" aria-hidden="true">✓</span></span>
+          </label>
+          <label class="status-option" data-status="scheduled">
+            <input type="radio" name="request-status" value="scheduled" />
+            <span class="status-choice"><span class="status-symbol" aria-hidden="true">✓</span><span>Cita acordada</span><span class="status-selected" aria-hidden="true">✓</span></span>
+          </label>
+        </div>
+      </fieldset>
       <p id="dialog-notice" role="status" hidden></p>
       <div class="dialog-actions">
         <button type="button" class="btn" id="save-status">Guardar estado</button>
@@ -352,6 +361,6 @@
     <script src="../js/backend-config.js?v=panel1" defer></script>
     <script src="../js/backend.js?v=invitation-button2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
-    <script src="../js/panel.js?v=pending-profile3" defer></script>
+    <script src="../js/panel.js?v=request-status1" defer></script>
   </body>
 </html>
