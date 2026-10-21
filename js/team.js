@@ -81,8 +81,6 @@
     me = null;
     members = [];
     clientCounts = null;
-    get("team-clients-total").textContent = "—";
-    get("team-clients-mine").textContent = "—";
     selected = null;
     clearPhotos();
     places.clear();
@@ -103,6 +101,8 @@
       "team-member-multiplier",
       "team-member-manager",
       "team-member-reports",
+      "team-member-clients",
+      "team-member-interested",
     ].forEach((id) => (get(id).textContent = ""));
     get("team-assignment-form").elements.manager.replaceChildren();
     get("team-assignment-form").hidden = true;
@@ -240,16 +240,6 @@
       hint.className = "team-node-hint";
       hint.textContent = "Ver perfil ↗";
       info.append(name, position, factor, hint);
-      const count = clientCounts?.by_consultant.find(
-        (row) => row.user_id === member.user_id,
-      );
-      if (count) {
-        const clients = document.createElement("span");
-        clients.className = "team-node-client-count";
-        clients.textContent =
-          count.clients + (count.clients === 1 ? " cliente" : " clientes");
-        info.append(clients);
-      }
       card.append(face, info);
       if (self) {
         const tag = document.createElement("span");
@@ -278,6 +268,11 @@
         ? fullName(manager)
         : "Responsable principal";
     get("team-member-reports").textContent = childrenCount(member.user_id) + " personas";
+    const totals = clientCounts?.by_consultant.find(
+      (row) => row.user_id === member.user_id,
+    );
+    get("team-member-clients").textContent = totals?.clients ?? "—";
+    get("team-member-interested").textContent = totals?.interested ?? "—";
     avatar(get("team-member-photo"), member, true);
     const form = get("team-assignment-form");
     form.hidden = account?.role !== "admin";
@@ -330,8 +325,6 @@
     get("team-canvas").replaceChildren();
     try {
       clientCounts = null;
-      get("team-clients-total").textContent = "—";
-      get("team-clients-mine").textContent = "—";
       const [directory, mine, counts] = await Promise.all([
         backend.listTeam(),
         backend.getMyTeamProfile(),
@@ -339,10 +332,6 @@
       ]);
       if (snapshot !== revision) return;
       clientCounts = counts;
-      get("team-clients-total").textContent = counts?.total ?? "—";
-      get("team-clients-mine").textContent =
-        counts?.by_consultant.find((row) => row.user_id === mine?.user_id)?.clients ??
-        "—";
       members = directory;
       me = mine;
       await fetchPhotos(members, snapshot);

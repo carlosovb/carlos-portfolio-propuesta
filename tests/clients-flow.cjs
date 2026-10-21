@@ -44,7 +44,7 @@ const headers = [
   "Dato que debe ignorarse",
 ];
 const a = [
-  "Particular",
+  "Cliente",
   "Activo",
   "García",
   "Ana",
@@ -157,7 +157,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         return json({
           total: clients.length,
           consultants_with_clients: clients.length ? 1 : 0,
-          by_consultant: [{ user_id: uid, clients: clients.length }],
+          by_consultant: [{ user_id: uid, clients: clients.length, interested: 0 }],
         });
       if (url.pathname.endsWith("/rpc/list_my_clients")) {
         if (delayNextList) {
@@ -166,16 +166,20 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
         const q = parser.normalize(body.p_search);
-        const matches = clients.filter((row) =>
-          parser.normalize(Object.values(row).join(" ")).includes(q),
-        );
+        const matches = clients
+          .filter((row) => parser.normalize(Object.values(row).join(" ")).includes(q))
+          .sort(
+            (a, b) =>
+              (parser.normalize(a.client_type) === "cliente" ? 0 : 1) -
+              (parser.normalize(b.client_type) === "cliente" ? 0 : 1),
+          );
         return json({
           rows: matches.slice(body.p_page * 25, (body.p_page + 1) * 25),
           total: matches.length,
           stats: {
             clients: clients.length,
             localities: new Set(clients.map((row) => row.locality)).size,
-            with_contact: clients.filter((row) => row.phone || row.email).length,
+            interested: 0,
           },
         });
       }
@@ -232,6 +236,12 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(await page.locator("#clients-list tr").count(), 3);
     assert.equal(clients.length, 0);
     assert.equal(writes, 0);
+    assert.deepEqual(
+      await page
+        .locator("#clients-list tr")
+        .evaluateAll((rows) => rows.map((row) => row.dataset.category)),
+      ["client", "client", "interested"],
+    );
     for (const width of [320, 768, 1440]) {
       await page.setViewportSize({ width, height: 1050 });
       for (const theme of ["light", "dark"]) {
@@ -250,19 +260,30 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     }
     if (process.env.CLIENTS_SCREENSHOT)
       await page.screenshot({ path: process.env.CLIENTS_SCREENSHOT, fullPage: true });
-    await page.locator("#clients-list .client-action button").first().click();
-    assert.equal(await page.locator("#client-detail-fields .client-field").count(), 12);
-    assert.equal(await page.locator("#client-detail-demo").isVisible(), true);
     for (const width of [320, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
+      const open = page.locator("#clients-list .client-action button").first();
+      await open.scrollIntoViewIfNeeded();
+      const before = await page.evaluate(() => window.scrollY);
+      await open.click();
+      assert.ok(
+        Math.abs((await page.evaluate(() => window.scrollY)) - before) < 2,
+        "Abrir la ficha no debe desplazar la página",
+      );
+      assert.equal(await page.locator("#client-detail-fields .client-field").count(), 12);
+      assert.equal(await page.locator("#client-detail-demo").isVisible(), true);
       assert.equal(
         await page
           .locator("#client-detail-dialog")
           .evaluate((d) => d.scrollWidth <= d.clientWidth),
         true,
       );
+      await page.locator("#client-detail-close").click();
+      assert.ok(
+        Math.abs((await page.evaluate(() => window.scrollY)) - before) < 2,
+        "Cerrar la ficha debe conservar la posición",
+      );
     }
-    await page.locator("#client-detail-close").click();
     await page.locator("#clients-demo-toggle").click();
     await page.locator("#clients-empty").waitFor();
     const upload = () =>
@@ -306,10 +327,13 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       () => document.querySelectorAll("#clients-list tr").length === 2,
     );
     await page.locator('#panel-navigation [data-view="team"]').click();
-    await page.waitForFunction(
-      () => document.querySelector("#team-clients-total").textContent === "2",
-    );
-    assert.equal(await page.locator("#team-clients-mine").textContent(), "2");
+    await page.locator(".team-node-self").waitFor();
+    assert.equal(await page.locator("#team-view .team-node-client-count").count(), 0);
+    assert.equal(await page.locator(".team-clients-summary").count(), 0);
+    await page.locator(".team-node-self").click();
+    assert.equal(await page.locator("#team-member-clients").textContent(), "2");
+    assert.equal(await page.locator("#team-member-interested").textContent(), "0");
+    await page.locator("#team-member-close").click();
     assert.equal(
       await page
         .locator("#team-view")

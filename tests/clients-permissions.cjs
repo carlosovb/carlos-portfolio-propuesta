@@ -24,7 +24,7 @@ const fs = require("fs"),
     birth_date: "1990-02-03",
     email: "ana@example.invalid",
     phone: "000000001",
-    client_type: "Particular",
+    client_type: "Cliente",
     status: "Activo",
     street_type: "Calle",
     street: "Ejemplo",
@@ -139,6 +139,27 @@ const fs = require("fs"),
         .total,
       1,
     );
+    const leads = Array.from({ length: 26 }, (_, i) => ({
+      ...a,
+      client_type: "Interesado",
+      last_name: "AAA",
+      first_name: "Interesado " + i,
+    }));
+    await rpc(leads, false);
+    const firstPage = (await db.query("select public.list_my_clients('',0) result"))
+      .rows[0].result;
+    const secondPage = (await db.query("select public.list_my_clients('',1) result"))
+      .rows[0].result;
+    assert.equal(firstPage.stats.clients, 2);
+    assert.equal(firstPage.stats.interested, 26);
+    assert.equal(firstPage.rows[0].category, "client");
+    assert.equal(firstPage.rows[1].category, "client");
+    assert.equal(
+      secondPage.rows.every((row) => row.category === "interested"),
+      true,
+      "La prioridad se aplica antes de paginar",
+    );
+    await db.query("delete from public.portfolio_clients where client_type='Interesado'");
     const id = (
       await db.query("select id from public.portfolio_clients where first_name='Ana'")
     ).rows[0].id;
@@ -157,15 +178,27 @@ const fs = require("fs"),
       0,
     );
     await rpc(
-      [{ ...a, first_name: "Cliente de otro consultor", email: "other@example.invalid" }],
+      [
+        {
+          ...a,
+          client_type: "Interesado",
+          first_name: "Cliente de otro consultor",
+          email: "other@example.invalid",
+        },
+      ],
       false,
     );
     const counts = (await db.query("select public.get_team_client_counts() result"))
       .rows[0].result;
-    assert.equal(counts.total, 3);
+    assert.equal(counts.total, 2);
+    assert.equal(counts.interested, 1);
     assert.equal(counts.by_consultant.find((row) => row.user_id === member).clients, 2);
     assert.equal(JSON.stringify(counts).includes("example.invalid"), false);
-    assert.deepEqual(Object.keys(counts.by_consultant[0]).sort(), ["clients", "user_id"]);
+    assert.deepEqual(Object.keys(counts.by_consultant[0]).sort(), [
+      "clients",
+      "interested",
+      "user_id",
+    ]);
     await as(owner);
     assert.equal(
       (await db.query("select count(*)::int total from public.portfolio_clients")).rows[0]

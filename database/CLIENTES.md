@@ -25,3 +25,5 @@ No se aplica a esta cartera el borrado a los 60 días de las solicitudes de prim
 `tests/clients-permissions.cjs`: base aislada, permisos por consultor, validación, duplicados, propietario fijado en servidor, anonimato de los agregados y bloqueo de accesos desactivados.
 
 `tests/clients-flow.cjs`: datos ficticios, ejemplo separado, vista previa, importación repetida, exclusión de columnas adicionales, búsqueda, fichas, selección múltiple, eliminación y limpieza al cerrar sesión, en móvil y escritorio.
+
+Los tipos originales Cliente e Interesado se distinguen mediante etiquetas y colores. Los clientes se ordenan primero desde la base de datos, antes de paginar; los tipos no reconocidos quedan al final sin reclasificarse. El resumen de cartera distingue ambas categorías. En Equipo, los recuentos aparecen solo dentro de la ficha del consultor.

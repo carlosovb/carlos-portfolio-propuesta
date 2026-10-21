@@ -19,6 +19,15 @@
     pending = null,
     searchTimer;
   let operation = 0;
+  let dialogScroll = null;
+  const category = (row) =>
+    row.category ||
+    (parser.normalize(row.client_type) === "cliente"
+      ? "client"
+      : parser.normalize(row.client_type) === "interesado"
+        ? "interested"
+        : "other");
+  const priority = (row) => ({ client: 0, interested: 1, other: 2 })[category(row)];
   const selection = new Set();
   const name = (row) => [row.first_name, row.last_name].filter(Boolean).join(" ");
   const formatDate = (value) =>
@@ -34,7 +43,7 @@
   const examples = () => [
     {
       id: "demo-1",
-      client_type: "Particular",
+      client_type: "Cliente",
       status: "Activo",
       first_name: "Lucía",
       last_name: "Martín · Ejemplo",
@@ -49,7 +58,7 @@
     },
     {
       id: "demo-2",
-      client_type: "Particular",
+      client_type: "Cliente",
       status: "Activo",
       first_name: "Daniel",
       last_name: "Pérez · Ejemplo",
@@ -64,7 +73,7 @@
     },
     {
       id: "demo-3",
-      client_type: "Autónomo",
+      client_type: "Interesado",
       status: "Activo",
       first_name: "Sofía",
       last_name: "León · Ejemplo",
@@ -100,6 +109,11 @@
   }
   function detail(row) {
     if (!visible || !account) return;
+    dialogScroll = {
+      x: window.scrollX,
+      y: window.scrollY,
+      opener: document.activeElement,
+    };
     get("client-detail-name").textContent = name(row);
     get("client-detail-demo").hidden = !demo;
     const fields = get("client-detail-fields");
@@ -117,6 +131,8 @@
       fields.append(group);
     });
     get("client-detail-dialog").showModal();
+    get("client-detail-close").focus({ preventScroll: true });
+    window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
   }
   function render(result) {
     rows = result.rows;
@@ -125,6 +141,7 @@
     get("clients-list").replaceChildren();
     for (const row of rows) {
       const tr = el("tr");
+      tr.dataset.category = category(row);
       const selectCell = el("td", "client-select-cell");
       const checkbox = el("input", "bulk-checkbox");
       checkbox.type = "checkbox";
@@ -149,7 +166,15 @@
       const title = el("span");
       title.append(
         el("strong", "", name(row)),
-        el("small", "", row.client_type || "Sin tipo indicado"),
+        el(
+          "small",
+          "client-category",
+          category(row) === "client"
+            ? "Cliente"
+            : category(row) === "interested"
+              ? "Interesado"
+              : row.client_type || "Sin clasificar",
+        ),
       );
       identity.append(monogram, title);
       const contact = el("td", "client-contact");
@@ -179,11 +204,11 @@
     const stats = result.stats;
     get("clients-count").textContent = stats.clients;
     get("clients-localities-count").textContent = stats.localities;
-    get("clients-contact-count").textContent = stats.with_contact;
+    get("clients-interested-count").textContent = stats.interested;
     get("clients-total").textContent =
       result.total +
       " " +
-      (result.total === 1 ? "cliente" : "clientes") +
+      (result.total === 1 ? "registro" : "registros") +
       (get("clients-search").value ? " en esta búsqueda" : "");
     get("clients-table-wrap").hidden = !rows.length;
     get("clients-empty").hidden = !!rows.length;
@@ -206,16 +231,19 @@
       let result;
       if (demo) {
         const query = parser.normalize(get("clients-search").value);
-        const matches = demoRows.filter((row) =>
-          parser.normalize(Object.values(row).join(" ")).includes(query),
-        );
+        const matches = demoRows
+          .filter((row) => parser.normalize(Object.values(row).join(" ")).includes(query))
+          .sort(
+            (a, b) =>
+              priority(a) - priority(b) || a.last_name.localeCompare(b.last_name, "es"),
+          );
         result = {
           rows: matches.slice(page * 25, (page + 1) * 25),
           total: matches.length,
           stats: {
-            clients: demoRows.length,
+            clients: demoRows.filter((row) => category(row) === "client").length,
+            interested: demoRows.filter((row) => category(row) === "interested").length,
             localities: new Set(demoRows.map((row) => row.locality)).size,
-            with_contact: demoRows.filter((row) => row.phone || row.email).length,
           },
         };
       } else result = await backend.listClients(get("clients-search").value, page);
@@ -235,7 +263,7 @@
       get("clients-bulk").hidden = true;
       get("clients-pagination").hidden = true;
       get("clients-empty").hidden = true;
-      ["clients-count", "clients-localities-count", "clients-contact-count"].forEach(
+      ["clients-count", "clients-localities-count", "clients-interested-count"].forEach(
         (id) => (get(id).textContent = "—"),
       );
       get("clients-total").textContent = "";
@@ -248,6 +276,7 @@
   }
   function hide() {
     visible = false;
+    dialogScroll = null;
     operation++;
     busy = false;
     get("clients-file").disabled = false;
@@ -273,7 +302,7 @@
     get("clients-file").disabled = false;
     get("clients-search").value = "";
     get("clients-total").textContent = "";
-    ["clients-count", "clients-localities-count", "clients-contact-count"].forEach(
+    ["clients-count", "clients-localities-count", "clients-interested-count"].forEach(
       (id) => (get(id).textContent = "—"),
     );
     get("clients-bulk").hidden = true;
@@ -308,10 +337,18 @@
     page++;
     load();
   });
-  get("client-detail-close").addEventListener("click", () => {
-    get("client-detail-dialog").close();
+  get("client-detail-close").addEventListener("click", () =>
+    get("client-detail-dialog").close(),
+  );
+  get("client-detail-dialog").addEventListener("close", () => {
+    const saved = dialogScroll;
+    dialogScroll = null;
     get("client-detail-fields").replaceChildren();
     get("client-detail-name").textContent = "";
+    if (saved && visible) {
+      if (saved.opener?.isConnected) saved.opener.focus({ preventScroll: true });
+      window.scrollTo({ left: saved.x, top: saved.y, behavior: "instant" });
+    }
   });
   get("clients-cancel-import").addEventListener("click", () => {
     if (busy) return;

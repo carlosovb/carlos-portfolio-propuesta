@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/team.css?v=clients1" />
+    <link rel="stylesheet" href="../css/team.css?v=clients2" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
-    <link rel="stylesheet" href="../css/clients.css?v=clients1" />
+    <link rel="stylesheet" href="../css/clients.css?v=clients2" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
   </head>
   <body class="panel-page">
@@ -335,16 +335,16 @@
           </div>
           <div class="clients-metrics" aria-label="Resumen de mi cartera">
             <article>
-              <span>Mis clientes</span>
+              <span>Clientes</span>
               <strong id="clients-count">—</strong>
+            </article>
+            <article>
+              <span>Interesados</span>
+              <strong id="clients-interested-count">—</strong>
             </article>
             <article>
               <span>Localidades</span>
               <strong id="clients-localities-count">—</strong>
-            </article>
-            <article>
-              <span>Con datos de contacto</span>
-              <strong id="clients-contact-count">—</strong>
             </article>
           </div>
           <div class="clients-section-heading">
@@ -525,16 +525,6 @@
               <abbr title="Gestor de Equipo">GE</abbr>
               <b>×3,5</b>
             </span>
-          </div>
-          <div class="team-clients-summary" aria-label="Resumen de clientes del equipo">
-            <div>
-              <strong id="team-clients-total">—</strong>
-              <span>Clientes del equipo</span>
-            </div>
-            <div>
-              <strong id="team-clients-mine">—</strong>
-              <span>Mis clientes</span>
-            </div>
           </div>
           <p id="team-notice" class="panel-notice" role="status" hidden></p>
           <button type="button" id="team-open-profile" class="panel-secondary">
@@ -822,6 +812,14 @@
                 <dt>Equipo directo</dt>
                 <dd id="team-member-reports"></dd>
               </div>
+              <div>
+                <dt>Clientes</dt>
+                <dd id="team-member-clients">—</dd>
+              </div>
+              <div>
+                <dt>Interesados</dt>
+                <dd id="team-member-interested">—</dd>
+              </div>
             </dl>
           </div>
         </div>
@@ -919,13 +917,13 @@
     </dialog>
 
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=clients1" defer></script>
+    <script src="../js/backend.js?v=clients2" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
-    <script src="../js/client-import.js?v=clients1" defer></script>
-    <script src="../js/clients.js?v=clients1" defer></script>
+    <script src="../js/client-import.js?v=clients2" defer></script>
+    <script src="../js/clients.js?v=clients2" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/team.js?v=clients1" defer></script>
-    <script src="../js/panel.js?v=clients1" defer></script>
+    <script src="../js/team.js?v=clients2" defer></script>
+    <script src="../js/panel.js?v=clients2" defer></script>
   </body>
 </html>
