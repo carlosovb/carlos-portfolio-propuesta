@@ -257,7 +257,9 @@ async function login(page, base) {
     });
     const data = state("consultant");
     data.profile = null;
-    data.needsPassword = true;
+    // Reproduce la situación real: Auth ya marcó contraseña pero falta el perfil.
+    // La contraseña elegida en el formulario debe guardarse de todos modos.
+    data.needsPassword = false;
     await mock(context, data);
     const page = await context.newPage();
     await page.goto(base + "cuenta/#token_hash=token-de-prueba&type=invite");

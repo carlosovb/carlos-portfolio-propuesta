@@ -102,8 +102,9 @@
           phone: form.elements.phone.value.trim(),
         });
       }
-      if (link.type === "recovery" || details.needs_password)
-        details = await backend.setPasswordFromLink(form.elements.password.value);
+      // En una invitación siempre guardar la contraseña elegida, aunque Auth ya
+      // haya actualizado internamente el indicador de contraseña al validar el enlace.
+      details = await backend.setPasswordFromLink(form.elements.password.value);
       form.reset();
       await backend.preparePanelRedirect();
       transferring = true;
