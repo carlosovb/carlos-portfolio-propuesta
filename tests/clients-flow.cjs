@@ -172,8 +172,28 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           month: body.p_from || body.p_month,
           first_month: "2024-02-01",
           months: {
-            own: [{ month: "2024-02-01", units: 100, euros: 250 }],
-            global: [{ month: "2024-02-01", units: 100, euros: 400 }],
+            own: [
+              {
+                month: "2024-02-01",
+                units: 100,
+                euros: 250,
+                own_units: 100,
+                team_units: 0,
+                own_euros: 250,
+                team_euros: 0,
+              },
+            ],
+            global: [
+              {
+                month: "2024-02-01",
+                units: 100,
+                euros: 400,
+                own_units: 100,
+                team_units: 200,
+                own_euros: 200,
+                team_euros: 200,
+              },
+            ],
           },
           last_day: 29,
           undated_own: 1,
@@ -206,8 +226,28 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
             },
           },
           days: {
-            own: [{ day: 29, units: 100, euros: 250 }],
-            global: [{ day: 29, units: 100, euros: 400 }],
+            own: [
+              {
+                day: 29,
+                units: 100,
+                euros: 250,
+                own_units: 100,
+                team_units: 0,
+                own_euros: 250,
+                team_euros: 0,
+              },
+            ],
+            global: [
+              {
+                day: 29,
+                units: 100,
+                euros: 400,
+                own_units: 100,
+                team_units: 200,
+                own_euros: 200,
+                team_euros: 200,
+              },
+            ],
           },
           people: [
             {
@@ -1034,6 +1074,31 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.getByRole("button", { name: "Equipo completo", exact: true }).click();
     assert.match(await page.locator(".stats-metrics").textContent(), /400/);
     assert.equal(await page.locator(".stats-person").count(), 1);
+    await page.locator(".stats-chart [data-metric=euros]").click();
+    assert.equal(await page.locator(".stats-bars").getAttribute("data-metric"), "euros");
+    assert.equal(await page.locator(".stats-bars>div").count(), 29);
+    assert.match(
+      await page.locator(".stats-bars>div").last().getAttribute("title"),
+      /Propias:.*200.*Equipo:.*200/,
+    );
+    assert.equal(
+      await page
+        .locator(".stats-bars>div")
+        .last()
+        .locator("[data-series=team]")
+        .evaluate((el) => el.style.height),
+      "100%",
+    );
+    await page.locator(".stats-chart [data-metric=units]").click();
+    assert.equal(
+      await page
+        .locator(".stats-bars>div")
+        .last()
+        .locator("[data-series=own]")
+        .evaluate((el) => el.style.height),
+      "50%",
+    );
+
     await page.locator(".stats-heading input[name=to]").fill("2024-03");
     await page.getByRole("button", { name: "Ver periodo", exact: true }).click();
     await page.locator(".stats-bars[data-period=months]").waitFor();

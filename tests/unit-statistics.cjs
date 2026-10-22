@@ -117,6 +117,13 @@ const assert = require("node:assert/strict");
     assert.equal(ranged.scopes.global.units, 100);
     assert.equal(ranged.scopes.global.own_euros + ranged.scopes.global.team_euros, 400);
     assert.equal(ranged.last_day, 29);
+    assert.equal(ranged.months.global[0].own_units, 100);
+    assert.equal(ranged.months.global[0].team_units, 200);
+    assert.equal(ranged.months.global[0].own_euros, 200);
+    assert.equal(ranged.months.global[0].team_euros, 200);
+    assert.equal(ranged.days.global[0].team_euros, 200);
+    assert.equal(ranged.days.own[0].team_units, 0);
+
     assert.equal(ranged.people.length, 1);
     assert.equal(ranged.months.global[0].month, "2024-02-01");
     assert.equal(ranged.days.global[0].date, "2024-02-29");

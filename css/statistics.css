@@ -317,3 +317,75 @@ html[data-theme="light"] .stats-person div:last-of-type strong {
     right: auto;
   }
 }
+
+.stats-chart-controls {
+  display: flex;
+  gap: 0.3rem;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  width: max-content;
+  max-width: 100%;
+  margin: 1rem 0;
+}
+.stats-chart-controls button {
+  border: 0;
+  border-radius: 100px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+}
+.stats-chart-controls button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--bg);
+}
+.stats-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.85rem;
+  margin: 1rem 0;
+}
+.stats-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.stats-chart-legend span::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: #80b7ea;
+}
+.stats-chart-legend [data-series="team"]::before {
+  background: #7fc7a7;
+}
+.stats-bars > div {
+  gap: 2px;
+}
+.stats-bars span {
+  min-height: 0;
+}
+.stats-bars span[data-series="team"] {
+  background: #7fc7a7;
+}
+.stats-bars > div:hover span[data-series="own"] {
+  background: #9bcfff;
+}
+.stats-bars > div:hover span[data-series="team"] {
+  background: #a1e0c3;
+}
+.stats-chart details {
+  overflow-x: auto;
+}
+html[data-theme="light"] .stats-bars span[data-series="own"],
+html[data-theme="light"] .stats-chart-legend [data-series="own"]::before {
+  background: #337cb9;
+}
+html[data-theme="light"] .stats-bars span[data-series="team"],
+html[data-theme="light"] .stats-chart-legend [data-series="team"]::before {
+  background: #25855f;
+}

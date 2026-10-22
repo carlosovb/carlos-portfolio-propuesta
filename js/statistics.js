@@ -12,6 +12,7 @@
     from = currentMonth(),
     to = currentMonth(),
     scope = "own",
+    chartMetric = "units",
     data,
     loading = false,
     error = "";
@@ -247,77 +248,133 @@
       host.append(notice);
     }
     const chart = n("section", undefined, "stats-chart");
-    const multiple = from !== to;
-    chart.append(n("h3", multiple ? "El ritmo del periodo." : "El ritmo del mes."));
-    const days = data.days?.[scope] || [],
-      monthly = data.months?.[scope] || [];
-    const series = multiple
-      ? monthsBetween(from, to).map((month) => ({
-          ...monthly.find((row) => row.month.slice(0, 7) === month),
-          month,
-        }))
-      : Array.from({ length: data.last_day }, (_, i) => ({
-          ...days.find((row) => Number(row.day) === i + 1),
-          day: i + 1,
-        }));
-    const max = Math.max(1, ...series.map((row) => Number(row.units || 0)));
-    const scroll = n("div", undefined, "stats-chart-scroll"),
-      bars = n("div", undefined, "stats-bars");
-    bars.dataset.period = multiple ? "months" : "days";
-    bars.setAttribute(
-      "aria-label",
-      multiple
-        ? "Unidades por mes; desglose accesible en la tabla inferior"
-        : "Unidades por día; desglose accesible en la tabla inferior",
-    );
-    series.forEach((row) => {
-      const label = multiple ? monthName(row.month) : String(row.day),
-        bar = n("div"),
-        fill = n("span");
-      bar.title =
-        label +
-        ": " +
-        num(row.units) +
-        " U · " +
-        eur(row.euros) +
-        (row.pending ? " · Importe incompleto" : "");
-      fill.style.height = (Number(row.units || 0) / max) * 100 + "%";
-      bar.append(fill, n("small", label));
-      bars.append(bar);
-    });
-    scroll.append(bars);
-    chart.append(scroll);
-    const detail = n("details"),
-      summary = n("summary", multiple ? "Ver desglose mensual" : "Ver desglose diario");
-    detail.append(summary);
-    const daily = n("table"),
-      head = n("thead"),
-      header = n("tr");
-    ["Mes", "Unidades", "Euros calculados"].forEach((label, i) =>
-      header.append(n("th", i === 0 && !multiple ? "Día" : label)),
-    );
-    head.append(header);
-    daily.append(head);
-    const body = n("tbody");
-    (multiple ? series : days).forEach((row) => {
-      const tr = n("tr");
-      tr.append(
-        n("td", multiple ? monthName(row.month) : String(row.day)),
-        n("td", num(row.units) + " U"),
-        n("td", eur(row.euros) + (row.pending ? " · Incompleto" : "")),
+    function drawChart() {
+      chart.replaceChildren();
+      const multiple = from !== to;
+      chart.append(n("h3", multiple ? "El ritmo del periodo." : "El ritmo del mes."));
+      const days = data.days?.[scope] || [],
+        monthly = data.months?.[scope] || [];
+      const series = multiple
+        ? monthsBetween(from, to).map((month) => ({
+            ...monthly.find((row) => row.month.slice(0, 7) === month),
+            month,
+          }))
+        : Array.from({ length: data.last_day }, (_, i) => ({
+            ...days.find((row) => Number(row.day) === i + 1),
+            day: i + 1,
+          }));
+      const parts = [
+        ["own", "Propias"],
+        ["team", "Generado por el equipo"],
+      ];
+      const value = (row, key) => Number(row[key + "_" + chartMetric] || 0);
+      const format = (value) =>
+        chartMetric === "euros" ? eur(value) : num(value) + " U";
+      const max = Math.max(
+        1,
+        ...series.flatMap((row) => parts.map(([key]) => value(row, key))),
       );
-      body.append(tr);
-    });
-    if (!multiple && !days.length) {
-      const tr = n("tr"),
-        td = n("td", "Todavía no hay firmas registradas en este mes.");
-      td.colSpan = 3;
-      tr.append(td);
-      body.append(tr);
+      const controls = n("div", undefined, "stats-chart-controls");
+      controls.setAttribute("role", "group");
+      controls.setAttribute("aria-label", "Medida del gráfico");
+      for (const [key, label] of [
+        ["units", "Unidades"],
+        ["euros", "Euros"],
+      ]) {
+        const b = n("button", label);
+        b.type = "button";
+        b.dataset.metric = key;
+        b.setAttribute("aria-pressed", String(chartMetric === key));
+        b.onclick = () => {
+          chartMetric = key;
+          drawChart();
+          chart
+            .querySelector('[data-metric="' + key + '"]')
+            .focus({ preventScroll: true });
+        };
+        controls.append(b);
+      }
+      const legend = n("div", undefined, "stats-chart-legend");
+      for (const [key, label] of parts) {
+        const item = n("span", label);
+        item.dataset.series = key;
+        legend.append(item);
+      }
+      chart.append(controls, legend);
+      chart.append(
+        n(
+          "p",
+          (chartMetric === "euros" ? "Euros calculados" : "Unidades") +
+            " · " +
+            (multiple ? "por mes" : "por día"),
+          "stats-caption",
+        ),
+      );
+      const scroll = n("div", undefined, "stats-chart-scroll"),
+        bars = n("div", undefined, "stats-bars");
+      bars.dataset.period = multiple ? "months" : "days";
+      bars.dataset.metric = chartMetric;
+      bars.setAttribute(
+        "aria-label",
+        (chartMetric === "euros" ? "Euros" : "Unidades") +
+          (multiple ? " por mes" : " por día") +
+          "; propias y equipo, con desglose en la tabla inferior",
+      );
+      series.forEach((row) => {
+        const label = multiple ? monthName(row.month) : String(row.day),
+          bar = n("div");
+        bar.title =
+          label +
+          " · Propias: " +
+          format(value(row, "own")) +
+          " · Equipo: " +
+          format(value(row, "team")) +
+          (row.pending ? " · Importe incompleto" : "");
+        for (const [key, name] of parts) {
+          const fill = n("span");
+          fill.dataset.series = key;
+          fill.style.height = (value(row, key) / max) * 100 + "%";
+          fill.title = name + ": " + format(value(row, key));
+          bar.append(fill);
+        }
+        bar.append(n("small", label));
+        bars.append(bar);
+      });
+      scroll.append(bars);
+      chart.append(scroll);
+      const detail = n("details"),
+        summary = n("summary", multiple ? "Ver desglose mensual" : "Ver desglose diario");
+      detail.append(summary);
+      const daily = n("table"),
+        head = n("thead"),
+        header = n("tr");
+      ["Mes", "Propias", "Generado por el equipo"].forEach((label, i) =>
+        header.append(n("th", i === 0 && !multiple ? "Día" : label)),
+      );
+      head.append(header);
+      daily.append(head);
+      const body = n("tbody");
+      (multiple ? series : days).forEach((row) => {
+        const tr = n("tr");
+        tr.append(
+          n("td", multiple ? monthName(row.month) : String(row.day)),
+          n("td", format(value(row, "own"))),
+          n("td", format(value(row, "team")) + (row.pending ? " · Incompleto" : "")),
+        );
+        body.append(tr);
+      });
+      if (!multiple && !days.length) {
+        const tr = n("tr"),
+          td = n("td", "Todavía no hay firmas registradas en este mes.");
+        td.colSpan = 3;
+        tr.append(td);
+        body.append(tr);
+      }
+      daily.append(body);
+      detail.append(daily);
+      chart.append(detail);
     }
-    daily.append(body);
-    detail.append(daily);
-    chart.append(detail);
+    drawChart();
     host.append(chart);
     if (scope !== "own") {
       const people = n("section", undefined, "stats-people");

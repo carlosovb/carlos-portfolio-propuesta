@@ -23,10 +23,10 @@ begin
     'team_euros',coalesce(sum(euros) filter(where not is_own),0),
     'pending',count(*) filter(where euros is null)) value from scopes group by scope
  ), days as (
-   select scope,signed_on,jsonb_build_object('date',signed_on,'day',extract(day from signed_on),'units',coalesce(sum(units) filter(where is_own or scope<>'global'),0),'euros',coalesce(sum(euros),0),'pending',count(*) filter(where euros is null)) value
+   select scope,signed_on,jsonb_build_object('date',signed_on,'day',extract(day from signed_on),'units',coalesce(sum(units) filter(where is_own or scope<>'global'),0),'euros',coalesce(sum(euros),0),'own_units',coalesce(sum(units) filter(where is_own),0),'team_units',coalesce(sum(units) filter(where not is_own),0),'own_euros',coalesce(sum(euros) filter(where is_own),0),'team_euros',coalesce(sum(euros) filter(where not is_own),0),'pending',count(*) filter(where euros is null)) value
    from scopes group by scope,signed_on
  ), months as (
-   select scope,date_trunc('month',signed_on)::date month_start,jsonb_build_object('month',date_trunc('month',signed_on)::date,'units',coalesce(sum(units) filter(where is_own or scope<>'global'),0),'euros',coalesce(sum(euros),0),'pending',count(*) filter(where euros is null)) value
+   select scope,date_trunc('month',signed_on)::date month_start,jsonb_build_object('month',date_trunc('month',signed_on)::date,'units',coalesce(sum(units) filter(where is_own or scope<>'global'),0),'euros',coalesce(sum(euros),0),'own_units',coalesce(sum(units) filter(where is_own),0),'team_units',coalesce(sum(units) filter(where not is_own),0),'own_euros',coalesce(sum(euros) filter(where is_own),0),'team_euros',coalesce(sum(euros) filter(where not is_own),0),'pending',count(*) filter(where euros is null)) value
    from scopes group by scope,date_trunc('month',signed_on)
  ), people as (
    select b.user_id,p.first_name||' '||p.last_name name,
