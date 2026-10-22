@@ -696,3 +696,162 @@ html[data-theme="dark"] .product-choice-copy img {
     transform: none;
   }
 }
+
+/* El alta conserva solo la selección, no todas las opciones desplegadas. */
+.product-picker-group {
+  margin: 14px 0;
+}
+.product-picker-group legend {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.product-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0 14px;
+}
+.product-selected strong {
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.product-change {
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  font-size: 13px;
+  padding: 8px;
+  cursor: pointer;
+}
+.product-change:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.product-choice-copy {
+  min-height: 64px;
+  padding: 14px 32px 14px 14px;
+  gap: 6px;
+}
+.product-choice-copy img {
+  height: 30px;
+  max-width: 110px;
+  margin: 0;
+}
+.product-choice-copy strong {
+  font-size: 14px;
+}
+.product-choice-copy small {
+  font-size: 11px;
+}
+.product-company-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.product-company-options .product-choice-copy {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.product-company-options > .product-choice:last-child .product-choice-copy {
+  min-height: 42px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.product-portfolio-options {
+  gap: 7px;
+}
+.product-portfolio-options .product-choice-copy {
+  min-height: 36px;
+  padding: 9px 29px 9px 12px;
+}
+.product-portfolio-options .product-choice-tick {
+  top: 9px;
+  right: 10px;
+}
+.product-picker-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.product-conditions {
+  padding-top: 16px;
+}
+.product-conditions > h5 {
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+.product-conditions .contract-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.contract-signature {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0 10px;
+  padding: 16px 0;
+}
+.contract-signature legend {
+  font-size: 15px;
+}
+.contract-signature > label {
+  font-size: 12px;
+  min-width: 0;
+}
+.contract-signature input,
+.contract-signature select {
+  min-width: 0;
+  width: 100%;
+}
+.contract-structure,
+.contract-confirmation,
+.contract-calculation-help {
+  grid-column: 1/-1;
+  font-size: 12px;
+}
+.contract-signature .contract-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+}
+.contract-signature .contract-confirmation input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin: 2px 0 0;
+}
+.contract-calculation-help summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.contract-editor .contract-actions {
+  margin: 16px 0 0;
+}
+@media (max-width: 600px) {
+  .product-conditions .contract-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .product-conditions .contract-fields label:first-child {
+    grid-column: 1/-1;
+  }
+  .product-choice-copy {
+    min-height: 60px;
+  }
+  .product-company-options .product-choice-copy {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .product-choice-copy img {
+    max-width: 85px;
+    height: 25px;
+  }
+  .product-selected strong {
+    font-size: 14px;
+  }
+}

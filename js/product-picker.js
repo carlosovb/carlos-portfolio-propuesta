@@ -58,11 +58,42 @@
     host.append(label);
     return { label, input };
   }
+  function compactSelection(group, options, key) {
+    group.dataset.choice = key;
+    const summary = node("div", undefined, "product-selected");
+    const text = node("strong");
+    const change = node("button", "Cambiar", "product-change");
+    change.type = "button";
+    change.setAttribute(
+      "aria-label",
+      "Cambiar " + (key === "company" ? "compañía" : "producto"),
+    );
+    change.addEventListener("click", () => {
+      summary.hidden = true;
+      options.hidden = false;
+      change.setAttribute("aria-expanded", "true");
+      (options.querySelector("input:checked") || options.querySelector("input"))?.focus({
+        preventScroll: true,
+      });
+    });
+    summary.append(text, change);
+    group.insertBefore(summary, options);
+    return (value) => {
+      const collapse = !!value && value !== custom;
+      const moveFocus = collapse && options.contains(document.activeElement);
+      text.textContent = value || "";
+      summary.hidden = !collapse;
+      options.hidden = collapse;
+      change.setAttribute("aria-expanded", String(!collapse));
+      if (moveFocus) change.focus({ preventScroll: true });
+    };
+  }
   function mount(form, original, conditions) {
     const root = node("div", undefined, "product-picker");
     const companies = group("Elige la compañía", "01");
     const companyOptions = node("div", undefined, "product-company-options");
     companies.append(companyOptions);
+    const collapseCompany = compactSelection(companies, companyOptions, "company");
     const companyManual = manualInput(
       companies,
       "Nombre de la compañía",
@@ -116,6 +147,7 @@
       portfolios.hidden = false;
     }
     function renderProducts(selectedCompany, savedProduct = "", savedPortfolio = "") {
+      collapseCompany(selectedCompany);
       company = catalog.find(selectedCompany);
       companyManual.label.hidden = selectedCompany !== custom;
       companyManual.input.disabled = selectedCompany !== custom;
@@ -130,6 +162,7 @@
       const available = company?.products || [];
       const options = node("div", undefined, "product-product-options");
       products.append(options);
+      const collapseProduct = compactSelection(products, options, "product");
       if (!available.length)
         products.append(
           node(
@@ -143,6 +176,7 @@
       const isManual = !!savedProduct && !known;
       manual.input.value = isManual ? savedProduct : "";
       function select(value, portfolio = "") {
+        collapseProduct(value);
         product = available.find((p) => p.name === value) || null;
         manual.label.hidden = value !== custom;
         manual.input.disabled = value !== custom;

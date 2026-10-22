@@ -434,28 +434,35 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.locator("#clients-list .client-action button").first().click();
     await page.getByRole("button", { name: "+ Añadir producto", exact: true }).click();
     const contract = page.locator(".contract-editor");
+    async function choose(name, value) {
+      const radio = contract.locator(`input[name="${name}"][value="${value}"]`);
+      if (!(await radio.isVisible()))
+        await contract
+          .locator(`.product-picker-group[data-choice="${name}"] .product-change`)
+          .click();
+      await radio.check();
+    }
+
     assert.equal(await contract.locator(".product-conditions").isVisible(), false);
-    await contract.locator('input[name=company][value="AXA"]').check();
+    await choose("company", "AXA");
     assert.equal(
       await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').count(),
       1,
     );
-    await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').check();
+    await choose("product", "PIAS Proyecto Futuro");
     await contract.locator('input[name=portfolio][value="Equilibrada+"]').check();
-    await contract
-      .locator('input[name=company][value="Intesa Sanpaolo Assicurazioni"]')
-      .check();
+    await choose("company", "Intesa Sanpaolo Assicurazioni");
     assert.equal(
       await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').count(),
       0,
     );
     assert.equal(await contract.locator("input[name=product]:checked").count(), 0);
     assert.equal(await contract.locator(".product-conditions").isVisible(), false);
-    await contract.locator('input[name=product][value="__manual__"]').check();
+    await choose("product", "__manual__");
     await contract.locator("[name=manual_product]").fill("Producto de ejemplo");
-    await contract.locator('input[name=company][value="AXA"]').check();
+    await choose("company", "AXA");
     assert.equal(await contract.locator("input[name=product]:checked").count(), 0);
-    await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').check();
+    await choose("product", "PIAS Proyecto Futuro");
     assert.equal(
       await contract.locator("input[name=portfolio]:checked").inputValue(),
       "",
@@ -476,6 +483,12 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract
       .locator(".product-picker")
       .screenshot({ path: path.join(process.env.TEMP, "product-picker.png") });
+    assert.equal(await contract.locator(".product-company-options").isVisible(), false);
+    assert.equal(await contract.locator(".product-product-options").isVisible(), false);
+    assert(
+      (await contract.locator(".product-picker").boundingBox()).height < 420,
+      "Selección compacta tras elegir compañía y producto",
+    );
     await contract.locator("[name=amount]").fill("50");
     await contract.locator("[name=units]").fill("2.5");
     await contract.locator("[name=signed_on]").fill("2024-02-29");
@@ -500,7 +513,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       await contract.locator("input[name=portfolio]:checked").inputValue(),
       "Equilibrada+",
     );
-    await contract.locator('input[name=product][value="__manual__"]').check();
+    await choose("product", "__manual__");
     await contract
       .locator("[name=manual_product]")
       .fill("Producto anterior personalizado");

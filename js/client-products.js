@@ -319,11 +319,13 @@
     });
     conditions.append(grid);
     const signature = node("fieldset", undefined, "contract-signature");
-    signature.append(
-      node("legend", "Producción de esta firma"),
+    signature.append(node("legend", "Firma y producción"));
+    const calculationHelp = node("details", undefined, "contract-calculation-help");
+    calculationHelp.append(
+      node("summary", "Cómo se calculan las unidades y comisiones"),
       node(
         "p",
-        "La aportación del cliente y tu comisión son importes diferentes. Las unidades cuentan una vez, en el mes de firma. Confirma los multiplicadores de entonces; si no los conoces, déjalos pendientes.",
+        "La aportación del cliente no es tu comisión. Las unidades cuentan una vez, en el mes de firma, con los multiplicadores confirmados de entonces. Lo desconocido queda pendiente.",
       ),
     );
     const signed = field(signature, "Fecha de firma", "signed_on", editing.signed_on, {
@@ -349,7 +351,8 @@
     );
     const structure = node("details"),
       rates = {};
-    structure.append(node("summary", "Multiplicadores de los responsables al firmar"));
+    structure.className = "contract-structure";
+    structure.append(node("summary", "Multiplicadores del equipo"));
     if (editing.signed_on) Object.assign(rates, editing.signature_rates || {});
     else {
       const seen = new Set([me.user_id]);
@@ -385,14 +388,15 @@
     signature.append(structure);
     const confirmation = node(
       "label",
-      "He revisado los multiplicadores de la fecha de firma. Los que dejo pendientes no generarán un importe calculado.",
+      "Confirmo los multiplicadores de esta firma; los pendientes quedan sin calcular.",
     );
     const check = node("input");
     check.type = "checkbox";
     check.required = !!signed.value;
     signed.addEventListener("change", () => (check.required = !!signed.value));
     confirmation.prepend(check);
-    signature.append(confirmation);
+    confirmation.className = "contract-confirmation";
+    signature.append(confirmation, calculationHelp);
     conditions.append(signature);
     form.append(conditions);
     const actions = node("div", undefined, "contract-actions"),
