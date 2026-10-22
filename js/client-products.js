@@ -301,9 +301,9 @@
     form.append(
       node("h4", editing.id ? "Editar producto contratado" : "Nuevo producto contratado"),
     );
-    field(grid, "Compañía", "company", editing.company, { required: true });
-    field(grid, "Producto", "product", editing.product, { required: true });
-    field(grid, "Cartera de fondos", "portfolio", editing.portfolio);
+    const conditions = node("section", undefined, "product-conditions");
+    const picker = window.ProductPicker.mount(form, editing, conditions);
+    conditions.append(node("h5", "Condiciones del contrato"));
     field(grid, "Tipo de aportación", "payment_type", editing.payment_type || "monthly", {
       options: [
         ["monthly", "Mensual · €/mes"],
@@ -317,7 +317,7 @@
     field(grid, "Unidades generadas (opcional)", "units", editing.units, {
       type: "number",
     });
-    form.append(grid);
+    conditions.append(grid);
     const signature = node("fieldset", undefined, "contract-signature");
     signature.append(
       node("legend", "Producción de esta firma"),
@@ -393,7 +393,8 @@
     signed.addEventListener("change", () => (check.required = !!signed.value));
     confirmation.prepend(check);
     signature.append(confirmation);
-    form.append(signature);
+    conditions.append(signature);
+    form.append(conditions);
     const actions = node("div", undefined, "contract-actions"),
       save = node("button", "Guardar producto", "btn");
     save.type = "submit";
@@ -414,25 +415,22 @@
             ? "instant"
             : "smooth",
         });
-        form.querySelector("input")?.focus({ preventScroll: true });
+        form
+          .querySelector(
+            ".product-company-options input:checked, .product-company-options input",
+          )
+          ?.focus({ preventScroll: true });
       }
     });
-    const datalist = node("datalist");
-    datalist.id = "contract-companies";
-    window.PortfolioCompanies.list.forEach((c) => {
-      const o = node("option");
-      o.value = c.name;
-      datalist.append(o);
-    });
-    form.append(datalist);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (busy || !client) return;
       const values = Object.fromEntries(new FormData(form));
+      const selection = picker.read(values);
       const fields = {
-        company: window.PortfolioCompanies.label(values.company),
-        product: values.product.trim(),
-        portfolio: values.portfolio.trim(),
+        company: window.PortfolioCompanies.label(selection.company),
+        product: selection.product.trim(),
+        portfolio: selection.portfolio.trim(),
         payment_type: values.payment_type,
         amount: Number(values.amount),
         units: values.units === "" ? null : Number(values.units),

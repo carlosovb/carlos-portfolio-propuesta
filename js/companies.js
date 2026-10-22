@@ -1,7 +1,26 @@
 // Catálogo visual y normalización de nombres. No contiene información de clientes.
 (() => {
   const companies = [
-    { id: "axa", name: "AXA", logo: "axa.png" },
+    {
+      id: "axa",
+      name: "AXA",
+      logo: "axa.png",
+      products: [
+        {
+          id: "pias-proyecto-futuro",
+          name: "PIAS Proyecto Futuro",
+          type: "Seguro de ahorro · PIAS",
+          portfolios: [
+            "Conservadora+",
+            "Moderada+",
+            "Equilibrada+",
+            "Dinámica+",
+            "Responsable+",
+            "Global+",
+          ],
+        },
+      ],
+    },
     {
       id: "intesa",
       name: "Intesa Sanpaolo Assicurazioni",

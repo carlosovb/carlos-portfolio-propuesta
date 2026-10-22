@@ -434,9 +434,48 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.locator("#clients-list .client-action button").first().click();
     await page.getByRole("button", { name: "+ Añadir producto", exact: true }).click();
     const contract = page.locator(".contract-editor");
-    await contract.locator("[name=company]").fill("AXA");
-    await contract.locator("[name=product]").fill("Ahorro de ejemplo");
-    await contract.locator("[name=portfolio]").fill("Cartera equilibrada");
+    assert.equal(await contract.locator(".product-conditions").isVisible(), false);
+    await contract.locator('input[name=company][value="AXA"]').check();
+    assert.equal(
+      await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').count(),
+      1,
+    );
+    await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').check();
+    await contract.locator('input[name=portfolio][value="Equilibrada+"]').check();
+    await contract
+      .locator('input[name=company][value="Intesa Sanpaolo Assicurazioni"]')
+      .check();
+    assert.equal(
+      await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').count(),
+      0,
+    );
+    assert.equal(await contract.locator("input[name=product]:checked").count(), 0);
+    assert.equal(await contract.locator(".product-conditions").isVisible(), false);
+    await contract.locator('input[name=product][value="__manual__"]').check();
+    await contract.locator("[name=manual_product]").fill("Producto de ejemplo");
+    await contract.locator('input[name=company][value="AXA"]').check();
+    assert.equal(await contract.locator("input[name=product]:checked").count(), 0);
+    await contract.locator('input[name=product][value="PIAS Proyecto Futuro"]').check();
+    assert.equal(
+      await contract.locator("input[name=portfolio]:checked").inputValue(),
+      "",
+    );
+    await contract.locator('input[name=portfolio][value="Equilibrada+"]').check();
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+      for (const width of [320, 768, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert(
+          await page
+            .locator("#client-detail-dialog")
+            .evaluate((d) => d.scrollWidth <= d.clientWidth),
+          "Selector de productos responsive",
+        );
+      }
+    }
+    await contract
+      .locator(".product-picker")
+      .screenshot({ path: path.join(process.env.TEMP, "product-picker.png") });
     await contract.locator("[name=amount]").fill("50");
     await contract.locator("[name=units]").fill("2.5");
     await contract.locator("[name=signed_on]").fill("2024-02-29");
@@ -445,13 +484,30 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.locator(".contract-card").waitFor();
     assert.equal(products.length, 1);
-    assert.equal(products[0].portfolio, "Cartera equilibrada");
+    assert.equal(products[0].portfolio, "Equilibrada+");
+    assert.equal(products[0].product, "PIAS Proyecto Futuro");
     assert.equal(products[0].signed_on, "2024-02-29");
     assert.equal(products[0].signed_multiplier, 2.5);
     await page
       .locator(".contract-card")
       .getByRole("button", { name: "Editar", exact: true })
       .click();
+    assert.equal(
+      await contract.locator("input[name=product]:checked").inputValue(),
+      "PIAS Proyecto Futuro",
+    );
+    assert.equal(
+      await contract.locator("input[name=portfolio]:checked").inputValue(),
+      "Equilibrada+",
+    );
+    await contract.locator('input[name=product][value="__manual__"]').check();
+    await contract
+      .locator("[name=manual_product]")
+      .fill("Producto anterior personalizado");
+    await contract.locator('input[name=portfolio][value="__manual__"]').check();
+    await contract
+      .locator("[name=manual_portfolio]")
+      .fill("Cartera anterior personalizada");
     await contract.locator("[name=payment_type]").selectOption("single");
     await contract.locator("[name=amount]").fill("1000");
     await contract.locator("[name=units]").fill("");
@@ -462,6 +518,22 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     );
     assert.equal(products[0].payment_type, "single");
     assert.equal(products[0].units, null);
+    assert.equal(products[0].product, "Producto anterior personalizado");
+    assert.equal(products[0].portfolio, "Cartera anterior personalizada");
+    await page
+      .locator(".contract-card")
+      .getByRole("button", { name: "Editar", exact: true })
+      .click();
+    assert.equal(
+      await contract.locator("[name=manual_product]").inputValue(),
+      "Producto anterior personalizado",
+    );
+    assert.equal(
+      await contract.locator("[name=manual_portfolio]").inputValue(),
+      "Cartera anterior personalizada",
+    );
+    await contract.getByRole("button", { name: "Cancelar", exact: true }).click();
+
     for (const width of [320, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert(
@@ -481,11 +553,9 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
             .evaluate((d) => d.scrollWidth <= d.clientWidth),
           "Nueva ficha responsive",
         );
-        await page
-          .locator("#client-detail-dialog")
-          .screenshot({
-            path: path.join(process.env.TEMP, `client-file-${theme}-${width}.png`),
-          });
+        await page.locator("#client-detail-dialog").screenshot({
+          path: path.join(process.env.TEMP, `client-file-${theme}-${width}.png`),
+        });
       }
     }
     assert.equal(await page.locator(".contract-company").count(), 1);
