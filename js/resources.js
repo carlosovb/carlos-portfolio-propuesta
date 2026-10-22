@@ -428,7 +428,9 @@
       busy ||
       account?.role !== "admin" ||
       !selection.size ||
-      !confirm(`¿Eliminar definitivamente ${selection.size} recursos seleccionados?`)
+      !(await window.SiteConfirm.ask(
+        `¿Eliminar definitivamente ${selection.size} recursos seleccionados?`,
+      ))
     )
       return;
     const ticket = version,

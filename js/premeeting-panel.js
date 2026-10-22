@@ -142,7 +142,9 @@
     if (
       busy ||
       !selected.size ||
-      !confirm(`¿Eliminar definitivamente ${selected.size} respuestas seleccionadas?`)
+      !(await window.SiteConfirm.ask(
+        `¿Eliminar definitivamente ${selected.size} respuestas seleccionadas?`,
+      ))
     )
       return;
     const version = epoch;

@@ -401,13 +401,13 @@
         radio.name = "mode";
         radio.value = value;
         radio.checked = data.mode === value;
-        radio.addEventListener("change", () => {
+        radio.addEventListener("change", async () => {
           if (
             value === "individual" &&
             data.people.length === 2 &&
-            !confirm(
+            !(await window.SiteConfirm.ask(
               "Se quitarán los datos de la segunda persona y los compartidos. ¿Continuar?",
-            )
+            ))
           ) {
             render();
             return;

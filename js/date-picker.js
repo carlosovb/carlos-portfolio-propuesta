@@ -1,0 +1,214 @@
+(() => {
+  let opened = null;
+  const el = (tag, text, cls) => {
+    const n = document.createElement(tag);
+    if (text != null) n.textContent = text;
+    if (cls) n.className = cls;
+    return n;
+  };
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const parse = (s) => (s ? new Date(s + "T12:00:00Z") : null);
+  const today = () =>
+    new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Atlantic/Canary",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  function close(focus = false) {
+    if (opened) {
+      const o = opened;
+      opened = null;
+      o.popup.hidden = true;
+      o.trigger.setAttribute("aria-expanded", "false");
+      if (focus && o.trigger.isConnected) o.trigger.focus({ preventScroll: true });
+    }
+  }
+  document.addEventListener("pointerdown", (e) => {
+    if (opened && !opened.wrap.contains(e.target)) close();
+  });
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (opened && e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        close(true);
+      }
+    },
+    true,
+  );
+  new MutationObserver(() => {
+    if (opened && (!opened.wrap.isConnected || opened.wrap.closest("[hidden]"))) close();
+  }).observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
+  window.addEventListener("resize", () => {
+    if (opened)
+      requestAnimationFrame(() =>
+        opened?.popup.scrollIntoView({ block: "nearest", behavior: "instant" }),
+      );
+  });
+  function mount(input) {
+    const wrap = el("span", null, "contract-date-wrap");
+    input.after(wrap);
+    wrap.append(input);
+    input.classList.add("contract-date-input");
+    const trigger = el("button", "▦", "contract-date-trigger");
+    trigger.type = "button";
+    trigger.setAttribute("aria-label", "Abrir calendario de firma");
+    trigger.setAttribute("aria-expanded", "false");
+    const popup = el("span", null, "contract-calendar");
+    popup.hidden = true;
+    popup.setAttribute("role", "dialog");
+    popup.setAttribute("aria-label", "Elegir fecha de firma");
+    wrap.append(trigger, popup);
+    let view = parse(input.value) || parse(today()),
+      mode = "days",
+      range = Math.floor(view.getUTCFullYear() / 12) * 12;
+    const allowed = (s) =>
+      (!input.min || s >= input.min) && (!input.max || s <= input.max);
+    const choose = (s) => {
+      input.value = s;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      close(true);
+    };
+    const button = (text, fn, cls) => {
+      const b = el("button", text, cls);
+      b.type = "button";
+      b.addEventListener("click", fn);
+      return b;
+    };
+    function render() {
+      popup.replaceChildren();
+      const head = el("span", null, "contract-calendar-head");
+      const label =
+        mode === "days"
+          ? new Intl.DateTimeFormat("es-ES", {
+              month: "long",
+              year: "numeric",
+              timeZone: "UTC",
+            }).format(view)
+          : range + "–" + (range + 11);
+      const shift = (delta) => {
+        if (mode === "years") range += delta * 12;
+        else
+          view = new Date(
+            Date.UTC(view.getUTCFullYear(), view.getUTCMonth() + delta, 1, 12),
+          );
+        render();
+      };
+      head.append(
+        button("‹", () => shift(-1), "calendar-prev"),
+        button(
+          label,
+          () => {
+            mode = mode === "days" ? "years" : "days";
+            range = Math.floor(view.getUTCFullYear() / 12) * 12;
+            render();
+          },
+          "calendar-period",
+        ),
+        button("›", () => shift(1), "calendar-next"),
+      );
+      head.firstChild.setAttribute(
+        "aria-label",
+        mode === "days" ? "Mes anterior" : "Años anteriores",
+      );
+      head.lastChild.setAttribute(
+        "aria-label",
+        mode === "days" ? "Mes siguiente" : "Años siguientes",
+      );
+      popup.append(head);
+      const grid = el(
+        "span",
+        null,
+        mode === "days" ? "contract-calendar-days" : "contract-calendar-years",
+      );
+      if (mode === "years") {
+        for (let y = range; y < range + 12; y++) {
+          const b = button(String(y), () => {
+            view = new Date(Date.UTC(y, view.getUTCMonth(), 1, 12));
+            mode = "days";
+            render();
+          });
+          b.disabled =
+            y < Number(input.min?.slice(0, 4) || 2000) ||
+            y > Number(input.max?.slice(0, 4) || today().slice(0, 4));
+          grid.append(b);
+        }
+      } else {
+        ["L", "M", "X", "J", "V", "S", "D"].forEach((day) =>
+          grid.append(el("small", day)),
+        );
+        const first = new Date(
+          Date.UTC(view.getUTCFullYear(), view.getUTCMonth(), 1, 12),
+        );
+        const offset = (first.getUTCDay() + 6) % 7;
+        for (let n = 0; n < 42; n++) {
+          const date = new Date(
+              Date.UTC(view.getUTCFullYear(), view.getUTCMonth(), 1 - offset + n, 12),
+            ),
+            value = iso(date);
+          const b = button(String(date.getUTCDate()), () => choose(value));
+          b.dataset.date = value;
+          b.disabled = !allowed(value);
+          b.dataset.outside = String(date.getUTCMonth() !== view.getUTCMonth());
+          b.setAttribute(
+            "aria-label",
+            new Intl.DateTimeFormat("es-ES", {
+              dateStyle: "full",
+              timeZone: "UTC",
+            }).format(date),
+          );
+          b.setAttribute("aria-pressed", String(value === input.value));
+          if (value === today()) b.setAttribute("aria-current", "date");
+          b.addEventListener("keydown", (e) => {
+            const deltas = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+            if (deltas[e.key]) {
+              e.preventDefault();
+              const next = new Date(date);
+              next.setUTCDate(next.getUTCDate() + deltas[e.key]);
+              const s = iso(next);
+              if (!allowed(s)) return;
+              view = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth(), 1, 12));
+              render();
+              popup.querySelector('[data-date="' + s + '"]')?.focus();
+            }
+          });
+          grid.append(b);
+        }
+      }
+      popup.append(grid);
+      const foot = el("span", null, "contract-calendar-footer");
+      foot.append(button("Hoy", () => choose(today())));
+      if (!input.required) foot.append(button("Sin fecha", () => choose("")));
+      popup.append(foot);
+    }
+    trigger.addEventListener("click", () => {
+      if (opened?.wrap === wrap) {
+        close();
+        return;
+      }
+      close();
+      window.ContractControls?.close();
+      view = parse(input.value) || parse(today());
+      mode = "days";
+      render();
+      popup.hidden = false;
+      trigger.setAttribute("aria-expanded", "true");
+      opened = { wrap, popup, trigger };
+      popup.scrollIntoView({ block: "nearest", behavior: "instant" });
+      (
+        popup.querySelector('[aria-pressed="true"]') ||
+        popup.querySelector('[aria-current="date"]') ||
+        popup.querySelector("button:not(:disabled)")
+      )?.focus({ preventScroll: true });
+    });
+  }
+  window.DatePicker = { mount, close };
+})();

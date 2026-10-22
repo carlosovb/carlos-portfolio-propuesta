@@ -1402,3 +1402,65 @@ html[data-theme="light"] #client-detail-dialog[data-activity="inactive"] {
     justify-content: flex-start;
   }
 }
+
+/* Selección independiente de la identidad y del color de cada tarjeta. */
+#clients-table-wrap[data-view="cards"] tr {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  border-top: 3px solid var(--category-color, var(--line));
+  gap: 14px;
+}
+#clients-table-wrap[data-view="cards"] td {
+  grid-column: 1;
+}
+#clients-table-wrap[data-view="cards"] .client-select-cell {
+  grid-area: auto;
+  position: absolute;
+  inset: 15px 15px auto auto;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  z-index: 1;
+}
+#clients-table-wrap[data-view="cards"] .client-identity {
+  padding-right: 40px;
+  min-height: 64px;
+}
+#clients-table-wrap[data-view="cards"] .client-select-cell input {
+  appearance: none;
+  display: block;
+  margin: 0;
+  width: 21px;
+  height: 21px;
+  border: 1.5px solid var(--muted);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+  position: relative;
+}
+#clients-table-wrap[data-view="cards"] .client-select-cell input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#clients-table-wrap[data-view="cards"] .client-select-cell input:checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+#clients-table-wrap[data-view="cards"] .client-select-cell input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+#clients-table-wrap[data-view="cards"] tr:has(.bulk-checkbox:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--panel));
+}

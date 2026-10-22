@@ -57,9 +57,9 @@
             if (busy || ticket !== generation) return;
             if (
               dangerous &&
-              !confirm(
+              !(await window.SiteConfirm.ask(
                 "¿Eliminar definitivamente este cliente? Se borrarán sus datos personales y productos. Las unidades y comisiones históricas se conservarán. No se podrá recuperar la ficha.",
-              )
+              ))
             )
               return;
             busy = true;

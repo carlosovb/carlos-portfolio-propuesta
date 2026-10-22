@@ -25,6 +25,7 @@
     "get_team_client_counts",
     "list_consultants",
     "get_unit_statistics",
+    "get_client_pias_budget",
   ]);
   function invalidateCache() {
     cacheVersion++;
@@ -398,11 +399,19 @@
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
       const query = new URLSearchParams({
         select:
-          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,signature_rates,archived_at",
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,signature_rates,archived_at,is_apex,parent_product_id",
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });
       return (await authenticated("/rest/v1/client_products?" + query)).json();
+    },
+    async getPiasBudget(clientId, year, exclude = null) {
+      return (
+        await authenticated("/rest/v1/rpc/get_client_pias_budget", {
+          method: "POST",
+          body: JSON.stringify({ p_client: clientId, p_year: year, p_exclude: exclude }),
+        })
+      ).json();
     },
     async saveClientProduct(clientId, fields, id = null) {
       if (!/^[0-9a-f-]{36}$/i.test(clientId) || (id && !/^[0-9a-f-]{36}$/i.test(id)))
@@ -425,6 +434,8 @@
       } else {
         body.id = crypto.randomUUID();
         body.client_id = clientId;
+        body.is_apex = !!fields.is_apex;
+        body.parent_product_id = fields.parent_product_id || null;
       }
       const response = await authenticated("/rest/v1/client_products?" + query, {
         method: id ? "PATCH" : "POST",

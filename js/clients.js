@@ -211,9 +211,9 @@
       ticket = lifecycleEpoch;
     if (
       !active &&
-      !confirm(
+      !(await window.SiteConfirm.ask(
         "¿Dar de baja a este contacto? Sus productos pasarán al historial. Sus unidades y comisiones se conservarán y podrás reactivarlo más adelante.",
-      )
+      ))
     )
       return;
     get("client-activity-toggle").disabled = true;
@@ -670,7 +670,7 @@
   get("clients-delete-selected").addEventListener("click", async () => {
     if (!selection.size || busy || !visible || !account) return;
     if (
-      !confirm(
+      !(await window.SiteConfirm.ask(
         "¿Eliminar " +
           selection.size +
           " clientes seleccionados" +
@@ -678,7 +678,7 @@
           (demo
             ? "? Solo afecta al ejemplo."
             : "? Permanecerán en Eliminados durante 10 días y podrás recuperarlos. Después se eliminarán definitivamente junto con sus datos y productos. Las unidades y comisiones históricas se conservan. Solo un administrador puede adelantar la eliminación definitiva."),
-      )
+      ))
     )
       return;
     busy = true;

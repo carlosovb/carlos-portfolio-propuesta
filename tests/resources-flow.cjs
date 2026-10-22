@@ -42,7 +42,7 @@ const server = http.createServer((req, res) => {
     owner = "11111111-1111-4111-8111-111111111111",
     member = "22222222-2222-4222-8222-222222222222";
   page.on("pageerror", (e) => errors.push(e.message));
-  page.on("dialog", (d) => d.accept());
+  await require("./ui-confirm.cjs").auto(page);
   await context.route("https://*.supabase.co/**", async (route) => {
     const req = route.request(),
       url = new URL(req.url()),
@@ -56,8 +56,8 @@ const server = http.createServer((req, res) => {
         body: JSON.stringify(v),
         headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
       });
-    if (url.pathname.endsWith('/rpc/get_client_view_preference')) return json('list');
-    if (url.pathname.endsWith('/rpc/save_client_view_preference')) return json(null);
+    if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
+    if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname === "/auth/v1/token")
       return json({
         access_token: "fake",

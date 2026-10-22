@@ -331,6 +331,30 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         product.archived_at = body.p_archived ? new Date().toISOString() : null;
         return json(null);
       }
+      if (url.pathname.endsWith("/rpc/get_client_pias_budget")) {
+        const rest = products.filter(
+          (p) =>
+            p.client_id === body.p_client &&
+            p.id !== body.p_exclude &&
+            /pias/i.test(p.product),
+        );
+        const reserved = rest.reduce(
+          (sum, p) =>
+            sum +
+            (p.payment_type === "monthly"
+              ? Number(p.amount) * 12
+              : Number(p.signed_on?.slice(0, 4)) === body.p_year
+                ? Number(p.amount)
+                : 0),
+          0,
+        );
+        return json({
+          year: body.p_year,
+          reserved,
+          remaining: Math.max(0, 8000 - reserved),
+          limit: 8000,
+        });
+      }
       if (url.pathname.endsWith("/rpc/import_my_clients")) {
         const seen = new Set(clients.map(parser.identity));
         let added = 0,
@@ -571,10 +595,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await choose("company", "AXA");
     assert.equal(await contract.locator("input[name=product]:checked").count(), 0);
     await choose("product", "PIAS Proyecto Futuro");
-    assert.equal(
-      await contract.locator("input[name=portfolio]:checked").inputValue(),
-      "",
-    );
+    assert.equal(await contract.locator("input[name=portfolio]:checked").count(), 0);
     await contract.locator('input[name=portfolio][value="Equilibrada+"]').check();
     assert.equal(await contract.locator(".axa-choice").count(), 6);
     await contract.locator(".axa-reference > summary").click();
@@ -641,6 +662,99 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(products[0].product, "PIAS Proyecto Futuro");
     assert.equal(products[0].signed_on, "2024-02-29");
     assert.equal(products[0].signed_multiplier, 2.5);
+    // APEX belongs to its parent and has its own signature and production.
+    await page.locator(".contract-detail summary").click();
+    await page.getByRole("button", { name: "+ Añadir APEX", exact: true }).click();
+    await contract.locator("[name=amount]").fill("599");
+    assert.equal(
+      await contract.locator("[name=amount]").evaluate((el) => el.checkValidity()),
+      false,
+    );
+    await contract.locator("[name=amount]").fill("600");
+    await contract.locator("[name=units]").fill("10");
+    await contract.locator("[name=signed_multiplier]").selectOption("3.5");
+    await contract.locator("[name=signed_on]").fill("2024-03-14");
+    await contract.locator(".contract-date-trigger").click();
+    assert.equal(await contract.locator(".contract-calendar").isVisible(), true);
+    await contract.locator('[data-date="2024-03-15"]').click();
+    assert.equal(await contract.locator("[name=signed_on]").inputValue(), "2024-03-15");
+    await contract.locator(".contract-date-trigger").click();
+    await contract.locator(".calendar-period").click();
+    await contract
+      .locator(".contract-calendar-years")
+      .getByRole("button", { name: "2024", exact: true })
+      .click();
+    assert.equal(await contract.locator(".contract-calendar-days").isVisible(), true);
+    await page.keyboard.press("Escape");
+    assert.equal(
+      await page.locator("#client-detail-dialog").evaluate((el) => el.open),
+      true,
+      "Calendar Escape leaves client file open",
+    );
+    await contract.locator(".contract-date-trigger").click();
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert.equal(
+        await page
+          .locator("#client-detail-dialog")
+          .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+        true,
+      );
+      await page
+        .locator("#client-detail-dialog")
+        .screenshot({
+          path: path.join(process.env.TEMP, `client-apex-calendar-${width}.png`),
+        });
+    }
+    await page.keyboard.press("Escape");
+    await contract.locator(".contract-signature input[type=checkbox]").check();
+    await contract.getByRole("button", { name: "Guardar APEX", exact: true }).click();
+    await page.locator(".contract-card").waitFor();
+    assert.equal(products.length, 2);
+    const apex = products.find((p) => p.is_apex);
+    assert.equal(apex.parent_product_id, products[0].id);
+    assert.equal(apex.units, 10);
+    assert.equal(apex.signed_multiplier, 3.5);
+    assert.equal(products[0].signed_multiplier, 2.5);
+    assert.equal(await page.locator(".contract-card").count(), 1);
+    await page.locator(".contract-detail summary").click();
+    await page.locator(".contract-apex-entry").waitFor();
+    await page.getByRole("button", { name: "+ Añadir APEX", exact: true }).click();
+    await contract.locator("[name=signed_on]").fill("2024-04-01");
+    await contract.locator("[name=amount]").fill("7500");
+    await contract.locator("[name=units]").fill("1");
+    await contract.locator("[name=signed_multiplier]").selectOption("2");
+    await contract.locator(".contract-signature input[type=checkbox]").check();
+    await page.waitForTimeout(220);
+    assert.equal(
+      await contract.locator("[name=amount]").evaluate((el) => el.checkValidity()),
+      false,
+      "APEX exceeds remaining annual capacity",
+    );
+    await contract.getByRole("button", { name: "Cancelar", exact: true }).click();
+    await page.getByRole("button", { name: "Eliminar APEX", exact: true }).click();
+    await page.locator("#site-confirm-dialog").waitFor();
+    assert.equal(
+      await page.locator("#site-confirm-title").textContent(),
+      "Confirmar eliminación",
+    );
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+      await page.screenshot({
+        path: path.join(process.env.TEMP, `confirm-${theme}.png`),
+      });
+    }
+    await page.keyboard.press("Escape");
+    assert.equal(products.length, 2, "Escape cancels APEX deletion");
+    assert.equal(
+      await page.locator("#client-detail-dialog").evaluate((el) => el.open),
+      true,
+    );
+    await require("./ui-confirm.cjs").next(page, true);
+    await page.getByRole("button", { name: "Eliminar APEX", exact: true }).click();
+    await page.waitForFunction(() => !document.querySelector(".contract-apex-entry"));
+    assert.equal(products.length, 1);
+
     await page
       .locator(".contract-card")
       .getByRole("button", { name: "Editar", exact: true })
@@ -657,11 +771,10 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract
       .locator("[name=manual_product]")
       .fill("Producto anterior personalizado");
-    await contract.locator('input[name=portfolio][value="__manual__"]').check();
     await contract
       .locator("[name=manual_portfolio]")
       .fill("Cartera anterior personalizada");
-    await contract.locator("[name=payment_type]").selectOption("single");
+    await contract.locator("[data-payment=single]").click();
     await contract.locator("[name=amount]").fill("1000");
     await contract.locator("[name=units]").fill("");
     await contract.locator(".contract-signature input[type=checkbox]").check();
@@ -693,6 +806,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await choose("company", "Intesa Sanpaolo Assicurazioni");
     await choose("product", "__manual__");
     await contract.locator("[name=manual_product]").fill("Segundo producto");
+    await contract.locator("[name=manual_portfolio]").fill("Cartera Intesa de ejemplo");
     await contract.locator("[name=amount]").fill("30");
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(
@@ -809,7 +923,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       () => document.querySelectorAll(".contract-card").length === 2,
     );
     await page.locator(".contract-detail summary").first().click();
-    page.once("dialog", (d) => d.accept());
+    await require("./ui-confirm.cjs").next(page, true);
     await page
       .getByRole("button", { name: "Pasar al historial", exact: true })
       .first()
@@ -825,7 +939,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     );
     await page.locator("[data-product-scope=current]").click();
     assert.equal(await page.locator(".contract-card").count(), 2);
-    page.once("dialog", (d) => d.accept());
+    await require("./ui-confirm.cjs").next(page, true);
     await page.locator("#client-activity-toggle").click();
     await page.waitForFunction(
       () =>
@@ -866,7 +980,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(await page.locator(".contract-card").count(), 2);
     await page.locator(".contract-card input[type=checkbox]").first().check();
     await page.locator(".contract-bulk input[type=checkbox]").check();
-    page.once("dialog", (d) => d.accept());
+    await require("./ui-confirm.cjs").next(page, true);
     await page
       .getByRole("button", { name: "Eliminar seleccionados", exact: true })
       .last()
@@ -881,7 +995,9 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       "Eliminar productos actualiza las referencias de compañías",
     );
     await page.locator("#client-detail-close").click();
-    assert.equal(await page.locator("#client-products-section").textContent(), "");
+    await page.waitForFunction(
+      () => document.querySelector("#client-products-section").textContent === "",
+    );
 
     await page.locator('#panel-navigation [data-view="statistics"]').click();
     await page.locator(".stats-heading").waitFor();
@@ -929,6 +1045,24 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
             .evaluate((el) => el.scrollWidth <= el.clientWidth),
           "Vistas de cartera responsive",
         );
+        if (view === "cards") {
+          const card = page.locator("#clients-list tr").first(),
+            checkbox = card.locator(".bulk-checkbox");
+          const bounds = await card.boundingBox(),
+            select = await checkbox.boundingBox();
+          assert(
+            select.x > bounds.x + bounds.width - 60,
+            "Card checkbox stays in right corner",
+          );
+          assert(select.y < bounds.y + 35, "Card checkbox stays near top edge");
+          await checkbox.check();
+          assert.equal(
+            await page.locator("#client-detail-dialog").evaluate((el) => el.open),
+            false,
+            "Selecting a card does not open it",
+          );
+          await checkbox.uncheck();
+        }
         if (width === 1440)
           await page.screenshot({
             path: path.join(process.env.TEMP, `clients-workspace-${view}.png`),
@@ -999,7 +1133,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(await page.locator("#clients-bulk").isVisible(), false);
     await page.locator("#clients-list input[type=checkbox]").first().check();
     await page.locator("#clients-select-all").check();
-    page.once("dialog", (d) => d.accept());
+    await require("./ui-confirm.cjs").next(page, true);
     await page.locator("#clients-delete-selected").click();
     await page.locator("#clients-empty").waitFor();
     assert.equal(clients.length, 0);
@@ -1040,7 +1174,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       () => document.querySelectorAll(".trash-client").length === 1,
     );
     assert.equal(clients.length, 1);
-    page.once("dialog", (d) => d.accept());
+    await require("./ui-confirm.cjs").next(page, true);
     await page
       .getByRole("button", { name: "Eliminar definitivamente", exact: true })
       .click();
@@ -1049,7 +1183,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     );
     await page.locator("#clients-trash-close").click();
     await page.locator("#clients-list input[type=checkbox]").first().check();
-    page.once("dialog", (d) => d.accept());
+    await require("./ui-confirm.cjs").next(page, true);
     await page.locator("#clients-delete-selected").click();
     await page.locator("#clients-empty").waitFor();
     role = "consultant";

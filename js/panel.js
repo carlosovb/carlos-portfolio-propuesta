@@ -98,13 +98,13 @@
       if (!ids.length) return;
       const invitations = listId === "consultant-list";
       if (
-        !confirm(
+        !(await window.SiteConfirm.ask(
           "¿Eliminar definitivamente " +
             ids.length +
             (invitations
               ? " invitaciones seleccionadas? Sus enlaces dejarán de funcionar."
               : " solicitudes seleccionadas?"),
-        )
+        ))
       )
         return;
       mutationPending = true;
@@ -467,11 +467,11 @@
             remove.addEventListener("click", async () => {
               if (!active || account?.role !== "admin" || mutationPending) return;
               if (
-                !confirm(
+                !(await window.SiteConfirm.ask(
                   "¿Eliminar la invitación de " +
                     member.email +
                     "? Su enlace dejará de funcionar.",
-                )
+                ))
               )
                 return;
               mutationPending = true;
@@ -693,7 +693,11 @@
 
   async function mutate(remove) {
     if (!active || !selected || mutationPending) return;
-    if (remove && !confirm("¿Eliminar definitivamente esta solicitud?")) return;
+    if (
+      remove &&
+      !(await window.SiteConfirm.ask("¿Eliminar definitivamente esta solicitud?"))
+    )
+      return;
     const snapshot = epoch;
     const id = selected.id;
     mutationPending = true;

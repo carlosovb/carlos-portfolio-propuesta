@@ -145,7 +145,6 @@
         manual.input.disabled = value !== custom;
         manual.input.required = value === custom;
       }
-      choice(options, "portfolio", "", "Sin especificar", "", !saved, toggle);
       names.forEach((name) => {
         const radio = choice(
           options,
@@ -158,8 +157,26 @@
         );
         if (company?.id === "axa") window.AxaPortfolios?.decorate(radio, name);
       });
-      choice(options, "portfolio", custom, "Otra cartera", "", isManual, toggle);
-      toggle(isManual ? custom : saved);
+      if (names.length) {
+        manual.label.hidden = true;
+        manual.input.disabled = true;
+        manual.input.required = false;
+        if (saved && !names.includes(saved))
+          portfolios.append(
+            node(
+              "p",
+              "Selecciona una cartera del catálogo para actualizar este contrato.",
+              "product-picker-help",
+            ),
+          );
+        toggle(names.includes(saved) ? saved : "");
+      } else {
+        manual.label.firstChild.textContent = "Cartera de fondos";
+        manual.label.hidden = false;
+        manual.input.disabled = false;
+        manual.input.required = true;
+        manual.input.value = saved;
+      }
       portfolios.hidden = false;
     }
     function renderProducts(selectedCompany, savedProduct = "", savedPortfolio = "") {
@@ -256,13 +273,14 @@
       read(values) {
         return {
           company:
-            values.company === custom ? values.manual_company.trim() : values.company,
+            values.company === custom
+              ? String(values.manual_company || "").trim()
+              : values.company || "",
           product:
-            values.product === custom ? values.manual_product.trim() : values.product,
-          portfolio:
-            values.portfolio === custom
-              ? values.manual_portfolio.trim()
-              : values.portfolio || "",
+            values.product === custom
+              ? String(values.manual_product || "").trim()
+              : values.product || "",
+          portfolio: (values.portfolio || values.manual_portfolio || "").trim(),
         };
       },
     };

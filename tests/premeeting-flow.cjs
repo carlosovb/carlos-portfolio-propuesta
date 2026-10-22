@@ -42,7 +42,7 @@ const root = path.resolve(__dirname, ".."),
     delayDetail = null;
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  page.on("dialog", (d) => d.accept());
+  await require("./ui-confirm.cjs").auto(page);
   await context.route("https://*.supabase.co/**", async (route) => {
     const r = route.request(),
       url = new URL(r.url()),
@@ -54,8 +54,8 @@ const root = path.resolve(__dirname, ".."),
         body: JSON.stringify(v),
         headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
       });
-    if (url.pathname.endsWith('/rpc/get_client_view_preference')) return json('list');
-    if (url.pathname.endsWith('/rpc/save_client_view_preference')) return json(null);
+    if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
+    if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname.endsWith("/rpc/submit_premeeting")) {
       attempts++;
       if (attempts === 1) return route.fulfill({ status: 503, body: "unavailable" });

@@ -56,8 +56,8 @@ async function mock(context, state) {
       expires_in: 3600,
       user: { id: "test-user", email: "consultor@example.invalid" },
     };
-    if (url.pathname.endsWith('/rpc/get_client_view_preference')) return json('list');
-    if (url.pathname.endsWith('/rpc/save_client_view_preference')) return json(null);
+    if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
+    if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname === "/auth/v1/token")
       return body.password === "incorrecta" ? json({}, 400) : json(session);
     if (url.pathname === "/auth/v1/verify") {
@@ -524,10 +524,10 @@ async function login(page, base) {
     );
     await statusPage.locator("#recent-requests .bulk-checkbox").first().check();
     await statusPage.locator('[data-bulk-all="recent-requests"]').check();
-    statusPage.once("dialog", (dialog) => dialog.dismiss());
+    await require("./ui-confirm.cjs").next(statusPage, false);
     await statusPage.locator('[data-bulk-delete="recent-requests"]').click();
     assert.equal(statusData.requests.length, 2, "Cancelar no elimina nada");
-    statusPage.once("dialog", (dialog) => dialog.accept());
+    await require("./ui-confirm.cjs").next(statusPage, true);
     await statusPage.locator('[data-bulk-delete="recent-requests"]').click();
     await statusPage.waitForFunction(() =>
       document.querySelector("#panel-notice").textContent.includes("No se ha confirmado"),
@@ -567,7 +567,7 @@ async function login(page, base) {
     );
     await statusPage.locator("#consultant-list .bulk-checkbox").first().check();
     await statusPage.locator('[data-bulk-all="consultant-list"]').check();
-    statusPage.once("dialog", (dialog) => dialog.accept());
+    await require("./ui-confirm.cjs").next(statusPage, true);
     await statusPage.locator('[data-bulk-delete="consultant-list"]').click();
     await statusPage.waitForFunction(() =>
       document.querySelector("#panel-notice").textContent.includes("1 eliminada"),
