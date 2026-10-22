@@ -466,15 +466,32 @@
         )
       )
         throw Error("Selección no válida.");
-      const query = new URLSearchParams({
-        id: "in.(" + ids.join(",") + ")",
-        select: "id",
+      return (
+        await authenticated("/rest/v1/rpc/trash_my_clients", {
+          method: "POST",
+          body: JSON.stringify({ p_ids: ids }),
+        })
+      ).json();
+    },
+    async deletedClients(page = 0) {
+      return (
+        await authenticated("/rest/v1/rpc/list_deleted_clients", {
+          method: "POST",
+          body: JSON.stringify({ p_page: page }),
+        })
+      ).json();
+    },
+    async restoreDeletedClient(id) {
+      await authenticated("/rest/v1/rpc/restore_deleted_client", {
+        method: "POST",
+        body: JSON.stringify({ p_id: id }),
       });
-      const response = await authenticated("/rest/v1/portfolio_clients?" + query, {
-        method: "DELETE",
-        headers: { Prefer: "return=representation" },
+    },
+    async purgeDeletedClient(id) {
+      await authenticated("/rest/v1/rpc/purge_deleted_client", {
+        method: "POST",
+        body: JSON.stringify({ p_id: id }),
       });
-      return (await response.json()).length;
     },
     async getMyTeamProfile() {
       return (

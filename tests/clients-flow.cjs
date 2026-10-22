@@ -76,6 +76,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
   });
   let delayNextList = 0,
     products = [];
+  let trash = [];
   let clients = [],
     writes = 0,
     previewCalls = 0,
@@ -334,11 +335,34 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           preview: body.p_preview,
         });
       }
-      if (url.pathname.includes("/portfolio_clients") && req.method() === "DELETE") {
-        const selected = url.searchParams.get("id");
-        const removed = clients.filter((row) => selected.includes(row.id));
-        clients = clients.filter((row) => !selected.includes(row.id));
-        return json(removed.map((row) => ({ id: row.id })));
+      if (url.pathname.endsWith("/rpc/trash_my_clients")) {
+        const removed = clients.filter((row) => body.p_ids.includes(row.id));
+        trash.push(
+          ...removed.map((row) => ({
+            ...row,
+            deleted_at: new Date().toISOString(),
+            purge_at: new Date(Date.now() + 10 * 86400000).toISOString(),
+            recoverable: true,
+          })),
+        );
+        clients = clients.filter((row) => !body.p_ids.includes(row.id));
+        return json(removed.length);
+      }
+      if (url.pathname.endsWith("/rpc/list_deleted_clients"))
+        return json({
+          admin: role === "admin",
+          rows: trash.slice(body.p_page * 25, body.p_page * 25 + 25),
+          total: trash.length,
+        });
+      if (url.pathname.endsWith("/rpc/restore_deleted_client")) {
+        clients.push(...trash.filter((row) => row.id === body.p_id));
+        trash = trash.filter((row) => row.id !== body.p_id);
+        return json(null);
+      }
+      if (url.pathname.endsWith("/rpc/purge_deleted_client")) {
+        assert.equal(role, "admin");
+        trash = trash.filter((row) => row.id !== body.p_id);
+        return json(null);
       }
       throw Error(
         "Petición no prevista en la prueba: " + req.method() + " " + url.pathname,
@@ -813,6 +837,55 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.locator("#clients-delete-selected").click();
     await page.locator("#clients-empty").waitFor();
     assert.equal(clients.length, 0);
+    await page.locator("#clients-trash-open").click();
+    await page.locator(".trash-client").first().waitFor();
+    assert.equal(await page.locator(".trash-client").count(), 2);
+    assert.equal(
+      await page
+        .locator("#clients-trash-dialog")
+        .textContent()
+        .then((t) => t.includes("10 días")),
+      true,
+    );
+    for (const theme of ['light','dark']) {
+      await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
+      for (const width of [320,1440]) {
+        await page.setViewportSize({width,height:1000});
+        assert.equal(await page.locator('#clients-trash-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'Eliminados sin desbordamiento horizontal');
+        await page.screenshot({path:require('os').tmpdir()+`/clients-trash-${theme}-${width}.png`});
+      }
+    }
+    await page
+      .getByRole("button", { name: "Recuperar cliente", exact: true })
+      .first()
+      .click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".trash-client").length === 1,
+    );
+    assert.equal(clients.length, 1);
+    page.once("dialog", (d) => d.accept());
+    await page
+      .getByRole("button", { name: "Eliminar definitivamente", exact: true })
+      .click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".trash-client").length === 0,
+    );
+    await page.locator("#clients-trash-close").click();
+    await page.locator("#clients-list input[type=checkbox]").first().check();
+    page.once("dialog", (d) => d.accept());
+    await page.locator("#clients-delete-selected").click();
+    await page.locator("#clients-empty").waitFor();
+    role = "consultant";
+    await page.locator("#clients-trash-open").click();
+    await page.locator(".trash-client").first().waitFor();
+    assert.equal(
+      await page
+        .getByRole("button", { name: "Eliminar definitivamente", exact: true })
+        .count(),
+      0,
+    );
+    await page.locator("#clients-trash-close").click();
+    role = "admin";
     await page.locator("#clients-demo-toggle").click();
     await page.locator("#clients-demo-banner").waitFor();
     await page.evaluate(() => window.PortfolioBackend.invalidateCache());

@@ -1197,3 +1197,53 @@ html:not([data-theme="dark"]) .client-company-mark[data-company="intesa"] {
     transform: none;
   }
 }
+#clients-trash-dialog {
+  width: min(920px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  box-sizing: border-box;
+  padding: clamp(20px, 4vw, 36px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: auto;
+}
+#clients-trash-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+.trash-heading,
+.trash-client,
+.trash-actions,
+.trash-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.trash-heading h2 {
+  margin: 0;
+}
+.trash-client {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.trash-client h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+.trash-client p {
+  margin: 0;
+}
+.trash-pagination {
+  margin-top: 24px;
+}
+#clients-trash-notice {
+  min-height: 1.5em;
+}
+@media (max-width: 560px) {
+  .trash-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

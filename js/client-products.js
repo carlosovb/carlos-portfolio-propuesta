@@ -136,7 +136,7 @@
           busy ||
           !selected.size ||
           !confirm(
-            `¿Eliminar ${selected.size} productos contratados seleccionados? También se eliminarán sus unidades y comisiones de las estadísticas.`,
+            `¿Eliminar ${selected.size} productos contratados seleccionados? Las unidades y comisiones históricas se conservarán.`,
           )
         )
           return;

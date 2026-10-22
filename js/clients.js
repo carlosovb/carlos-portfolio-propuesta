@@ -379,6 +379,7 @@
     }
   }
   function hide() {
+    window.ClientTrash?.reset();
     get("clients-bulk").hidden = true;
     window.ClientProducts.reset();
     visible = false;
@@ -611,7 +612,9 @@
           selection.size +
           " clientes seleccionados" +
           (demo ? " de este ejemplo" : " de tu cartera") +
-          "? También se eliminarán sus productos, unidades y comisiones registradas.",
+          (demo
+            ? "? Solo afecta al ejemplo."
+            : "? Permanecerán en Eliminados durante 10 días y podrás recuperarlos. Después se eliminarán definitivamente junto con sus datos y productos. Las unidades y comisiones históricas se conservan. Solo un administrador puede adelantar la eliminación definitiva."),
       )
     )
       return;
@@ -631,7 +634,12 @@
       if (snapshot !== revision || !visible) return;
       await load();
       if (!visible || account !== initiatingAccount) return;
-      notice(removed + " clientes eliminados" + (demo ? " del ejemplo." : "."));
+      notice(
+        removed +
+          (demo
+            ? " clientes eliminados del ejemplo."
+            : " clientes trasladados a Eliminados. Puedes recuperarlos durante 10 días."),
+      );
     } catch {
       if (snapshot === revision && visible)
         notice(
