@@ -56,6 +56,7 @@
     sync();
   }
   function amount(input) {
+    let suppressFocus = false;
     const wrap = el("span", null, "contract-amount-wrap");
     input.after(wrap);
     wrap.append(input);
@@ -70,14 +71,14 @@
     wrap.append(trigger, popup);
     function show() {
       close();
-      const max = Math.min(Number(input.max) || 8000, 8000),
+      const max = Math.min(input.max === "" ? 8000 : Number(input.max), 8000),
         min = Number(input.min) || 0.01;
       popup.replaceChildren();
       const values = [];
       for (let n = 50; n <= max; n += 50) if (n >= min) values.push(n);
       if (max >= min && !values.includes(max)) values.push(max);
       if (!values.length) {
-        popup.append(el("small", "Escribe el importe exacto."));
+        popup.append(el("small", max < min ? "No queda margen para la aportación mínima." : "Escribe el importe exacto."));
       }
       for (const value of values) {
         const b = el(
@@ -91,7 +92,9 @@
           input.dispatchEvent(new Event("input", { bubbles: true }));
           input.dispatchEvent(new Event("change", { bubbles: true }));
           close();
+          suppressFocus = true;
           input.focus({ preventScroll: true });
+          suppressFocus = false;
         });
         popup.append(b);
       }
@@ -100,7 +103,7 @@
       opened = { wrap, popup, trigger };
     }
     trigger.addEventListener("click", () => (opened?.wrap === wrap ? close() : show()));
-    input.addEventListener("focus", show);
+    input.addEventListener("focus", () => { if (!suppressFocus) show(); });
     input.addEventListener("keydown", (e) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();

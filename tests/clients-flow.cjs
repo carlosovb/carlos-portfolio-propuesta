@@ -650,6 +650,12 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       (await contract.locator(".product-picker").boundingBox()).height < 420,
       "Selección compacta tras elegir compañía y producto",
     );
+    await contract.locator('[name=amount]').focus();
+    await contract.locator('.contract-amount-options').getByRole('button',{name:'150 €',exact:true}).click();
+    assert.equal(await contract.locator('[name=amount]').inputValue(),'150');
+    assert.equal(await contract.locator('.contract-amount-options').isVisible(),false,'Choosing a suggested amount closes its dropdown');
+    await contract.locator('[name=amount]').fill('87.25');
+    assert.equal(await contract.locator('[name=amount]').inputValue(),'87.25','Free amount remains available');
     await contract.locator("[name=amount]").fill("50");
     await contract.locator("[name=units]").fill("2.5");
     await contract.locator("[name=signed_on]").fill("2024-02-29");
