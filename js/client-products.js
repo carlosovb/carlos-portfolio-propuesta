@@ -277,6 +277,9 @@
         detail: {
           clientId: client.id,
           demo,
+          productCount: rows.length,
+          units: rows.reduce((sum, r) => sum + Number(r.units || 0), 0),
+          pendingUnits: rows.filter((r) => r.units == null).length,
           companies: [
             ...new Set(rows.map((r) => window.PortfolioCompanies.label(r.company))),
           ],

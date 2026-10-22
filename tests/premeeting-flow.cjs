@@ -54,6 +54,8 @@ const root = path.resolve(__dirname, ".."),
         body: JSON.stringify(v),
         headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
       });
+    if (url.pathname.endsWith('/rpc/get_client_view_preference')) return json('list');
+    if (url.pathname.endsWith('/rpc/save_client_view_preference')) return json(null);
     if (url.pathname.endsWith("/rpc/submit_premeeting")) {
       attempts++;
       if (attempts === 1) return route.fulfill({ status: 503, body: "unavailable" });
@@ -69,7 +71,7 @@ const root = path.resolve(__dirname, ".."),
       });
     if (url.pathname === "/auth/v1/logout") return json({});
     if (url.pathname.includes("/team_resources")) return json([]);
-    if (url.pathname.endsWith("/rpc/list_my_clients"))
+    if (url.pathname.endsWith("/rpc/search_my_clients"))
       return json({ rows: [], total: 0, stats: { clients: 0, interested: 0 } });
     if (url.pathname.endsWith("/rpc/premeeting_consultant"))
       return json({

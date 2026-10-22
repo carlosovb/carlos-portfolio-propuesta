@@ -727,3 +727,473 @@ html:not([data-theme="dark"]) .client-company-mark[data-company="axa"] {
 html:not([data-theme="dark"]) .client-company-mark[data-company="intesa"] {
   --company-ink: #22754c;
 }
+
+/* Cartera de trabajo: cabecera corta, búsqueda y vistas personales. */
+#clients-view {
+  max-width: 1480px;
+}
+.clients-workspace-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.clients-workspace-heading h2 {
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.15;
+  margin: 12px 0;
+  letter-spacing: -1px;
+}
+.clients-workspace-heading p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 14px;
+}
+.clients-heading-actions {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.clients-import-menu {
+  position: relative;
+}
+.clients-import-menu > summary {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 13px;
+}
+.clients-import-menu > .clients-import-card {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  width: min(360px, 80vw);
+  z-index: 4;
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px #0002;
+}
+.clients-import-menu .clients-import-symbol {
+  display: none;
+}
+.clients-import-menu h3 {
+  margin-top: 0;
+}
+.clients-metrics {
+  margin: 22px 0;
+  gap: 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.clients-metrics article {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 24px;
+  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.clients-metrics article + article {
+  border-left: 1px solid var(--line);
+}
+.clients-metrics strong {
+  font-size: 30px;
+  letter-spacing: -1px;
+}
+.clients-section-heading {
+  margin: 24px 0 14px;
+}
+.clients-section-heading h2 {
+  font-size: 23px;
+  margin: 8px 0;
+}
+.clients-section-heading .eyebrow {
+  display: none;
+}
+.clients-workbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.clients-workbar .clients-search {
+  flex: 1;
+  width: auto;
+  min-width: 200px;
+  position: relative;
+}
+.clients-search > span[aria-hidden] {
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  font-size: 24px;
+  color: var(--muted);
+}
+.clients-workbar .clients-search input {
+  padding-left: 44px;
+  margin: 0;
+  min-height: 48px;
+}
+.clients-view-switch {
+  display: flex;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.clients-view-switch button {
+  min-height: 38px;
+  border: 0;
+  background: transparent;
+  padding: 8px 12px;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  border-radius: 8px;
+}
+.clients-view-switch button[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--bg);
+}
+.clients-view-switch button:focus-visible,
+.client-file-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.clients-view-status {
+  font-size: 11px;
+  color: var(--muted);
+  min-height: 18px;
+  margin: 8px 0 12px;
+}
+.clients-filter-panel {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  margin-bottom: 20px;
+}
+.clients-filter-panel label {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.clients-filter-panel input,
+.clients-filter-panel select {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+}
+.clients-filter-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.clients-filter-panel legend {
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding: 0;
+}
+.clients-filter-panel fieldset > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.clients-filter-actions {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.clients-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.clients-active-filters button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 99px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.clients-table-wrap {
+  background: var(--panel);
+  border-radius: 18px;
+}
+.clients-table th {
+  padding: 15px 12px;
+  font-size: 10px;
+  letter-spacing: 0.7px;
+}
+.clients-table td {
+  padding: 18px 12px;
+}
+.clients-table td:first-child {
+  width: 40px;
+}
+.client-monogram {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  float: left;
+}
+.client-identity strong {
+  font-size: 14px;
+}
+.clients-table .client-action button {
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 12px;
+}
+.client-portfolio-summary {
+  display: grid;
+  gap: 5px;
+}
+.client-portfolio-summary strong {
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.client-portfolio-summary small {
+  margin: 0;
+  font-size: 11px;
+}
+.clients-table .client-category {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+.clients-table .client-company-marks {
+  margin-top: 6px;
+}
+/* Lista compacta conserva todos los datos con menor separación. */
+.clients-table-wrap[data-view="compact"] td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.clients-table-wrap[data-view="compact"] .client-monogram {
+  display: none;
+}
+.clients-table-wrap[data-view="compact"] .client-identity strong {
+  font-size: 13px;
+}
+/* Tarjetas: mismos controles y misma selección, sin duplicar datos en memoria. */
+.clients-table-wrap[data-view="cards"] {
+  background: transparent;
+  border: 0;
+  overflow: visible;
+}
+.clients-table-wrap[data-view="cards"] .clients-table {
+  display: block;
+}
+.clients-table-wrap[data-view="cards"] thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.clients-table-wrap[data-view="cards"] tbody {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.clients-table-wrap[data-view="cards"] tr {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  padding: 22px;
+  transition:
+    transform 0.18s,
+    border-color 0.18s;
+}
+.clients-table-wrap[data-view="cards"] tr:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+.clients-table-wrap[data-view="cards"] td {
+  display: block;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  max-width: none;
+  grid-column: 2;
+  width: auto;
+}
+.clients-table-wrap[data-view="cards"] .client-select-cell {
+  grid-column: 1;
+  grid-row: 1;
+}
+.clients-table-wrap[data-view="cards"] .client-identity {
+  grid-row: 1;
+}
+.clients-table-wrap[data-view="cards"] .client-monogram {
+  display: none;
+}
+.clients-table-wrap[data-view="cards"] .client-identity strong {
+  font-size: 17px;
+}
+.clients-table-wrap[data-view="cards"] .client-portfolio {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.clients-table-wrap[data-view="cards"] .client-portfolio-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.clients-table-wrap[data-view="cards"] .client-action button {
+  padding: 0;
+  min-height: 32px;
+}
+/* Ficha centrada en su cartera; el contacto tiene su propio espacio. */
+.client-file-tabs {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--line);
+  margin-top: 12px;
+}
+.client-file-tabs button {
+  padding: 15px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.client-file-tabs button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.client-file-layout {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 24px;
+}
+.client-file-layout[data-tab="contact"] #client-detail-fields {
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+  padding: 12px 0 24px;
+}
+.client-file-layout[data-tab="contact"] .client-additional {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.client-file-layout[data-tab="contact"] .client-additional > summary {
+  display: none;
+}
+.client-file-layout[data-tab="contact"]
+  .client-additional
+  .client-info-section
+  + .client-info-section {
+  margin-top: 0;
+}
+@media (max-width: 1200px) {
+  .clients-table-wrap[data-view="cards"] tbody {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .client-monogram {
+    display: none;
+  }
+}
+@media (max-width: 800px) {
+  .clients-workspace-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .clients-heading-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .clients-metrics article {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 12px;
+  }
+  .clients-metrics strong {
+    font-size: 28px;
+  }
+  .clients-filter-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 18px;
+  }
+  .clients-view-switch {
+    margin-left: auto;
+  }
+  .clients-table-wrap {
+    border: 0;
+    background: transparent;
+  }
+  .clients-table .client-portfolio {
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .clients-table-wrap[data-view="compact"] tr {
+    gap: 8px 12px;
+    padding: 16px;
+  }
+  .client-file-layout[data-tab="contact"] #client-detail-fields {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .client-file-layout[data-tab="contact"] .client-additional {
+    display: block;
+  }
+  .client-file-layout[data-tab="contact"]
+    .client-additional
+    .client-info-section
+    + .client-info-section {
+    margin-top: 24px;
+  }
+}
+@media (max-width: 550px) {
+  .clients-table-wrap[data-view="cards"] tbody {
+    grid-template-columns: 1fr;
+  }
+  .clients-filter-panel {
+    grid-template-columns: 1fr;
+  }
+  .clients-workbar .clients-search {
+    flex-basis: 100%;
+  }
+  .clients-view-switch button {
+    padding: 8px 9px;
+  }
+  .client-file-tabs button {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clients-table-wrap[data-view="cards"] tr {
+    transition: none;
+  }
+  .clients-table-wrap[data-view="cards"] tr:hover {
+    transform: none;
+  }
+}

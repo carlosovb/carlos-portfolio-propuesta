@@ -79,7 +79,8 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
   let clients = [],
     writes = 0,
     previewCalls = 0,
-    role = "admin";
+    role = "admin",
+    preferredView = "list";
   try {
     const context = await browser.newContext({
       viewport: { width: 1440, height: 1050 },
@@ -101,6 +102,12 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           body: JSON.stringify(value),
           headers: { "Access-Control-Expose-Headers": "Content-Range" },
         });
+      if (url.pathname.endsWith("/rpc/get_client_view_preference"))
+        return json(preferredView);
+      if (url.pathname.endsWith("/rpc/save_client_view_preference")) {
+        preferredView = body.p_view;
+        return json(null);
+      }
       if (url.pathname === "/auth/v1/token")
         return json({
           access_token: "test-access",
@@ -244,36 +251,58 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           consultants_with_clients: clients.length ? 1 : 0,
           by_consultant: [{ user_id: uid, clients: clients.length, interested: 0 }],
         });
-      if (url.pathname.endsWith("/rpc/list_my_clients")) {
+      if (url.pathname.endsWith("/rpc/search_my_clients")) {
         if (delayNextList) {
           const delay = delayNextList;
           delayNextList = 0;
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
-        const q = parser.normalize(body.p_search);
-        const matches = clients
-          .filter((row) => parser.normalize(Object.values(row).join(" ")).includes(q))
-          .sort(
-            (a, b) =>
-              (parser.normalize(a.client_type) === "cliente" ? 0 : 1) -
-              (parser.normalize(b.client_type) === "cliente" ? 0 : 1),
-          );
+        const q = parser.normalize(body.p_search),
+          f = body.p_filters || {};
+        const all = clients.map((row) => {
+          const contracts = products.filter((p) => p.client_id === row.id);
+          return {
+            ...row,
+            companies: [...new Set(contracts.map((p) => p.company))],
+            products: [...new Set(contracts.map((p) => p.product))],
+            product_count: contracts.length,
+            total_units: contracts.reduce((sum, p) => sum + Number(p.units || 0), 0),
+            pending_units: contracts.filter((p) => p.units == null).length,
+          };
+        });
+        const matches = all.filter(
+          (row) =>
+            parser.normalize(Object.values(row).join(" ")).includes(q) &&
+            (!f.company ||
+              products.some(
+                (p) =>
+                  p.client_id === row.id &&
+                  p.company === f.company &&
+                  (!f.product || p.product === f.product),
+              )) &&
+            (!f.product ||
+              products.some(
+                (p) =>
+                  p.client_id === row.id &&
+                  p.product === f.product &&
+                  (!f.company || p.company === f.company),
+              )) &&
+            (f.min_products == null || row.product_count >= f.min_products) &&
+            (f.max_products == null || row.product_count <= f.max_products) &&
+            (f.min_units == null || row.total_units >= f.min_units) &&
+            (f.max_units == null || row.total_units <= f.max_units),
+        );
         return json({
-          rows: matches
-            .slice(body.p_page * 25, (body.p_page + 1) * 25)
-            .map((row) => ({
-              ...row,
-              companies: [
-                ...new Set(
-                  products.filter((p) => p.client_id === row.id).map((p) => p.company),
-                ),
-              ],
-            })),
+          rows: matches.slice(body.p_page * 25, (body.p_page + 1) * 25),
           total: matches.length,
           stats: {
             clients: clients.length,
-            localities: new Set(clients.map((row) => row.locality)).size,
+            localities: new Set(clients.map((r) => r.locality)).size,
             interested: 0,
+          },
+          options: {
+            companies: [...new Set(products.map((p) => p.company))],
+            products: products.map((p) => ({ company: p.company, product: p.product })),
           },
         });
       }
@@ -373,6 +402,10 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           .evaluate((d) => d.scrollWidth <= d.clientWidth),
         true,
       );
+      await page.locator('[data-client-tab="contact"]').click();
+      assert.equal(await page.locator("#client-detail-fields").isVisible(), true);
+      assert.equal(await page.locator("#client-products-section").isVisible(), false);
+      await page.locator('[data-client-tab="products"]').click();
       await page.locator("#client-detail-name").click();
       assert.equal(
         await page.locator("#client-detail-dialog").evaluate((d) => d.open),
@@ -687,6 +720,59 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       }
     }
     await page.locator('#panel-navigation [data-view="clients"]').click();
+    assert.equal(await page.locator("#clients-filter-panel").isVisible(), false);
+    for (const view of ["cards", "compact", "list"]) {
+      await page.locator(`[data-client-view="${view}"]`).click();
+      await page.waitForFunction(
+        (v) => document.querySelector("#clients-table-wrap").dataset.view === v,
+        view,
+      );
+      await page.waitForFunction(() =>
+        document.querySelector("#clients-view-status").textContent.includes("guardada"),
+      );
+      assert.equal(preferredView, view);
+      for (const width of [320, 768, 1024, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert(
+          await page
+            .locator("#clients-view")
+            .evaluate((el) => el.scrollWidth <= el.clientWidth),
+          "Vistas de cartera responsive",
+        );
+        if (width === 1440)
+          await page.screenshot({
+            path: path.join(process.env.TEMP, `clients-workspace-${view}.png`),
+            fullPage: true,
+          });
+      }
+    }
+    await page.locator('[data-client-view="cards"]').click();
+    await page.waitForFunction(() =>
+      document.querySelector("#clients-view-status").textContent.includes("guardada"),
+    );
+    await login();
+    await page.locator('#panel-navigation [data-view="clients"]').click();
+    await page.waitForFunction(
+      () => document.querySelector("#clients-table-wrap").dataset.view === "cards",
+    );
+    assert.equal(
+      preferredView,
+      "cards",
+      "La vista se recupera al volver a iniciar sesión",
+    );
+    await page.locator('[data-client-view="list"]').click();
+    await page.locator("#clients-filter-toggle").click();
+    assert.equal(await page.locator("#clients-filter-panel").isVisible(), true);
+    await page.locator("#clients-filter-panel [name=min_products]").fill("1");
+    await page.locator("#clients-filter-panel button[type=submit]").click();
+    await page.waitForFunction(
+      () => document.querySelectorAll("#clients-list tr").length === 0,
+    );
+    await page.locator("#clients-filter-clear").click();
+    await page.waitForFunction(
+      () => document.querySelectorAll("#clients-list tr").length === 2,
+    );
+    await page.locator("#clients-filter-toggle").click();
     await page.locator("#clients-search").fill("Bruno");
     await page.waitForFunction(
       () =>

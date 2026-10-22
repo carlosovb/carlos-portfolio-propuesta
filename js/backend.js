@@ -18,6 +18,8 @@
   let cacheVersion = 0;
   const cachedRpcs = new Set([
     "list_my_clients",
+    "search_my_clients",
+    "get_client_view_preference",
     "get_my_team_profile",
     "get_team_directory",
     "get_team_client_counts",
@@ -352,13 +354,27 @@
         ).json()
       ).length;
     },
-    async listClients(search = "", page = 0) {
+    async listClients(search = "", page = 0, filters = {}) {
       return (
-        await authenticated("/rest/v1/rpc/list_my_clients", {
+        await authenticated("/rest/v1/rpc/search_my_clients", {
           method: "POST",
-          body: JSON.stringify({ p_search: search, p_page: page }),
+          body: JSON.stringify({ p_search: search, p_page: page, p_filters: filters }),
         })
       ).json();
+    },
+    async getClientViewPreference() {
+      return (
+        await authenticated("/rest/v1/rpc/get_client_view_preference", {
+          method: "POST",
+          body: "{}",
+        })
+      ).json();
+    },
+    async saveClientViewPreference(view) {
+      await authenticated("/rest/v1/rpc/save_client_view_preference", {
+        method: "POST",
+        body: JSON.stringify({ p_view: view }),
+      });
     },
     async listClientProducts(clientId) {
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");

@@ -1,7 +1,8 @@
 /* Cartera privada: los clientes reales permanecen en Supabase y en memoria durante la sesión. */
 (() => {
   const backend = window.PortfolioBackend,
-    parser = window.ClientImport;
+    parser = window.ClientImport,
+    workspace = window.ClientWorkspace;
   const get = (id) => document.getElementById(id);
   const el = (tag, className, text) => {
     const node = document.createElement(tag);
@@ -23,7 +24,10 @@
   const compactClient = matchMedia("(max-width: 850px)");
   compactClient.addEventListener("change", (event) => {
     const additional = get("client-detail-fields").querySelector(".client-additional");
-    if (additional) additional.open = !event.matches;
+    if (additional)
+      additional.open =
+        additional.closest(".client-file-layout").dataset.tab === "contact" ||
+        !event.matches;
   });
   const category = (row) =>
     row.category ||
@@ -130,7 +134,13 @@
         : category(row) === "interested"
           ? "Interesado"
           : row.client_type || "Ficha personal";
-    get("client-detail-status").textContent = row.status || "Estado sin indicar";
+    get("client-detail-status").textContent = [
+      row.status || "Estado sin indicar",
+      row.phone,
+      row.locality,
+    ]
+      .filter(Boolean)
+      .join(" · ");
     const groups = [
       [
         "Contacto",
@@ -168,6 +178,7 @@
       (index === 0 ? fields : additional).append(section);
     });
     fields.append(additional);
+    workspace.detailTab("products");
     get("client-detail-dialog").showModal();
     get("client-detail-dialog").scrollTop = 0;
     window.ClientProducts.open(row, demo);
@@ -201,13 +212,19 @@
     const row = rows.find((r) => r.id === event.detail.clientId);
     if (!row) return;
     row.companies = event.detail.companies;
+    row.product_count = event.detail.productCount;
+    row.total_units = event.detail.units;
+    row.pending_units = event.detail.pendingUnits;
     const tr = Array.from(get("clients-list").children).find(
       (el) => el.dataset.clientId === row.id,
     );
     tr?.querySelector(".client-company-marks")?.replaceWith(companyMarks(row));
+    tr?.querySelector(".client-portfolio-summary")?.replaceWith(workspace.summary(row));
+    workspace.changed();
   });
   function render(result) {
     rows = result.rows;
+    workspace.update(result);
     selection.clear();
     syncDemo();
     get("clients-list").replaceChildren();
@@ -263,6 +280,9 @@
         el("span", "", row.locality || "Sin indicar"),
         el("small", "", row.postal_code || ""),
       );
+      const portfolio = el("td", "client-portfolio");
+      portfolio.dataset.label = "Cartera";
+      portfolio.append(workspace.summary(row));
       const status = el("td", "client-state");
       status.dataset.label = "Estado";
       status.append(el("span", "client-status", row.status || "Sin indicar"));
@@ -280,7 +300,7 @@
         detail(row, open);
       });
       action.append(open);
-      tr.append(selectCell, identity, contact, locality, status, action);
+      tr.append(selectCell, identity, contact, locality, portfolio, status, action);
       get("clients-list").append(tr);
     }
     const stats = result.stats;
@@ -296,9 +316,10 @@
     get("clients-empty").hidden = !!rows.length;
     get("clients-bulk").hidden = true;
     get("clients-pagination").hidden = !rows.length;
-    get("clients-empty").textContent = get("clients-search").value
-      ? "No hay clientes que coincidan con tu búsqueda."
-      : "Todavía no tienes clientes importados. Sube tu informe o abre el ejemplo para ver cómo quedará.";
+    get("clients-empty").textContent =
+      get("clients-search").value || Object.keys(workspace.filters()).length
+        ? "No hay clientes que coincidan con esta búsqueda o estos filtros. Prueba a ampliar la selección."
+        : "Todavía no tienes clientes importados. Sube tu informe o abre el ejemplo para ver cómo quedará.";
     get("clients-previous").disabled = page === 0;
     get("clients-next").disabled = (page + 1) * 25 >= result.total;
     get("clients-page-label").textContent = "Página " + (page + 1);
@@ -310,15 +331,11 @@
     visible = true;
     const snapshot = ++revision;
     try {
+      await workspace.restore();
+      if (snapshot !== revision || !visible) return;
       let result;
       if (demo) {
-        const query = parser.normalize(get("clients-search").value);
-        const matches = demoRows
-          .filter((row) => parser.normalize(Object.values(row).join(" ")).includes(query))
-          .sort(
-            (a, b) =>
-              priority(a) - priority(b) || a.last_name.localeCompare(b.last_name, "es"),
-          );
+        const matches = workspace.demoResult(demoRows, get("clients-search").value);
         result = {
           rows: matches.slice(page * 25, (page + 1) * 25),
           total: matches.length,
@@ -328,7 +345,12 @@
             localities: new Set(demoRows.map((row) => row.locality)).size,
           },
         };
-      } else result = await backend.listClients(get("clients-search").value, page);
+      } else
+        result = await backend.listClients(
+          get("clients-search").value,
+          page,
+          workspace.filters(),
+        );
       if (snapshot !== revision || !visible) return;
       if (page > 0 && !result.rows.length) {
         page--;
@@ -370,11 +392,13 @@
     clearPreview();
     get("client-detail-dialog").close();
     get("client-detail-name").textContent = "";
+    get("client-detail-status").textContent = "";
     get("client-detail-fields").replaceChildren();
   }
   function reset() {
     hide();
     account = null;
+    workspace.reset();
     busy = false;
     page = 0;
     demo = false;
@@ -450,6 +474,7 @@
     dialogScroll = null;
     get("client-detail-fields").replaceChildren();
     get("client-detail-name").textContent = "";
+    get("client-detail-status").textContent = "";
     if (saved && visible) {
       if (saved.opener?.isConnected) saved.opener.focus({ preventScroll: true });
       window.scrollTo({ left: saved.x, top: saved.y, behavior: "instant" });
@@ -619,6 +644,11 @@
         syncSelection();
       }
     }
+  });
+  workspace.init(() => {
+    if (!visible || busy) return;
+    page = 0;
+    load();
   });
   window.ClientsPanel = { load, hide, reset };
 })();

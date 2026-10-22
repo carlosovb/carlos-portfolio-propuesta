@@ -56,6 +56,8 @@ async function mock(context, state) {
       expires_in: 3600,
       user: { id: "test-user", email: "consultor@example.invalid" },
     };
+    if (url.pathname.endsWith('/rpc/get_client_view_preference')) return json('list');
+    if (url.pathname.endsWith('/rpc/save_client_view_preference')) return json(null);
     if (url.pathname === "/auth/v1/token")
       return body.password === "incorrecta" ? json({}, 400) : json(session);
     if (url.pathname === "/auth/v1/verify") {
@@ -64,7 +66,7 @@ async function mock(context, state) {
     }
     if (url.pathname === "/auth/v1/logout") return json({});
     if (url.pathname.includes("/team_resources")) return json([]);
-    if (url.pathname.endsWith("/rpc/list_my_clients"))
+    if (url.pathname.endsWith("/rpc/search_my_clients"))
       return json({ rows: [], total: 0, stats: { clients: 0, interested: 0 } });
 
     if (url.pathname.includes("premeeting_responses")) return json([]);

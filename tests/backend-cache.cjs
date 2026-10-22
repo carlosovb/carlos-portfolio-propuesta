@@ -55,7 +55,7 @@ const vm = require("node:vm"),
       }
       if (path.endsWith("/panel_access"))
         return json({ role: "consultant", profile_complete: true });
-      if (path.endsWith("/list_my_clients")) {
+      if (path.endsWith("/search_my_clients")) {
         const captured = owner;
         if (slow) {
           slow = false;
@@ -84,17 +84,17 @@ const vm = require("node:vm"),
   const first = await b.listClients();
   first.rows[0].owner = "changed";
   assert.equal((await b.listClients()).rows[0].owner, "a");
-  assert.equal(count("rpc/list_my_clients"), 1);
+  assert.equal(count("rpc/search_my_clients"), 1);
   await b.getCareerProgress("11111111-1111-4111-8111-111111111111");
   await b.getCareerProgress("11111111-1111-4111-8111-111111111111");
   assert.equal(count("rpc/get_career_progress"),2,"El progreso revalida permisos en cada consulta");
-  await b.listClients();assert.equal(count("rpc/list_my_clients"),1,"Consultar progreso no invalida los demás listados");
+  await b.listClients();assert.equal(count("rpc/search_my_clients"),1,"Consultar progreso no invalida los demás listados");
   b.invalidateCache();
   await Promise.all([b.listClients(), b.listClients()]);
-  assert.equal(count("rpc/list_my_clients"), 2, "Concurrent reads coalesce");
+  assert.equal(count("rpc/search_my_clients"), 2, "Concurrent reads coalesce");
   now += 61000;
   await b.listClients();
-  assert.equal(count("rpc/list_my_clients"), 3, "TTL refreshes");
+  assert.equal(count("rpc/search_my_clients"), 3, "TTL refreshes");
   await b.saveClientProduct("11111111-1111-4111-8111-111111111111", {
     company: "AXA",
     product: "Test",
@@ -104,7 +104,7 @@ const vm = require("node:vm"),
     units: null,
   });
   await b.listClients();
-  assert.equal(count("rpc/list_my_clients"), 4, "Mutation invalidates");
+  assert.equal(count("rpc/search_my_clients"), 4, "Mutation invalidates");
   fail = true;
   await assert.rejects(() => b.listResources());
   await b.listResources();

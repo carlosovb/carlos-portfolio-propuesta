@@ -56,6 +56,8 @@ const server = http.createServer((req, res) => {
         body: JSON.stringify(v),
         headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
       });
+    if (url.pathname.endsWith('/rpc/get_client_view_preference')) return json('list');
+    if (url.pathname.endsWith('/rpc/save_client_view_preference')) return json(null);
     if (url.pathname === "/auth/v1/token")
       return json({
         access_token: "fake",
@@ -83,7 +85,7 @@ const server = http.createServer((req, res) => {
         multiplier: 2.5,
         is_root: role === "admin",
       });
-    if (url.pathname.endsWith("/rpc/list_my_clients"))
+    if (url.pathname.endsWith("/rpc/search_my_clients"))
       return json({ rows: [], total: 15, stats: { clients: 12, interested: 3 } });
     if (url.pathname.includes("/premeeting_responses"))
       return json(
