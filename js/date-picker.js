@@ -57,7 +57,12 @@
     input.after(wrap);
     wrap.append(input);
     input.classList.add("contract-date-input");
-    const trigger = el("button", "▦", "contract-date-trigger");
+    const trigger = el("button", null, "contract-date-trigger");
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M12 15h2M7 18h2M12 18h2"/>';
+    trigger.append(icon);
     trigger.type = "button";
     trigger.setAttribute("aria-label", "Abrir calendario de firma");
     trigger.setAttribute("aria-expanded", "false");

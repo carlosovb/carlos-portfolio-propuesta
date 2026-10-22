@@ -58,6 +58,23 @@
   font-size: 14px;
   cursor: pointer;
 }
+.contract-date-trigger {
+  display: grid;
+  place-items: center;
+}
+.contract-date-trigger svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.contract-date-trigger:hover {
+  color: var(--accent);
+}
 .contract-amount-options {
   position: absolute;
   z-index: 35;
