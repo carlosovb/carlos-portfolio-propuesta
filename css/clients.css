@@ -686,3 +686,44 @@ html[data-theme="light"] .clients-metrics article:has(#clients-interested-count)
     grid-template-columns: 1fr;
   }
 }
+
+.clients-table .client-company-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.client-company-mark {
+  --company-ink: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--company-ink);
+  background: color-mix(in srgb, var(--company-ink) 9%, transparent);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.client-company-mark::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.client-company-mark[data-company="axa"] {
+  --company-ink: #80b7ff;
+}
+.client-company-mark[data-company="intesa"] {
+  --company-ink: #80d2af;
+}
+html:not([data-theme="dark"]) .client-company-mark[data-company="axa"] {
+  --company-ink: #224eaa;
+}
+html:not([data-theme="dark"]) .client-company-mark[data-company="intesa"] {
+  --company-ink: #22754c;
+}

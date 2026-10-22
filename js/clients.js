@@ -174,6 +174,38 @@
     get("client-detail-close").focus({ preventScroll: true });
     window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
   }
+  function companyMarks(row) {
+    const marks = el("span", "client-company-marks");
+    const companies = [
+      ...new Set(
+        (row.companies || []).map((value) => window.PortfolioCompanies.label(value)),
+      ),
+    ];
+    marks.hidden = !companies.length;
+    companies.forEach((value) => {
+      const company = window.PortfolioCompanies.find(value);
+      const label = el(
+        "span",
+        "client-company-mark",
+        company?.id === "intesa" ? "Intesa" : value,
+      );
+      label.dataset.company = company?.id || "other";
+      label.title = value;
+      marks.append(label);
+    });
+    marks.setAttribute("aria-label", "Compañías contratadas");
+    return marks;
+  }
+  window.addEventListener("client-products-changed", (event) => {
+    if (!visible || demo !== event.detail.demo) return;
+    const row = rows.find((r) => r.id === event.detail.clientId);
+    if (!row) return;
+    row.companies = event.detail.companies;
+    const tr = Array.from(get("clients-list").children).find(
+      (el) => el.dataset.clientId === row.id,
+    );
+    tr?.querySelector(".client-company-marks")?.replaceWith(companyMarks(row));
+  });
   function render(result) {
     rows = result.rows;
     selection.clear();
@@ -182,6 +214,7 @@
     for (const row of rows) {
       const tr = el("tr");
       tr.dataset.category = category(row);
+      tr.dataset.clientId = row.id;
       const selectCell = el("td", "client-select-cell");
       const checkbox = el("input", "bulk-checkbox");
       checkbox.type = "checkbox";
@@ -216,6 +249,7 @@
               : row.client_type || "Sin clasificar",
         ),
       );
+      title.append(companyMarks(row));
       identity.append(monogram, title);
       const contact = el("td", "client-contact");
       contact.dataset.label = "Contacto";

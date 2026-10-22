@@ -855,3 +855,15 @@ html[data-theme="dark"] .product-choice-copy img {
     font-size: 14px;
   }
 }
+
+/* Mientras se registra o edita un contrato, se concentra la ficha en el formulario. */
+#client-products-section[data-editing="true"] > .contract-list,
+#client-products-section[data-editing="true"] > .contract-metrics,
+#client-products-section[data-editing="true"] > .contract-controls,
+#client-products-section[data-editing="true"] > .contract-empty {
+  display: none;
+}
+#client-products-section[data-editing="true"] .contract-editor {
+  margin-top: 12px;
+  padding-top: 18px;
+}

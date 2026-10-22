@@ -63,6 +63,8 @@ const fs = require("fs"),
     await db.exec(sql);
     await db.exec(fs.readFileSync("database/client-products-setup.sql", "utf8"));
     await db.exec(fs.readFileSync("database/client-products-setup.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/client-company-references.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/client-company-references.sql", "utf8"));
     await as(member);
     await rpc([a], false);
     const client = (await db.query("select id from public.portfolio_clients")).rows[0].id;
@@ -74,13 +76,31 @@ const fs = require("fs"),
         )
       ).rows[0].id;
     const product = await add();
+    const references = async () =>
+      (await db.query("select public.list_my_clients() data")).rows[0].data;
+    assert.deepEqual((await references()).rows[0].companies, ["AXA"]);
+    await add();
+    await db.query(
+      "insert into public.client_products(client_id,company,product,payment_type,amount) values($1,'Intesa Sanpaolo Assicurazioni','Test','monthly',20)",
+      [client],
+    );
+    assert.deepEqual(
+      (await references()).rows[0].companies,
+      ["AXA", "Intesa Sanpaolo Assicurazioni"],
+      "Compañías sin duplicados",
+    );
+
     await db.query(
       "update public.client_products set portfolio='Cartera conservadora',payment_type='single',amount=1000,units=null where id=$1",
       [product],
     );
     assert.equal(
-      (await db.query("select portfolio,amount,units from public.client_products"))
-        .rows[0].units,
+      (
+        await db.query(
+          "select portfolio,amount,units from public.client_products where id=$1",
+          [product],
+        )
+      ).rows[0].units,
       null,
     );
     await assert.rejects(() => db.query("update public.client_products set amount=-1"));
@@ -98,6 +118,11 @@ const fs = require("fs"),
     );
     for (const id of [other, owner]) {
       await as(id);
+      assert.deepEqual(
+        (await references()).rows,
+        [],
+        "Ni el administrador puede consultar compañías de clientes ajenos",
+      );
       assert.equal(
         (await db.query("select * from public.client_products")).rows.length,
         0,

@@ -30,6 +30,7 @@
     editing = null;
     busy = false;
     selected.clear();
+    host.dataset.editing = "false";
     host.replaceChildren();
   }
   function say(text) {
@@ -90,6 +91,7 @@
     return input;
   }
   function render() {
+    host.dataset.editing = "false";
     host.replaceChildren();
     if (!client) return;
     selected.clear();
@@ -120,7 +122,7 @@
       metrics.append(box);
     });
     host.append(metrics);
-    const controls = node("div", undefined, "contract-actions");
+    const controls = node("div", undefined, "contract-actions contract-controls");
     controls.append(
       button("+ Añadir producto", () => {
         editing = {};
@@ -145,6 +147,7 @@
           if (demo) {
             rows = rows.filter((r) => !selected.has(r.id));
             render();
+            announceCompanies();
           } else {
             await backend.deleteClientProducts(client.id, [...selected]);
             if (ticket === epoch) await reload();
@@ -268,6 +271,19 @@
     if (editing) editor();
     if (demo) say("Datos de ejemplo: los productos añadidos aquí no se guardan.");
   }
+  function announceCompanies() {
+    window.dispatchEvent(
+      new CustomEvent("client-products-changed", {
+        detail: {
+          clientId: client.id,
+          demo,
+          companies: [
+            ...new Set(rows.map((r) => window.PortfolioCompanies.label(r.company))),
+          ],
+        },
+      }),
+    );
+  }
   async function reload() {
     const ticket = epoch,
       list = await backend.listClientProducts(client.id);
@@ -275,11 +291,13 @@
     rows = list;
     editing = null;
     render();
+    announceCompanies();
   }
   async function editor() {
     const box = document.getElementById("client-product-editor");
     box.replaceChildren();
     if (!editing) return;
+    host.dataset.editing = "true";
     const selectedProduct = editing,
       ticket = epoch;
     box.textContent = "Preparando los datos de la firma…";
@@ -289,9 +307,11 @@
         ? [{ user_id: "demo" }, []]
         : await Promise.all([backend.getMyTeamProfile(), backend.listTeam()]);
     } catch {
-      if (ticket === epoch && selectedProduct === editing)
+      if (ticket === epoch && selectedProduct === editing) {
+        host.dataset.editing = "false";
         box.textContent =
           "No se ha podido preparar la firma. Pulsa Editar o Añadir producto para reintentar.";
+      }
       return;
     }
     if (ticket !== epoch || selectedProduct !== editing) return;
@@ -406,6 +426,7 @@
       save,
       button("Cancelar", () => {
         editing = null;
+        host.dataset.editing = "false";
         box.replaceChildren();
       }),
     );
@@ -459,6 +480,7 @@
           rows = id ? rows.map((r) => (r.id === id ? row : r)) : [row, ...rows];
           editing = null;
           render();
+          announceCompanies();
         } else {
           await backend.saveClientProduct(target, fields, id);
           if (ticket === epoch) await reload();

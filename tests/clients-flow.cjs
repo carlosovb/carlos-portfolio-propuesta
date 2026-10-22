@@ -259,7 +259,16 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
               (parser.normalize(b.client_type) === "cliente" ? 0 : 1),
           );
         return json({
-          rows: matches.slice(body.p_page * 25, (body.p_page + 1) * 25),
+          rows: matches
+            .slice(body.p_page * 25, (body.p_page + 1) * 25)
+            .map((row) => ({
+              ...row,
+              companies: [
+                ...new Set(
+                  products.filter((p) => p.client_id === row.id).map((p) => p.company),
+                ),
+              ],
+            })),
           total: matches.length,
           stats: {
             clients: clients.length,
@@ -546,6 +555,58 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       "Cartera anterior personalizada",
     );
     await contract.getByRole("button", { name: "Cancelar", exact: true }).click();
+    assert.equal(await page.locator(".contract-list").isVisible(), true);
+    await page.getByRole("button", { name: "+ Añadir producto", exact: true }).click();
+    await contract.waitFor();
+    assert.equal(await page.locator(".contract-list").isVisible(), false);
+    await choose("company", "Intesa Sanpaolo Assicurazioni");
+    await choose("product", "__manual__");
+    await contract.locator("[name=manual_product]").fill("Segundo producto");
+    await contract.locator("[name=amount]").fill("30");
+    await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 2,
+    );
+    assert.equal(
+      await page
+        .locator("#clients-list tr")
+        .first()
+        .locator(".client-company-mark")
+        .count(),
+      2,
+    );
+    await page.getByRole("button", { name: "+ Añadir producto", exact: true }).click();
+    await contract.waitFor();
+    assert.equal(await page.locator(".contract-card").count(), 2);
+    assert.equal(
+      await page.locator(".contract-list").isVisible(),
+      false,
+      "Los productos existentes quedan ocultos durante el alta",
+    );
+    assert.equal(await page.locator(".contract-metrics").isVisible(), false);
+    await contract.getByRole("button", { name: "Cancelar", exact: true }).click();
+    assert.equal(await page.locator(".contract-list").isVisible(), true);
+    await page.locator("#client-detail-close").click();
+    assert.equal(
+      await page
+        .locator("#clients-list tr")
+        .first()
+        .locator(".client-company-mark[data-company=axa]")
+        .count(),
+      1,
+    );
+    assert.equal(
+      await page
+        .locator("#clients-list tr")
+        .first()
+        .locator(".client-company-mark[data-company=intesa]")
+        .count(),
+      1,
+    );
+    await page.locator("#clients-list .client-action button").first().click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 2,
+    );
 
     for (const width of [320, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -571,13 +632,17 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         });
       }
     }
-    assert.equal(await page.locator(".contract-company").count(), 1);
-    assert.equal(await page.locator(".contract-company-heading h4").textContent(), "AXA");
+    assert.equal(await page.locator(".contract-company").count(), 2);
+    assert.equal(
+      await page.locator(".contract-company-heading h4").first().textContent(),
+      "AXA",
+    );
     await page.screenshot({
       path: path.join(process.env.TEMP, "client-products.png"),
       fullPage: true,
     });
-    await page.locator(".contract-card input[type=checkbox]").check();
+    await page.locator(".contract-card input[type=checkbox]").first().check();
+    await page.locator(".contract-bulk input[type=checkbox]").check();
     page.once("dialog", (d) => d.accept());
     await page
       .getByRole("button", { name: "Eliminar seleccionados", exact: true })
@@ -587,6 +652,11 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       () => document.querySelectorAll(".contract-card").length === 0,
     );
     assert.equal(products.length, 0);
+    assert.equal(
+      await page.locator("#clients-list .client-company-mark").count(),
+      0,
+      "Eliminar productos actualiza las referencias de compañías",
+    );
     await page.locator("#client-detail-close").click();
     assert.equal(await page.locator("#client-products-section").textContent(), "");
 
