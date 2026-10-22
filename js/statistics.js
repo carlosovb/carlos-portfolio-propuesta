@@ -2,14 +2,38 @@
 (() => {
   const host = document.getElementById("statistics-view");
   const backend = window.PortfolioBackend;
-  let epoch = 0,
-    month = new Intl.DateTimeFormat("sv-SE", {
+  const currentMonth = () =>
+    new Intl.DateTimeFormat("sv-SE", {
       timeZone: "Atlantic/Canary",
       year: "numeric",
       month: "2-digit",
-    }).format(new Date()),
+    }).format(new Date());
+  let epoch = 0,
+    from = currentMonth(),
+    to = currentMonth(),
     scope = "own",
-    data;
+    data,
+    loading = false,
+    error = "";
+  const monthName = (value) =>
+    new Intl.DateTimeFormat("es-ES", {
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(value.slice(0, 7) + "-01T12:00:00Z"));
+  function monthsBetween(start, end) {
+    const result = [];
+    let y = Number(start.slice(0, 4)),
+      m = Number(start.slice(5, 7));
+    while (y + "-" + String(m).padStart(2, "0") <= end.slice(0, 7)) {
+      result.push(y + "-" + String(m).padStart(2, "0"));
+      if (++m === 13) {
+        m = 1;
+        y++;
+      }
+    }
+    return result;
+  }
   const n = (tag, text, cls) => {
     const el = document.createElement(tag);
     if (text !== undefined) el.textContent = text;
@@ -26,24 +50,27 @@
   function reset() {
     epoch++;
     data = null;
+    loading = false;
+    error = "";
     host.replaceChildren();
   }
   async function load() {
     const ticket = ++epoch;
-    host.replaceChildren(n("p", "Preparando tu producción…"));
+    loading = true;
+    error = "";
+    render();
     try {
-      const result = await backend.getUnitStatistics(month);
+      const result = await backend.getUnitStatistics(from, to);
       if (ticket !== epoch) return;
       data = result;
+      loading = false;
       render();
     } catch {
       if (ticket !== epoch) return;
-      host.replaceChildren(
-        n(
-          "p",
-          "No se han podido cargar las estadísticas. Pulsa Actualizar para reintentarlo.",
-        ),
-      );
+      loading = false;
+      error =
+        "No se han podido cargar las estadísticas. Revisa el periodo y vuelve a pulsar «Ver periodo».";
+      render();
     }
   }
   function render() {
@@ -58,25 +85,94 @@
         "Unidades firmadas y comisiones calculadas con los multiplicadores de cada firma.",
       ),
     );
-    const label = n("label", "Mes de producción"),
-      input = n("input");
-    input.type = "month";
-    input.value = month;
-    input.min = "2000-01";
-    input.max = new Intl.DateTimeFormat("sv-SE", {
-      timeZone: "Atlantic/Canary",
-      year: "numeric",
-      month: "2-digit",
-    }).format(new Date());
-    input.addEventListener("change", () => {
-      if (input.value && input.checkValidity()) {
-        month = input.value;
-        load();
-      }
+    const form = n("form", undefined, "stats-range-form");
+    const controls = {};
+    for (const [key, label, value] of [
+      ["from", "Desde", from],
+      ["to", "Hasta", to],
+    ]) {
+      const field = n("label", label),
+        input = n("input");
+      input.type = "month";
+      input.name = key;
+      input.value = value;
+      input.required = true;
+      input.min = "2000-01";
+      input.max = currentMonth();
+      input.disabled = loading;
+      field.append(input);
+      form.append(field);
+      window.DatePicker.mount(input);
+      controls[key] = input;
+    }
+    const rangeError = n("p", undefined, "stats-range-error");
+    rangeError.setAttribute("role", "alert");
+    rangeError.hidden = true;
+    function valid() {
+      const bad = controls.from.value > controls.to.value;
+      rangeError.hidden = !bad;
+      rangeError.textContent = bad
+        ? "El mes inicial debe ser anterior o igual al mes final."
+        : "";
+      return !bad;
+    }
+    controls.from.addEventListener("change", valid);
+    controls.to.addEventListener("change", valid);
+    const apply = n("button", "Ver periodo", "panel-secondary stats-range-apply");
+    apply.type = "submit";
+    apply.disabled = loading;
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (loading || !valid() || !form.reportValidity()) return;
+      from = controls.from.value;
+      to = controls.to.value;
+      load();
     });
-    label.append(input);
-    hero.append(copy, label);
+    form.append(apply, rangeError);
+    const presets = n("div", undefined, "stats-range-presets");
+    for (const [label, start, end] of [
+      ["Este mes", currentMonth(), currentMonth()],
+      ["Este año", currentMonth().slice(0, 4) + "-01", currentMonth()],
+      ["Todo el historial", data?.first_month?.slice(0, 7) || "2000-01", currentMonth()],
+    ]) {
+      const b = n("button", label);
+      b.type = "button";
+      b.disabled = loading;
+      b.onclick = () => {
+        from = start;
+        to = end;
+        load();
+      };
+      presets.append(b);
+    }
+    form.append(presets);
+    hero.append(copy, form);
     host.append(hero);
+    if (loading) {
+      const note = n("p", "Preparando la producción del periodo…", "stats-loading");
+      note.setAttribute("role", "status");
+      host.append(note);
+      return;
+    }
+    if (error) {
+      const note = n("p", error, "stats-warning");
+      note.setAttribute("role", "status");
+      host.append(note);
+      return;
+    }
+    if (!data) return;
+    const rangeLabel = n(
+      "p",
+      from === to
+        ? monthName(from)
+        : "De " +
+            monthName(from) +
+            " a " +
+            monthName(to) +
+            " · meses completos incluidos",
+      "stats-period-label",
+    );
+    host.append(rangeLabel);
     const tabs = n("div", undefined, "stats-tabs");
     tabs.setAttribute("aria-label", "Ámbito de las estadísticas");
     Object.entries(names).forEach(([key, text]) => {
@@ -151,41 +247,68 @@
       host.append(notice);
     }
     const chart = n("section", undefined, "stats-chart");
-    chart.append(n("h3", "El ritmo del mes."));
-    const days = data.days[scope] || [],
-      max = Math.max(1, ...days.map((d) => Number(d.units)));
-    const bars = n("div", undefined, "stats-bars");
+    const multiple = from !== to;
+    chart.append(n("h3", multiple ? "El ritmo del periodo." : "El ritmo del mes."));
+    const days = data.days?.[scope] || [],
+      monthly = data.months?.[scope] || [];
+    const series = multiple
+      ? monthsBetween(from, to).map((month) => ({
+          ...monthly.find((row) => row.month.slice(0, 7) === month),
+          month,
+        }))
+      : Array.from({ length: data.last_day }, (_, i) => ({
+          ...days.find((row) => Number(row.day) === i + 1),
+          day: i + 1,
+        }));
+    const max = Math.max(1, ...series.map((row) => Number(row.units || 0)));
+    const scroll = n("div", undefined, "stats-chart-scroll"),
+      bars = n("div", undefined, "stats-bars");
+    bars.dataset.period = multiple ? "months" : "days";
     bars.setAttribute(
       "aria-label",
-      "Unidades por día; desglose accesible en la tabla inferior",
+      multiple
+        ? "Unidades por mes; desglose accesible en la tabla inferior"
+        : "Unidades por día; desglose accesible en la tabla inferior",
     );
-    for (let day = 1; day <= data.last_day; day++) {
-      const d = days.find((x) => Number(x.day) === day) || {},
+    series.forEach((row) => {
+      const label = multiple ? monthName(row.month) : String(row.day),
         bar = n("div"),
         fill = n("span");
-      bar.title = `Día ${day}: ${num(d.units)} U · ${eur(d.euros)}${d.pending ? " · Importe incompleto" : ""}`;
-      fill.style.height = (Number(d.units || 0) / max) * 100 + "%";
-      bar.append(fill, n("small", String(day)));
+      bar.title =
+        label +
+        ": " +
+        num(row.units) +
+        " U · " +
+        eur(row.euros) +
+        (row.pending ? " · Importe incompleto" : "");
+      fill.style.height = (Number(row.units || 0) / max) * 100 + "%";
+      bar.append(fill, n("small", label));
       bars.append(bar);
-    }
-    chart.append(bars);
+    });
+    scroll.append(bars);
+    chart.append(scroll);
     const detail = n("details"),
-      summary = n("summary", "Ver desglose diario");
+      summary = n("summary", multiple ? "Ver desglose mensual" : "Ver desglose diario");
     detail.append(summary);
-    const daily = n("table");
-    daily.innerHTML =
-      "<thead><tr><th>Día</th><th>Unidades</th><th>Euros calculados</th></tr></thead>";
+    const daily = n("table"),
+      head = n("thead"),
+      header = n("tr");
+    ["Mes", "Unidades", "Euros calculados"].forEach((label, i) =>
+      header.append(n("th", i === 0 && !multiple ? "Día" : label)),
+    );
+    head.append(header);
+    daily.append(head);
     const body = n("tbody");
-    days.forEach((d) => {
+    (multiple ? series : days).forEach((row) => {
       const tr = n("tr");
       tr.append(
-        n("td", String(d.day)),
-        n("td", num(d.units) + " U"),
-        n("td", eur(d.euros) + (d.pending ? " · Incompleto" : "")),
+        n("td", multiple ? monthName(row.month) : String(row.day)),
+        n("td", num(row.units) + " U"),
+        n("td", eur(row.euros) + (row.pending ? " · Incompleto" : "")),
       );
       body.append(tr);
     });
-    if (!days.length) {
+    if (!multiple && !days.length) {
       const tr = n("tr"),
         td = n("td", "Todavía no hay firmas registradas en este mes.");
       td.colSpan = 3;

@@ -220,3 +220,100 @@ html[data-theme="light"] .stats-person div:last-of-type strong {
     transition: none;
   }
 }
+
+.stats-range-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  flex: 0 1 410px;
+  min-width: 300px;
+}
+.stats-heading > div {
+  flex: 1;
+  min-width: 0;
+}
+.stats-range-form label {
+  min-width: 0;
+  font-size: 0.85rem;
+}
+.stats-range-form .contract-date-wrap > input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 54px;
+}
+.stats-range-apply,
+.stats-range-presets,
+.stats-range-error {
+  grid-column: 1/-1;
+}
+.stats-range-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.stats-range-presets button {
+  background: transparent;
+  border: 1px solid #8396aa55;
+  color: inherit;
+  border-radius: 100px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.stats-range-presets button:hover {
+  border-color: #e4b087;
+  background: #e4b08712;
+}
+.stats-range-error {
+  color: #f09c91;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.stats-period-label {
+  color: var(--accent, #e4b087);
+  font-weight: 600;
+}
+.stats-chart-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.stats-bars[data-period="months"] {
+  gap: 14px;
+}
+.stats-bars[data-period="months"] > div {
+  min-width: 74px;
+}
+.stats-bars[data-period="months"] small {
+  white-space: nowrap;
+  font-size: 0.7rem;
+}
+@media (max-width: 950px) {
+  .stats-heading {
+    flex-wrap: wrap;
+  }
+  .stats-range-form {
+    flex-basis: 100%;
+    max-width: 480px;
+  }
+}
+@media (max-width: 550px) {
+  .stats-range-form {
+    min-width: 0;
+    width: 100%;
+  }
+  .stats-range-form label {
+    grid-column: 1/-1;
+  }
+}
+
+.stats-range-form label:nth-child(2) .contract-calendar {
+  left: auto;
+  right: 0;
+}
+@media (max-width: 550px) {
+  .stats-range-form label:nth-child(2) .contract-calendar {
+    left: 0;
+    right: auto;
+  }
+}

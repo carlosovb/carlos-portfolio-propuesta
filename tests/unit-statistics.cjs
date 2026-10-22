@@ -106,6 +106,31 @@ const assert = require("node:assert/strict");
         [client, rates],
       )
     ).rows[0].id;
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/statistics-range.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/statistics-range.sql", "utf8"));
+    await as(other);
+    const range = async (from, to) =>
+      (await db.query("select public.get_unit_statistics_range($1,$2) data", [from, to]))
+        .rows[0].data;
+    let ranged = await range("2024-02-01", "2024-02-01");
+    assert.equal(ranged.scopes.global.units, 100);
+    assert.equal(ranged.scopes.global.own_euros + ranged.scopes.global.team_euros, 400);
+    assert.equal(ranged.last_day, 29);
+    assert.equal(ranged.people.length, 1);
+    assert.equal(ranged.months.global[0].month, "2024-02-01");
+    assert.equal(ranged.days.global[0].date, "2024-02-29");
+    assert.deepEqual((await range("2023-12-01", "2024-03-01")).scopes, ranged.scopes);
+    assert.deepEqual((await range("2024-03-01", "2024-04-01")).scopes, {});
+    for (const args of [
+      [null, "2024-02-01"],
+      ["2024-03-01", "2024-02-01"],
+      ["2024-02-01", "2099-01-01"],
+    ])
+      await assert.rejects(() => range(...args));
+    await db.exec("reset role;set role anon");
+    await assert.rejects(() => range("2024-02-01", "2024-03-01"));
+    await as(other);
     const stats = async (month = "2024-02-01") =>
       (await db.query("select public.get_unit_statistics($1) data", [month])).rows[0]
         .data;

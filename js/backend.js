@@ -25,6 +25,7 @@
     "get_team_client_counts",
     "list_consultants",
     "get_unit_statistics",
+    "get_unit_statistics_range",
     "get_client_pias_budget",
   ]);
   function invalidateCache() {
@@ -530,12 +531,21 @@
         })
       ).json();
     },
-    async getUnitStatistics(month) {
+    async getUnitStatistics(month, to) {
       return (
-        await authenticated("/rest/v1/rpc/get_unit_statistics", {
-          method: "POST",
-          body: JSON.stringify({ p_month: month + "-01" }),
-        })
+        await authenticated(
+          to
+            ? "/rest/v1/rpc/get_unit_statistics_range"
+            : "/rest/v1/rpc/get_unit_statistics",
+          {
+            method: "POST",
+            body: JSON.stringify(
+              to
+                ? { p_from: month + "-01", p_to: to + "-01" }
+                : { p_month: month + "-01" },
+            ),
+          },
+        )
       ).json();
     },
     async getCareerProgress(userId) {

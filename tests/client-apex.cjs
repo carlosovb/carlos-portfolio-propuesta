@@ -263,6 +263,29 @@ const assert = require("node:assert/strict");
       0,
       "Parent and APEX cascade together",
     );
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/statistics-range.sql", "utf8"));
+    await as(other);
+    const history = (
+      await db.query(
+        "select public.get_unit_statistics_range('2024-02-01','2025-03-01') data",
+      )
+    ).rows[0].data;
+    assert.equal(
+      history.months.own.length,
+      3,
+      "Monthly buckets preserve deleted base contracts and APEX",
+    );
+    assert.equal(
+      history.scopes.own.units,
+      history.months.own.reduce((sum, row) => sum + row.units, 0),
+    );
+    assert.equal(
+      history.scopes.own.own_euros,
+      history.months.own.reduce((sum, row) => sum + row.euros, 0),
+    );
+    assert.equal(history.months.own[0].month, "2024-02-01");
+    assert.equal(history.months.own[2].month, "2025-03-01");
     await db.exec("reset role;set role anon");
     await assert.rejects(() => budget());
     await db.exec("reset role");

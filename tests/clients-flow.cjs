@@ -167,9 +167,14 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
               },
             })
           : json([]);
-      if (url.pathname.endsWith("/rpc/get_unit_statistics")) {
+      if (/\/rpc\/get_unit_statistics(?:_range)?$/.test(url.pathname)) {
         return json({
-          month: body.p_month,
+          month: body.p_from || body.p_month,
+          first_month: "2024-02-01",
+          months: {
+            own: [{ month: "2024-02-01", units: 100, euros: 250 }],
+            global: [{ month: "2024-02-01", units: 100, euros: 400 }],
+          },
           last_day: 29,
           undated_own: 1,
           incomplete_global: 1,
@@ -650,12 +655,23 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       (await contract.locator(".product-picker").boundingBox()).height < 420,
       "Selección compacta tras elegir compañía y producto",
     );
-    await contract.locator('[name=amount]').focus();
-    await contract.locator('.contract-amount-options').getByRole('button',{name:'150 €',exact:true}).click();
-    assert.equal(await contract.locator('[name=amount]').inputValue(),'150');
-    assert.equal(await contract.locator('.contract-amount-options').isVisible(),false,'Choosing a suggested amount closes its dropdown');
-    await contract.locator('[name=amount]').fill('87.25');
-    assert.equal(await contract.locator('[name=amount]').inputValue(),'87.25','Free amount remains available');
+    await contract.locator("[name=amount]").focus();
+    await contract
+      .locator(".contract-amount-options")
+      .getByRole("button", { name: "150 €", exact: true })
+      .click();
+    assert.equal(await contract.locator("[name=amount]").inputValue(), "150");
+    assert.equal(
+      await contract.locator(".contract-amount-options").isVisible(),
+      false,
+      "Choosing a suggested amount closes its dropdown",
+    );
+    await contract.locator("[name=amount]").fill("87.25");
+    assert.equal(
+      await contract.locator("[name=amount]").inputValue(),
+      "87.25",
+      "Free amount remains available",
+    );
     await contract.locator("[name=amount]").fill("50");
     await contract.locator("[name=units]").fill("2.5");
     await contract.locator("[name=signed_on]").fill("2024-02-29");
@@ -706,11 +722,9 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
         true,
       );
-      await page
-        .locator("#client-detail-dialog")
-        .screenshot({
-          path: path.join(process.env.TEMP, `client-apex-calendar-${width}.png`),
-        });
+      await page.locator("#client-detail-dialog").screenshot({
+        path: path.join(process.env.TEMP, `client-apex-calendar-${width}.png`),
+      });
     }
     await page.keyboard.press("Escape");
     await contract.locator(".contract-signature input[type=checkbox]").check();
@@ -1007,13 +1021,40 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
 
     await page.locator('#panel-navigation [data-view="statistics"]').click();
     await page.locator(".stats-heading").waitFor();
-    await page.locator(".stats-heading input").fill("2024-02");
-    await page.locator(".stats-heading input").dispatchEvent("change");
+    await page.locator(".stats-heading input[name=from]").waitFor({ state: "visible" });
+    await page.waitForFunction(
+      () => !document.querySelector(".stats-heading input[name=from]").disabled,
+    );
+    await page.locator(".stats-heading input[name=from]").fill("2024-02");
+    await page.locator(".stats-heading input[name=to]").fill("2024-02");
+    await page.getByRole("button", { name: "Ver periodo", exact: true }).click();
+    await page.locator(".stats-bars").waitFor();
     await page.locator(".stats-heading").waitFor();
     assert.equal(await page.locator(".stats-bars>div").count(), 29);
     await page.getByRole("button", { name: "Equipo completo", exact: true }).click();
     assert.match(await page.locator(".stats-metrics").textContent(), /400/);
     assert.equal(await page.locator(".stats-person").count(), 1);
+    await page.locator(".stats-heading input[name=to]").fill("2024-03");
+    await page.getByRole("button", { name: "Ver periodo", exact: true }).click();
+    await page.locator(".stats-bars[data-period=months]").waitFor();
+    assert.equal(await page.locator(".stats-bars>div").count(), 2);
+    await page.locator(".stats-heading input[name=from]").fill("2024-04");
+    await page.locator(".stats-heading input[name=from]").dispatchEvent("change");
+    assert.equal(await page.locator(".stats-range-error").isVisible(), true);
+    await page.locator(".stats-heading input[name=from]").fill("2024-02");
+    await page
+      .locator(".stats-heading label")
+      .first()
+      .locator(".contract-date-trigger")
+      .click();
+    await page.locator('[data-month="2024-01"]').click();
+    assert.equal(
+      await page.locator(".stats-heading input[name=from]").inputValue(),
+      "2024-01",
+    );
+    await page.getByRole("button", { name: "Ver periodo", exact: true }).click();
+    await page.locator(".stats-bars[data-period=months]").waitFor();
+    assert.equal(await page.locator(".stats-bars>div").count(), 3);
     for (const theme of ["dark", "light"]) {
       await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
       for (const width of [320, 768, 1440]) {
