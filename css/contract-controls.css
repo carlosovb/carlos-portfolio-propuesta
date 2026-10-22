@@ -59,11 +59,25 @@
   cursor: pointer;
 }
 .contract-date-trigger {
-  display: grid;
-  place-items: center;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.contract-date-wrap > input {
+  display: block;
+  margin: 0;
 }
 .contract-date-trigger svg {
   display: block;
+  flex: none;
+  margin: 0;
   width: 22px;
   height: 22px;
   fill: none;
