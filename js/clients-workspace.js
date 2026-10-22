@@ -61,6 +61,8 @@
       company: "Compañía",
       product: "Producto",
       category: "Tipo",
+      activity: "Situación",
+      product_scope: "Productos",
       min_units: "Desde U",
       max_units: "Hasta U",
       min_products: "Desde productos",
@@ -68,6 +70,10 @@
       sort: "Orden",
     };
     const values = {
+      active: "En activo",
+      inactive: "De baja",
+      current: "Vigentes",
+      history: "Historial",
       client: "Clientes",
       interested: "Interesados",
       other: "Otros",
@@ -189,6 +195,8 @@
     return restoring;
   }
   function reset() {
+    const importer = document.querySelector(".clients-import-menu");
+    if (importer) importer.open = false;
     generation++;
     changes++;
     loaded = false;
@@ -216,6 +224,11 @@
           (r.category ||
             { cliente: "client", interesado: "interested" }[normalize(r.client_type)] ||
             "other") === f.category) &&
+        (!f.activity || (r.is_active !== false) === (f.activity === "active")) &&
+        (!f.product_scope ||
+          (f.product_scope === "history"
+            ? r.historical_product_count
+            : r.active_product_count || r.product_count || 0) > 0) &&
         (f.min_units == null || units >= f.min_units) &&
         (f.max_units == null || units <= f.max_units) &&
         (f.min_products == null || count >= f.min_products) &&
@@ -223,7 +236,10 @@
       );
     });
     return matched.sort((a, b) => {
-      const rank = (r) => ({ cliente: 0, interesado: 1 })[normalize(r.client_type)] ?? 2;
+      const rank = (r) =>
+        r.is_active === false
+          ? 3
+          : ({ cliente: 0, interesado: 1 }[normalize(r.client_type)] ?? 2);
       return (
         rank(a) - rank(b) ||
         (f.sort === "units"
@@ -267,6 +283,17 @@
         b.setAttribute("aria-pressed", String(b.dataset.clientTab === tab)),
       );
   }
+  document.addEventListener("pointerdown", (event) => {
+    const menu = document.querySelector(".clients-import-menu");
+    if (menu?.open && !menu.contains(event.target)) menu.open = false;
+  });
+  document.addEventListener("keydown", (event) => {
+    const menu = document.querySelector(".clients-import-menu");
+    if (event.key === "Escape" && menu?.open) {
+      menu.open = false;
+      menu.querySelector("summary").focus({ preventScroll: true });
+    }
+  });
   setView("list");
   window.ClientWorkspace = {
     restore,

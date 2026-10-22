@@ -274,6 +274,13 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         const matches = all.filter(
           (row) =>
             parser.normalize(Object.values(row).join(" ")).includes(q) &&
+            (!f.activity || (row.is_active !== false) === (f.activity === "active")) &&
+            (!f.product_scope ||
+              products.some(
+                (p) =>
+                  p.client_id === row.id &&
+                  (f.product_scope === "history" ? !!p.archived_at : !p.archived_at),
+              )) &&
             (!f.company ||
               products.some(
                 (p) =>
@@ -306,6 +313,23 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
             products: products.map((p) => ({ company: p.company, product: p.product })),
           },
         });
+      }
+      if (url.pathname.endsWith("/rpc/set_client_active")) {
+        const row = clients.find((r) => r.id === body.p_client);
+        assert(row);
+        row.is_active = body.p_active;
+        row.status = body.p_active ? "Activo" : "Inactivo";
+        if (!body.p_active)
+          products
+            .filter((p) => p.client_id === row.id && !p.archived_at)
+            .forEach((p) => (p.archived_at = new Date().toISOString()));
+        return json({ is_active: row.is_active, status: row.status });
+      }
+      if (url.pathname.endsWith("/rpc/set_client_product_archived")) {
+        const product = products.find((p) => p.id === body.p_product);
+        assert(product);
+        product.archived_at = body.p_archived ? new Date().toISOString() : null;
+        return json(null);
       }
       if (url.pathname.endsWith("/rpc/import_my_clients")) {
         const seen = new Set(clients.map(parser.identity));
@@ -445,6 +469,24 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         "Cerrar la ficha debe conservar la posición",
       );
     }
+    await page.locator(".clients-import-menu summary").click();
+    assert.equal(
+      await page.locator(".clients-import-menu").evaluate((el) => el.open),
+      true,
+    );
+    await page.locator(".clients-section-heading h2").click();
+    assert.equal(
+      await page.locator(".clients-import-menu").evaluate((el) => el.open),
+      false,
+      "Excel closes outside",
+    );
+    await page.locator(".clients-import-menu summary").click();
+    await page.keyboard.press("Escape");
+    assert.equal(
+      await page.locator(".clients-import-menu").evaluate((el) => el.open),
+      false,
+      "Excel closes with Escape",
+    );
     const selectClient = page.locator("#clients-list input[type=checkbox]").first();
     await selectClient.check();
     assert.equal(
@@ -534,6 +576,38 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       "",
     );
     await contract.locator('input[name=portfolio][value="Equilibrada+"]').check();
+    assert.equal(await contract.locator(".axa-choice").count(), 6);
+    await contract.locator(".axa-reference > summary").click();
+    assert.equal(
+      await contract
+        .locator(".axa-reference-content")
+        .textContent()
+        .then((t) => t.includes("LU")),
+      true,
+    );
+    await contract
+      .locator(".axa-reference-tabs")
+      .getByRole("button", { name: "Escenarios", exact: true })
+      .click();
+    assert.equal(
+      await contract
+        .locator(".axa-reference-content section:visible")
+        .textContent()
+        .then((t) => t.includes("Tensión")),
+      true,
+    );
+    await contract
+      .locator(".axa-reference-tabs")
+      .getByRole("button", { name: "Costes", exact: true })
+      .click();
+    assert.equal(
+      await contract
+        .locator(".axa-reference-content section:visible")
+        .textContent()
+        .then((t) => t.includes("Gestión y funcionamiento")),
+      true,
+    );
+    await contract.locator(".axa-reference > summary").click();
     for (const theme of ["dark", "light"]) {
       await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
       for (const width of [320, 768, 1440]) {
@@ -593,7 +667,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(() =>
-      document.querySelector(".contract-card").textContent.includes("Aportación única"),
+      document.querySelector(".contract-card").textContent.includes("aportación única"),
     );
     assert.equal(products[0].payment_type, "single");
     assert.equal(products[0].units, null);
@@ -698,6 +772,98 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       path: path.join(process.env.TEMP, "client-products.png"),
       fullPage: true,
     });
+    // Five contracts of a company stay compact until their details are requested.
+    const originals = products.slice();
+    for (let i = 0; i < 4; i++)
+      products.push({
+        ...originals[0],
+        id: "88888888-8888-4888-8888-" + String(i + 1).padStart(12, "0"),
+        product: "PIAS Proyecto Futuro",
+        portfolio: ["Global+", "Conservadora+", "Moderada+", "Dinámica+"][i],
+      });
+    await page.locator("#client-detail-close").click();
+    await page.evaluate(() => window.PortfolioBackend.invalidateCache());
+    await page.locator("#clients-list .client-action button").first().click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 6,
+    );
+    const axa = page
+      .locator(".contract-company")
+      .filter({ has: page.locator("h4", { hasText: "AXA" }) });
+    assert.equal(await axa.locator(".contract-card").count(), 5);
+    assert.equal(await axa.locator("details[open]").count(), 0);
+    assert(
+      (await axa.locator(".contract-card").first().boundingBox()).height < 120,
+      "Compact contract row",
+    );
+    await page
+      .locator("#client-detail-dialog")
+      .screenshot({ path: path.join(process.env.TEMP, "client-five-products.png") });
+    await axa.locator("summary").first().click();
+    assert.equal(await axa.locator(".contract-expanded").first().isVisible(), true);
+    products = originals;
+    await page.locator("#client-detail-close").click();
+    await page.evaluate(() => window.PortfolioBackend.invalidateCache());
+    await page.locator("#clients-list .client-action button").first().click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 2,
+    );
+    await page.locator(".contract-detail summary").first().click();
+    page.once("dialog", (d) => d.accept());
+    await page
+      .getByRole("button", { name: "Pasar al historial", exact: true })
+      .first()
+      .click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 1,
+    );
+    await page.locator("[data-product-scope=history]").click();
+    await page.locator(".contract-detail summary").first().click();
+    await page.getByRole("button", { name: "Reactivar producto", exact: true }).click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".contract-card").length === 0,
+    );
+    await page.locator("[data-product-scope=current]").click();
+    assert.equal(await page.locator(".contract-card").count(), 2);
+    page.once("dialog", (d) => d.accept());
+    await page.locator("#client-activity-toggle").click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#client-detail-dialog").dataset.activity === "inactive" &&
+        document.querySelectorAll(".contract-card").length === 2,
+    );
+    assert.equal(
+      await page
+        .getByRole("button", { name: "+ Añadir producto", exact: true })
+        .isDisabled(),
+      true,
+    );
+    assert(products.every((p) => p.archived_at));
+    await page
+      .locator("#client-detail-dialog")
+      .screenshot({ path: path.join(process.env.TEMP, "client-history.png") });
+    await page.locator("#client-activity-toggle").click();
+    await page.waitForFunction(
+      () => document.querySelector("#client-detail-dialog").dataset.activity === "active",
+    );
+    assert(
+      products.every((p) => p.archived_at),
+      "Client reactivation retains archived products",
+    );
+    await page.locator("[data-product-scope=history]").click();
+    for (let i = 0; i < 2; i++) {
+      await page.locator(".contract-detail summary").first().click();
+      await page
+        .getByRole("button", { name: "Reactivar producto", exact: true })
+        .first()
+        .click();
+      await page.waitForFunction(
+        (n) => document.querySelectorAll(".contract-card").length === n,
+        1 - i,
+      );
+    }
+    await page.locator("[data-product-scope=current]").click();
+    assert.equal(await page.locator(".contract-card").count(), 2);
     await page.locator(".contract-card input[type=checkbox]").first().check();
     await page.locator(".contract-bulk input[type=checkbox]").check();
     page.once("dialog", (d) => d.accept());
@@ -847,12 +1013,23 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         .then((t) => t.includes("10 días")),
       true,
     );
-    for (const theme of ['light','dark']) {
-      await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
-      for (const width of [320,1440]) {
-        await page.setViewportSize({width,height:1000});
-        assert.equal(await page.locator('#clients-trash-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'Eliminados sin desbordamiento horizontal');
-        await page.screenshot({path:require('os').tmpdir()+`/clients-trash-${theme}-${width}.png`});
+    for (const theme of ["light", "dark"]) {
+      await page.evaluate(
+        (theme) => (document.documentElement.dataset.theme = theme),
+        theme,
+      );
+      for (const width of [320, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert.equal(
+          await page
+            .locator("#clients-trash-dialog")
+            .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+          true,
+          "Eliminados sin desbordamiento horizontal",
+        );
+        await page.screenshot({
+          path: require("os").tmpdir() + `/clients-trash-${theme}-${width}.png`,
+        });
       }
     }
     await page

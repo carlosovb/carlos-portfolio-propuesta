@@ -112,6 +112,10 @@ const assert = require("node:assert/strict");
         .split("-- Limpieza al vencer")[0],
     );
     await as(other);
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/client-workspace.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/client-lifecycle.sql", "utf8"));
+    await as(other);
     const product = (
       await db.query(
         "insert into public.client_products(client_id,company,product,payment_type,amount,units,signed_on,signed_multiplier,signature_rates) values($1,'AXA','Prueba','monthly',50,100,'2024-02-29',2,$2) returning id",
@@ -121,6 +125,62 @@ const assert = require("node:assert/strict");
     const stats = async () =>
       (await db.query("select public.get_unit_statistics('2024-02-01') data")).rows[0]
         .data;
+    const initialScopes = (await stats()).scopes;
+    await db.query("select public.set_client_active($1,false)", [client]);
+    assert.equal(
+      (
+        await db.query("select is_active from public.portfolio_clients where id=$1", [
+          client,
+        ])
+      ).rows[0].is_active,
+      false,
+    );
+    assert.ok(
+      (
+        await db.query("select archived_at from public.client_products where id=$1", [
+          product,
+        ])
+      ).rows[0].archived_at,
+    );
+    assert.deepEqual(
+      (await stats()).scopes,
+      initialScopes,
+      "Baja preserves units and euros",
+    );
+    await assert.rejects(() =>
+      db.query("select public.set_client_product_archived($1,false)", [product]),
+    );
+    const filtered = (
+      await db.query("select public.search_my_clients('',0,$1) data", [
+        JSON.stringify({ activity: "inactive", product_scope: "history" }),
+      ])
+    ).rows[0].data;
+    assert.equal(filtered.total, 1);
+    await db.query("select public.set_client_active($1,true)", [client]);
+    assert.ok(
+      (
+        await db.query("select archived_at from public.client_products where id=$1", [
+          product,
+        ])
+      ).rows[0].archived_at,
+      "Reactivation does not revive contracts",
+    );
+    await db.query("select public.set_client_product_archived($1,false)", [product]);
+    assert.equal(
+      (
+        await db.query("select archived_at from public.client_products where id=$1", [
+          product,
+        ])
+      ).rows[0].archived_at,
+      null,
+    );
+    await as(member);
+    await assert.rejects(() =>
+      db.query("select public.set_client_active($1,false)", [client]),
+    );
+    await assert.rejects(() =>
+      db.query("select public.set_client_product_archived($1,true)", [product]),
+    );
     await as(member);
     assert.equal((await stats()).scopes.team.team_euros, 50);
     await as(other);
@@ -188,6 +248,12 @@ const assert = require("node:assert/strict");
       (await stats()).scopes,
       before.scopes,
       "Quarantine preserves production",
+    );
+    await assert.rejects(() =>
+      db.query("select public.set_client_active($1,true)", [client]),
+    );
+    await assert.rejects(() =>
+      db.query("select public.set_client_product_archived($1,true)", [product]),
     );
     let trash = (await db.query("select public.list_deleted_clients() data")).rows[0]
       .data;

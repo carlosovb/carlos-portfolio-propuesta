@@ -133,15 +133,31 @@
         160,
       );
       manual.input.value = isManual ? saved : "";
+      const reference = node("div", undefined, "axa-selected-reference");
+      portfolios.append(reference);
       function toggle(value) {
+        reference.replaceChildren();
+        if (company?.id === "axa") {
+          const info = window.AxaPortfolios?.details(value);
+          if (info) reference.append(info);
+        }
         manual.label.hidden = value !== custom;
         manual.input.disabled = value !== custom;
         manual.input.required = value === custom;
       }
       choice(options, "portfolio", "", "Sin especificar", "", !saved, toggle);
-      names.forEach((name) =>
-        choice(options, "portfolio", name, name, "", saved === name, toggle),
-      );
+      names.forEach((name) => {
+        const radio = choice(
+          options,
+          "portfolio",
+          name,
+          name,
+          "",
+          saved === name,
+          toggle,
+        );
+        if (company?.id === "axa") window.AxaPortfolios?.decorate(radio, name);
+      });
       choice(options, "portfolio", custom, "Otra cartera", "", isManual, toggle);
       toggle(isManual ? custom : saved);
       portfolios.hidden = false;

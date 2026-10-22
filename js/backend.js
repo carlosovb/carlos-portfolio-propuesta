@@ -376,11 +376,29 @@
         body: JSON.stringify({ p_view: view }),
       });
     },
+    async setClientActive(clientId, active) {
+      if (!/^[0-9a-f-]{36}$/i.test(clientId) || typeof active !== "boolean")
+        throw Error("Cliente no válido.");
+      return (
+        await authenticated("/rest/v1/rpc/set_client_active", {
+          method: "POST",
+          body: JSON.stringify({ p_client: clientId, p_active: active }),
+        })
+      ).json();
+    },
+    async setClientProductArchived(productId, archived) {
+      if (!/^[0-9a-f-]{36}$/i.test(productId) || typeof archived !== "boolean")
+        throw Error("Producto no válido.");
+      await authenticated("/rest/v1/rpc/set_client_product_archived", {
+        method: "POST",
+        body: JSON.stringify({ p_product: productId, p_archived: archived }),
+      });
+    },
     async listClientProducts(clientId) {
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
       const query = new URLSearchParams({
         select:
-          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,signature_rates",
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,signature_rates,archived_at",
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });

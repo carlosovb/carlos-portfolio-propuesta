@@ -8,7 +8,8 @@
     rows = [],
     editing = null,
     busy = false,
-    selected = new Set();
+    selected = new Set(),
+    scope = "current";
   const node = (tag, text, cls) => {
     const n = document.createElement(tag);
     if (text !== undefined) n.textContent = text;
@@ -44,6 +45,7 @@
     reset();
     client = row;
     demo = isDemo;
+    scope = row.is_active === false ? "history" : "current";
     const ticket = epoch;
     render();
     say("Cargando productos…");
@@ -97,8 +99,8 @@
     selected.clear();
     const heading = node("div", undefined, "client-products-heading");
     heading.append(
-      node("div", "PRODUCTOS CONTRATADOS", "eyebrow"),
-      node("h3", "Compañías y productos."),
+      node("div", "TU CARTERA", "eyebrow"),
+      node("h3", "Tus productos, de un vistazo."),
     );
     host.append(heading);
     const note = node("p");
@@ -106,14 +108,18 @@
     note.hidden = true;
     host.append(note);
     const metrics = node("div", undefined, "contract-metrics");
-    const monthly = rows
+    const liveRows = rows.filter((r) => !r.archived_at);
+    const visibleRows = rows.filter((r) =>
+      scope === "history" ? !!r.archived_at : !r.archived_at,
+    );
+    const monthly = liveRows
         .filter((r) => r.payment_type === "monthly")
         .reduce((s, r) => s + Number(r.amount), 0),
-      single = rows
+      single = liveRows
         .filter((r) => r.payment_type === "single")
         .reduce((s, r) => s + Number(r.amount), 0);
     [
-      ["Productos", String(rows.length)],
+      ["Productos vigentes", String(liveRows.length)],
       ["Aportación mensual", euro(monthly)],
       ["Aportaciones únicas", euro(single)],
     ].forEach(([label, value]) => {
@@ -122,13 +128,43 @@
       metrics.append(box);
     });
     host.append(metrics);
+    const tabs = node("div", undefined, "contract-tabs");
+    tabs.setAttribute("role", "group");
+    tabs.setAttribute("aria-label", "Situación de los productos");
+    [
+      ["current", "Vigentes", liveRows.length],
+      ["history", "Historial", rows.length - liveRows.length],
+    ].forEach(([key, label, count]) => {
+      const tab = button(
+        label + " · " + count,
+        () => {
+          scope = key;
+          editing = null;
+          render();
+        },
+        "contract-tab",
+      );
+      tab.dataset.productScope = key;
+      tab.setAttribute("aria-pressed", String(scope === key));
+      tabs.append(tab);
+    });
+    const toolbar = node("div", undefined, "contract-toolbar");
+    if (scope === "history")
+      host.append(
+        node(
+          "p",
+          "Productos finalizados o de un contacto de baja. Conservan su producción histórica.",
+          "contract-history-note",
+        ),
+      );
     const controls = node("div", undefined, "contract-actions contract-controls");
-    controls.append(
-      button("+ Añadir producto", () => {
-        editing = {};
-        editor();
-      }),
-    );
+    const add = button("+ Añadir producto", () => {
+      editing = {};
+      editor();
+    });
+    add.disabled = client.is_active === false;
+    if (add.disabled) add.title = "Reactiva el contacto antes de añadir productos";
+    controls.append(add);
     const remove = button(
       "Eliminar seleccionados",
       async () => {
@@ -171,7 +207,7 @@
     bulk.hidden = true;
     bulk.append(remove);
     controls.append(bulk);
-    if (rows.length) {
+    if (visibleRows.length) {
       const all = node("label", "Seleccionar todos");
       const check = node("input");
       check.type = "checkbox";
@@ -184,10 +220,11 @@
       all.prepend(check);
       bulk.append(all);
     }
-    host.append(controls);
+    toolbar.append(tabs, controls);
+    host.append(toolbar);
     const list = node("div", undefined, "contract-list");
     const companies = new Map();
-    rows.forEach((row) => {
+    visibleRows.forEach((row) => {
       const label = window.PortfolioCompanies.label(row.company);
       if (!companies.has(label)) {
         const section = node("section", undefined, "contract-company");
@@ -201,7 +238,7 @@
           heading.append(logo);
         }
         heading.append(node("h4", label));
-        const count = rows.filter(
+        const count = visibleRows.filter(
           (r) => window.PortfolioCompanies.label(r.company) === label,
         ).length;
         heading.append(node("small", count + (count === 1 ? " producto" : " productos")));
@@ -218,50 +255,130 @@
         remove.disabled = !selected.size || busy;
         bulk.hidden = !selected.size;
       });
-      const copy = node("div", undefined, "contract-copy");
-      copy.append(node("h5", row.product));
+      const copy = node("details", undefined, "contract-copy contract-detail");
+      const summary = node("summary", undefined, "contract-summary");
+      const identity = node("span", undefined, "contract-identity");
+      identity.append(
+        node("h5", row.product),
+        node(
+          "small",
+          row.portfolio || "Sin cartera asignada",
+          "contract-portfolio-label",
+        ),
+      );
+      const payment = node("span", undefined, "contract-payment");
+      payment.append(
+        node("strong", euro(row.amount)),
+        node("small", row.payment_type === "monthly" ? "al mes" : "aportación única"),
+      );
+      const units = node("span", undefined, "contract-units");
+      units.append(
+        node(
+          "strong",
+          row.units == null
+            ? "—"
+            : new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 }).format(
+                row.units,
+              ) + " U",
+        ),
+        node("small", row.archived_at ? "En historial" : "Unidades firmadas"),
+      );
+      summary.append(identity, payment, units, node("span", "⌄", "contract-chevron"));
+      const detail = node("div", undefined, "contract-expanded");
       const dl = node("dl");
+      const date = (value) =>
+        value
+          ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(
+              new Date(value + "T12:00:00"),
+            )
+          : "Pendiente";
       [
         ["Cartera de fondos", row.portfolio || "Sin indicar"],
-        ["Fecha de firma", row.signed_on || "Pendiente · No cuenta en estadísticas"],
+        ["Fecha de firma", date(row.signed_on)],
         [
           "Multiplicador al firmar",
           row.signed_multiplier == null ? "Pendiente" : "×" + row.signed_multiplier,
         ],
         [
-          row.payment_type === "monthly" ? "Aportación mensual" : "Aportación única",
-          euro(row.amount) + (row.payment_type === "monthly" ? " / mes" : ""),
+          "Comisión propia registrada",
+          row.units == null || row.signed_multiplier == null
+            ? "Pendiente"
+            : euro(Number(row.units) * Number(row.signed_multiplier)),
         ],
-        [
-          "Unidades generadas",
-          row.units == null
-            ? "Sin indicar"
-            : new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 }).format(
-                row.units,
-              ),
-        ],
+        ...(row.archived_at
+          ? [
+              [
+                "En historial desde",
+                new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(
+                  new Date(row.archived_at),
+                ),
+              ],
+            ]
+          : []),
       ].forEach(([label, value]) => {
         const item = node("div");
         item.append(node("dt", label), node("dd", value));
         dl.append(item);
       });
-      copy.append(dl);
-      card.append(
-        check,
-        copy,
-        button("Editar", () => {
-          editing = row;
-          editor();
-        }),
+      detail.append(dl);
+      const tools = node("div", undefined, "contract-detail-actions");
+      const archive = button(
+        row.archived_at ? "Reactivar producto" : "Pasar al historial",
+        async () => {
+          if (busy) return;
+          const restoring = !!row.archived_at;
+          if (
+            !restoring &&
+            !confirm(
+              "¿Pasar este producto al historial? Las unidades y comisiones se conservarán.",
+            )
+          )
+            return;
+          const ticket = epoch;
+          busy = true;
+          archive.disabled = true;
+          try {
+            if (demo) {
+              row.archived_at = restoring ? null : new Date().toISOString();
+              render();
+              announceCompanies();
+            } else {
+              await backend.setClientProductArchived(row.id, !restoring);
+              if (ticket === epoch) await reload();
+            }
+          } catch {
+            if (ticket === epoch) {
+              say(
+                "No se ha podido actualizar el producto. Reabre la ficha para comprobarlo.",
+              );
+              archive.disabled = false;
+            }
+          } finally {
+            if (ticket === epoch) busy = false;
+          }
+        },
       );
+      archive.disabled = !!row.archived_at && client.is_active === false;
+      if (archive.disabled) archive.title = "Reactiva primero el contacto";
+      tools.append(archive);
+      detail.append(tools);
+      copy.append(summary, detail);
+      const edit = button("Editar", () => {
+        editing = row;
+        editor();
+      });
+      edit.disabled = client.is_active === false;
+      card.append(check, copy, edit);
       companies.get(window.PortfolioCompanies.label(row.company)).append(card);
     });
     host.append(list);
-    if (!rows.length)
+    if (!visibleRows.length)
       host.append(
         node(
           "p",
-          "Todavía no hay productos añadidos. Puedes registrar el primero con «Añadir producto».",
+          scope === "history"
+            ? "Todavía no hay productos en el historial."
+            : "No hay productos vigentes. Añade uno nuevo o consulta el historial.",
           "contract-empty",
         ),
       );
@@ -281,7 +398,11 @@
           units: rows.reduce((sum, r) => sum + Number(r.units || 0), 0),
           pendingUnits: rows.filter((r) => r.units == null).length,
           companies: [
-            ...new Set(rows.map((r) => window.PortfolioCompanies.label(r.company))),
+            ...new Set(
+              rows
+                .filter((r) => !r.archived_at)
+                .map((r) => window.PortfolioCompanies.label(r.company)),
+            ),
           ],
         },
       }),

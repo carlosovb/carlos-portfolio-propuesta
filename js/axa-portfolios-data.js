@@ -1,0 +1,450 @@
+// Datos de referencia de la presentación facilitada. No son una recomendación ni información actualizada automáticamente.
+window.AxaPortfoliosData = {
+  portfolios: [
+    {
+      id: "conservadora",
+      name: "Conservadora+",
+      risk: 2,
+      profile: "Menor oscilación relativa",
+      values: [-1.5, -15.9, 4.3, 2.7, 1.8],
+      allocation: [80, 20, 0],
+      holdings: [
+        ["BNP Paribas Global Income Bond N2 RH EUR", 35],
+        ["Schroder ISF Euro Bond A1 EUR", 35],
+        ["Fidelity Euro Bond E EUR", 10],
+        ["Invesco Pan European High Income E EUR", 10],
+        ["AXA WF Global Income Generation E EUR", 10],
+      ],
+      scenarios: [
+        [761, 5627, 9839],
+        [761, 6473, 12425],
+        [903, 6942, 18413],
+        [982, 8662, 22486],
+      ],
+      scenarioRates: [
+        [-23.9, -7.9, -5.5],
+        [-23.9, -4.7, -2.4],
+        [-9.7, -3.2, 2.5],
+        [-1.8, 1.8, 4.9],
+      ],
+      file: "PiasOvb-Estrategia_Conservadora_plus.pdf",
+      changed: true,
+    },
+    {
+      id: "moderada",
+      name: "Moderada+",
+      risk: 3,
+      profile: "Combinación de fondos multiactivo y bolsa",
+      values: [11.1, -15, 6.6, 10.3, 8],
+      allocation: [0, 80, 20],
+      holdings: [
+        ["JPM Global Income D EUR", 40],
+        ["AXA WF Global Optimal Income E EUR", 40],
+        ["AB Low Volatility Equity Portfolio A USD", 10],
+        ["BNP Paribas Global Low Vol Equity N EUR", 10],
+      ],
+      scenarios: [
+        [636, 4309, 6846],
+        [758, 7649, 14520],
+        [932, 9193, 24297],
+        [1089, 11337, 27973],
+      ],
+      scenarioRates: [
+        [-36.4, -14, -10.6],
+        [-24.2, -1, -0.4],
+        [-6.8, 3.1, 5.8],
+        [8.9, 7.7, 7.5],
+      ],
+      file: "PiasOvb-Estrategia_Moderada_Plus.pdf",
+    },
+    {
+      id: "equilibrada",
+      name: "Equilibrada+",
+      risk: 3,
+      profile: "Mitad fondos multiactivo, mitad fondos de bolsa",
+      values: [13.2, -18.1, 6.9, 12.6, 6.3],
+      allocation: [0, 50, 50],
+      holdings: [
+        ["AXA WF Global Optimal Income E EUR", 50],
+        ["BNP Paribas Global Low Vol Equity N EUR", 20],
+        ["Fidelity World E EUR", 10],
+        ["BNP Paribas Global Megatrends N2 EUR", 10],
+        ["AXA WF Framlington Global Small Cap A EUR", 10],
+      ],
+      scenarios: [
+        [552, 3353, 4861],
+        [730, 7500, 14246],
+        [941, 10176, 27154],
+        [1144, 13619, 33693],
+      ],
+      scenarioRates: [
+        [-44.8, -19.8, -16],
+        [-27, -1.4, -0.6],
+        [-5.9, 5.3, 7.1],
+        [14.4, 11.7, 9.6],
+      ],
+      file: "PiasOvb-Estrategia_Equilibrada_Plus.pdf",
+      changed: true,
+    },
+    {
+      id: "dinamica",
+      name: "Dinámica+",
+      risk: 4,
+      profile: "Fondos de renta variable",
+      values: [25.4, -19.5, 18.3, 20.5, 3],
+      allocation: [0, 0, 100],
+      holdings: [
+        ["AB Low Volatility Equity Portfolio A USD", 20],
+        ["Fidelity World E EUR", 10],
+        ["BNP Paribas Global Megatrends N2 EUR", 15],
+        ["AXA WF Framlington Global Small Cap A EUR", 10],
+        ["AB Eurozone Growth Portfolio A EUR", 10],
+        ["AB American Growth Portfolio C EUR", 20],
+        ["BNP Paribas Disruptive Technology N EUR", 15],
+      ],
+      scenarios: [
+        [456, 2385, 3067],
+        [716, 7394, 14051],
+        [996, 15890, 46127],
+        [1258, 22078, 83154],
+      ],
+      scenarioRates: [
+        [-54.4, -28, -24.3],
+        [-28.4, -1.8, -0.8],
+        [-0.4, 15.1, 13.1],
+        [25.8, 22.4, 19.6],
+      ],
+      file: "PiasOvb-Estrategia_Dinámica_Plus.pdf",
+      changed: true,
+    },
+    {
+      id: "responsable",
+      name: "Responsable+",
+      risk: 3,
+      profile: "Fondos con enfoque medioambiental y sostenible",
+      values: [18.1, -19.7, 9.3, 7.1, 2.3],
+      allocation: [15, 15, 70],
+      holdings: [
+        ["BNP Paribas Sustainable Multi-Asset Stability", 15],
+        ["AXA WF Green Bonds", 15],
+        ["Schroder ISF Global Climate Change Equity A1 EUR HDG", 10],
+        ["BNP Paribas Global Environment C EUR", 60],
+      ],
+      scenarios: [
+        [548, 3231, 4620],
+        [717, 6941, 13216],
+        [941, 10802, 31575],
+        [1264, 14368, 42393],
+      ],
+      scenarioRates: [
+        [-45.2, -20.7, -16.9],
+        [-28.3, -3.2, -1.6],
+        [-5.9, 6.6, 8.8],
+        [26.4, 12.9, 12.2],
+      ],
+      file: "PiasOvb-Estrategia_Responsable_Plus.pdf",
+    },
+    {
+      id: "global",
+      name: "Global+",
+      risk: 4,
+      profile: "Bolsa internacional con distintas regiones y sectores",
+      values: [28.9, -10.8, 19.4, 19.8, 13.2],
+      allocation: [0, 0, 100],
+      holdings: [
+        ["JPM Global Select Equity A EUR", 25],
+        ["Robeco BP Global Premium Equities M2 EUR", 20],
+        ["AB American Growth Portfolio C EUR", 15],
+        ["Fidelity Global Technology E", 15],
+        ["JPM Europe Equity Plus D EUR", 15],
+        ["Carmignac Emergents A EUR", 5],
+        ["AXA Or et Matières Premières C EUR", 5],
+      ],
+      scenarios: [
+        [426, 3055, 4286],
+        [787, 7979, 15126],
+        [994, 16842, 49995],
+        [1356, 19779, 88059],
+      ],
+      scenarioRates: [
+        [-57.4, -22, -18.2],
+        [-21.3, -0.1, 0.1],
+        [-0.6, 16.4, 14],
+        [35.6, 20, 20.2],
+      ],
+      file: "KID PIAS OVB 2025 Estrategia Global+.pdf",
+    },
+  ],
+  funds: {
+    LU0238209513: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00002BSX/cotizacion",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F0GBR06PWB",
+      sourceName: "Dato publicado ↗",
+      ongoing: 1.4,
+      entry: null,
+      date: "28/03/2025",
+    },
+    LU0243957742: {
+      morningstar:
+        "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F0GBR06T9O",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F0GBR06T9O",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.11,
+      entry: 3,
+      date: "07/05/2025",
+    },
+    LU0960401213: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00016JQK/riesgo",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000W771",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.02,
+      entry: null,
+      date: "21/02/2025",
+    },
+    LU0465917390: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/F00000PR36/documentos",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000PR36",
+      sourceName: "Dato publicado ↗",
+      ongoing: 1.96,
+      entry: null,
+      date: "21/02/2025",
+    },
+    LU0861579265: {
+      morningstar:
+        "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000PA64",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000PA64",
+      sourceName: "Dato publicado ↗",
+      ongoing: 1.67,
+      entry: 5,
+      date: "27/02/2025",
+    },
+    LU0115769746: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00000LI4/cotizacion",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F0GBR04LVV",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.64,
+      entry: null,
+      date: "28/03/2025",
+    },
+    LU0868490383: {
+      morningstar:
+        "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000PCHH&tab=5",
+      source:
+        "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000PCHH&tab=5",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2,
+      entry: 5.5,
+      date: "Sin fecha publicada (consulta 15/10/2026)",
+    },
+    LU0528102642: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P0000Q27O/cotizacion",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000JUYK",
+      sourceName: "Dato publicado ↗",
+      ongoing: 1.88,
+      entry: 5,
+      date: "27/02/2025",
+    },
+    LU0823422141: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P0000YSYY/cotizacion",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000PXI4",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.71,
+      entry: null,
+      date: "21/05/2025",
+    },
+    LU1956160276: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P0001IVIT/grafico",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F000014JFG",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.36,
+      entry: null,
+      date: "21/05/2025",
+    },
+    LU0347711466: {
+      morningstar:
+        "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F000001LNO",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F000001LNO",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.21,
+      entry: 3,
+      date: "21/05/2025",
+    },
+    LU0157178582: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00012HGU/cotizacion",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F00000T0WB",
+      sourceName: "Dato publicado ↗",
+      ongoing: 1.7,
+      entry: 5,
+      date: "17/04/2025",
+    },
+    LU0115773425: {
+      morningstar:
+        "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=f0gbr04lvp",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=f0gbr04lvp",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.64,
+      entry: null,
+      date: "28/03/2025",
+    },
+    LU0289214628: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P000094D4/cotizacion",
+      source: "https://www.morningstar.es/es/funds/snapshot/snapshot.aspx?id=F000000GET",
+      sourceName: "Dato publicado ↗",
+      ongoing: 2.74,
+      entry: 5,
+      date: "17/04/2025",
+    },
+    LU3311921632: {
+      morningstar: null,
+      ongoing: 1.7,
+      entry: 1,
+      date: "Página actualizada 22/09/2026; sin fecha propia del gasto",
+      source:
+        "https://www.finect.com/fondos-inversion/LU3311921632-Bnp_paribas_global_inc_bd_n2_rh_eur_cap",
+      sourceName: "Finect · datos Morningstar ↗",
+    },
+    LU0133706050: {
+      morningstar: null,
+      ongoing: 1.49,
+      entry: 2,
+      date: "Ficha consultada 15/10/2026; fecha del gasto no identificada",
+      source:
+        "https://api.schroders.com/document-store/SISF-EURO-Bond-A1-Acc-FMR-LUEN.pdf",
+      sourceName: "Schroders ↗",
+    },
+    LU0740858492: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P0000VOBN/cotizacion",
+      ongoing: 1.75,
+      entry: null,
+      date: "Informe de 2026; fecha exacta del gasto no indicada",
+      source:
+        "https://lt.morningstar.com/1c6qh1t6k9/snapshotresearchpdf/default.aspx?Id=F00000VIKM&LanguageId=en-GB&ms-redirect-path=%2F1c6qh1t6k9default.aspx",
+      sourceName: "Informe Morningstar ↗",
+    },
+    LU0823418388: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P0000YSYR/cotizacion",
+      ongoing: 2.72,
+      entry: 0,
+      date: "Página actualizada 29/09/2026; sin fecha propia del gasto",
+      source:
+        "https://www.finect.com/fondos-inversion/LU0823418388-Bnp_paribas_sst_glb_lw_vol_eq_n_cap",
+      sourceName: "Finect · datos Morningstar ↗",
+    },
+    LU3311927597: {
+      morningstar: null,
+      ongoing: 2.34,
+      entry: null,
+      date: "Página actualizada 09/09/2026; sin fecha propia del gasto",
+      source:
+        "https://www.finect.com/fondos-inversion/LU3311927597-Bnp_paribas_fds_glb_mgtrnd_n2_eur_cap",
+      sourceName: "Finect · datos Morningstar ↗",
+    },
+    LU0232575059: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P000019TX/cotizacion",
+      ongoing: 2.17,
+      entry: null,
+      date: "Sin fecha propia del gasto (consulta 15/10/2026)",
+      source:
+        "https://global.morningstar.com/es/inversiones/fondos/F0GBR04MRH/cotizacion",
+      sourceName: "Tabla de clases / mismo identificador ↗",
+    },
+    LU0306805531: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/F000000L3O/cotizacion",
+      ongoing: 2.36,
+      entry: 4,
+      date: "Página actualizada 28/09/2026; sin fecha propia del gasto",
+      source:
+        "https://www.finect.com/fondos-inversion/LU0306805531-Schroder_isf_glb_clmt_chg_eq_a1_acc_eurh",
+      sourceName: "Finect · datos Morningstar ↗",
+    },
+    LU1280196004: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00016ZNY/cotizacion",
+      ongoing: 1.44,
+      entry: 0,
+      date: "Página actualizada 08/09/2026; sin fecha propia del gasto",
+      source:
+        "https://www.finect.com/fondos-inversion/LU1280196004-Axa_wf_act_green_bds_e_cap_eur",
+      sourceName: "Finect · datos Morningstar ↗",
+    },
+    LU1648455753: {
+      morningstar:
+        "https://global.morningstar.com/en-eu/investments/funds/F00000ZAUM/documents",
+      ongoing: 2.71,
+      entry: null,
+      date: "Informe 12/06/2026",
+      source:
+        "https://lt.morningstar.com/1c6qh1t6k9/snapshotresearchpdf/default.aspx?Id=F00000WVL2&LanguageId=en-GB&ms-redirect-path=%2F1c6qh1t6k9default.aspx",
+      sourceName: "Informe Morningstar ↗",
+    },
+    FR0010011171: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00000GAG/cotizacion",
+      ongoing: 1.48,
+      entry: 4.5,
+      date: "Página actualizada 08/09/2026; sin fecha propia del gasto",
+      source:
+        "https://www.finect.com/fondos-inversion/FR0010011171-Axa_or_et_matires_premires_c",
+      sourceName: "Finect · datos Morningstar ↗",
+    },
+    FR0010149302: {
+      morningstar:
+        "https://global.morningstar.com/es/inversiones/fondos/0P00000FAP/cotizacion",
+      ongoing: 1.8,
+      entry: null,
+      date: "Sin fecha propia del gasto (consulta 15/10/2026)",
+    },
+  },
+  fundIsins: [
+    "LU3311921632",
+    "LU0133706050",
+    "LU0238209513",
+    "LU0243957742",
+    "LU0960401213",
+    "LU0740858492",
+    "LU0465917390",
+    "LU0861579265",
+    "LU0823418388",
+    "LU0115769746",
+    "LU3311927597",
+    "LU0868490383",
+    "LU0528102642",
+    "LU0232575059",
+    "LU0823422141",
+    "LU1956160276",
+    "LU1280196004",
+    "LU0306805531",
+    "LU0347711466",
+    "LU0157178582",
+    "LU1648455753",
+    "LU0115773425",
+    "LU0289214628",
+    "FR0010149302",
+    "FR0010011171",
+  ],
+  kidCosts: [
+    [0.5, 1.9, 0.2, 2.6],
+    [0.3, 1.8, 0.2, 2.3],
+    [0.3, 2, 0.1, 2.4],
+    [0.2, 1.6, 0.1, 1.9],
+    [0.3, 1.8, 0.1, 2.2],
+    [0.2, 1.5, 0.3, 2],
+  ],
+  source: "Presentación AXA · PIAS Proyecto Futuro facilitada por Carlos",
+  compositionDate: "Agosto de 2026",
+  kidDate: "31/12/2025",
+  historyYears: [2021, 2022, 2023, 2024, 2025],
+};

@@ -14,13 +14,13 @@
     <link rel="stylesheet" href="../css/career.css?v=career2" />
     <link rel="stylesheet" href="../css/team.css?v=clients2" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
-    <link rel="stylesheet" href="../css/clients.css?v=trash1" />
+    <link rel="stylesheet" href="../css/clients.css?v=clientdesign1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
     <link rel="stylesheet" href="../css/premeeting.css?v=previo1" />
     <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
     <link rel="stylesheet" href="../css/workspace.css?v=products1" />
     <link rel="stylesheet" href="../css/clipboard.css?v=products1" />
-    <link rel="stylesheet" href="../css/client-products.css?v=companymarks1" />
+    <link rel="stylesheet" href="../css/client-products.css?v=clientdesign1" />
     <link rel="stylesheet" href="../css/statistics.css?v=units1" />
   </head>
   <body class="panel-page">
@@ -675,6 +675,22 @@
                 <option value="other">Otros</option>
               </select>
             </label>
+            <label>
+              Situación
+              <select name="activity">
+                <option value="">Todas las situaciones</option>
+                <option value="active">En activo</option>
+                <option value="inactive">De baja · Historial</option>
+              </select>
+            </label>
+            <label>
+              Productos
+              <select name="product_scope">
+                <option value="">Vigentes e históricos</option>
+                <option value="current">Solo vigentes</option>
+                <option value="history">Con historial</option>
+              </select>
+            </label>
             <fieldset>
               <legend>Unidades registradas</legend>
               <div>
@@ -1240,11 +1256,13 @@
     <dialog id="client-detail-dialog" aria-labelledby="client-detail-name">
       <button
         type="button"
-        class="team-modal-close"
+        class="client-close"
         id="client-detail-close"
         aria-label="Cerrar ficha de cliente"
       >
-        ✕
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18" />
+        </svg>
       </button>
       <header class="client-file-header">
         <p class="eyebrow">
@@ -1253,6 +1271,12 @@
         </p>
         <h2 id="client-detail-name"></h2>
         <p id="client-detail-status" class="client-file-status"></p>
+        <div class="client-life-actions">
+          <button type="button" class="panel-secondary" id="client-activity-toggle">
+            Dar de baja
+          </button>
+          <p id="client-activity-notice" role="status" hidden></p>
+        </div>
         <p id="client-detail-demo" class="panel-muted" hidden>
           Datos ficticios de ejemplo
         </p>
@@ -1333,12 +1357,14 @@
     <script src="../js/clipboard.js?v=products1" defer></script>
     <script src="../js/companies.js?v=picker1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=trash1" defer></script>
+    <script src="../js/backend.js?v=clientdesign1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
-    <script src="../js/product-picker.js?v=compactpicker2" defer></script>
-    <script src="../js/client-products.js?v=trash1" defer></script>
-    <script src="../js/clients-workspace.js?v=workspace1" defer></script>
+    <script src="../js/axa-portfolios-data.js?v=clientdesign1" defer></script>
+    <script src="../js/axa-portfolios.js?v=clientdesign1" defer></script>
+    <script src="../js/product-picker.js?v=clientdesign1" defer></script>
+    <script src="../js/client-products.js?v=clientdesign1" defer></script>
+    <script src="../js/clients-workspace.js?v=clientdesign1" defer></script>
     <dialog id="clients-trash-dialog" aria-labelledby="clients-trash-title">
       <div class="trash-heading">
         <h2 id="clients-trash-title">Eliminados</h2>
@@ -1369,7 +1395,7 @@
         </button>
       </div>
     </dialog>
-    <script src="../js/clients.js?v=trash1" defer></script>
+    <script src="../js/clients.js?v=clientdesign1" defer></script>
     <script src="../js/client-trash.js?v=trash1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>

@@ -20,7 +20,9 @@
     pending = null,
     searchTimer;
   let operation = 0;
-  let dialogScroll = null;
+  let dialogScroll = null,
+    currentClient = null,
+    lifecycleEpoch = 0;
   const compactClient = matchMedia("(max-width: 850px)");
   compactClient.addEventListener("change", (event) => {
     const additional = get("client-detail-fields").querySelector(".client-additional");
@@ -124,6 +126,9 @@
       y: window.scrollY,
       opener,
     };
+    currentClient = row;
+    lifecycleEpoch++;
+    renderActivity(row);
     get("client-detail-name").textContent = name(row);
     get("client-detail-demo").hidden = !demo;
     const fields = get("client-detail-fields");
@@ -134,13 +139,6 @@
         : category(row) === "interested"
           ? "Interesado"
           : row.client_type || "Ficha personal";
-    get("client-detail-status").textContent = [
-      row.status || "Estado sin indicar",
-      row.phone,
-      row.locality,
-    ]
-      .filter(Boolean)
-      .join(" · ");
     const groups = [
       [
         "Contacto",
@@ -185,6 +183,58 @@
     get("client-detail-close").focus({ preventScroll: true });
     window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
   }
+  function renderActivity(row) {
+    const active = row.is_active !== false;
+    const dialog = get("client-detail-dialog");
+    dialog.dataset.category = category(row);
+    dialog.dataset.activity = active ? "active" : "inactive";
+    get("client-detail-status").textContent = [
+      active ? "En activo" : "De baja · Historial conservado",
+      row.phone,
+      row.locality,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const button = get("client-activity-toggle");
+    button.textContent = active ? "Dar de baja" : "Reactivar contacto";
+    button.disabled = false;
+    const notice = get("client-activity-notice");
+    notice.hidden = active;
+    notice.textContent = active
+      ? ""
+      : "Sus productos están en el historial. Las unidades y comisiones se conservan. Puedes reactivar el contacto sin reactivar automáticamente sus productos.";
+  }
+  get("client-activity-toggle").addEventListener("click", async () => {
+    if (!currentClient || !visible || get("client-activity-toggle").disabled) return;
+    const row = currentClient,
+      active = row.is_active === false,
+      ticket = lifecycleEpoch;
+    if (
+      !active &&
+      !confirm(
+        "¿Dar de baja a este contacto? Sus productos pasarán al historial. Sus unidades y comisiones se conservarán y podrás reactivarlo más adelante.",
+      )
+    )
+      return;
+    get("client-activity-toggle").disabled = true;
+    try {
+      const updated = demo
+        ? { is_active: active, status: active ? "Activo" : "Inactivo" }
+        : await backend.setClientActive(row.id, active);
+      if (ticket !== lifecycleEpoch || !visible || currentClient !== row) return;
+      Object.assign(row, updated);
+      renderActivity(row);
+      window.ClientProducts.open(row, demo);
+      await load();
+    } catch {
+      if (ticket === lifecycleEpoch && currentClient === row) {
+        get("client-activity-toggle").disabled = false;
+        get("client-activity-notice").hidden = false;
+        get("client-activity-notice").textContent =
+          "No se ha podido guardar la situación. Reabre la ficha para actualizarla.";
+      }
+    }
+  });
   function companyMarks(row) {
     const marks = el("span", "client-company-marks");
     const companies = [
@@ -231,6 +281,7 @@
     for (const row of rows) {
       const tr = el("tr");
       tr.dataset.category = category(row);
+      tr.dataset.activity = row.is_active === false ? "inactive" : "active";
       tr.dataset.clientId = row.id;
       const selectCell = el("td", "client-select-cell");
       const checkbox = el("input", "bulk-checkbox");
@@ -259,11 +310,13 @@
         el(
           "small",
           "client-category",
-          category(row) === "client"
-            ? "Cliente"
-            : category(row) === "interested"
-              ? "Interesado"
-              : row.client_type || "Sin clasificar",
+          row.is_active === false
+            ? "De baja · " + (category(row) === "client" ? "Cliente" : "Contacto")
+            : category(row) === "client"
+              ? "Cliente"
+              : category(row) === "interested"
+                ? "Interesado"
+                : row.client_type || "Sin clasificar",
         ),
       );
       title.append(companyMarks(row));
@@ -285,7 +338,9 @@
       portfolio.append(workspace.summary(row));
       const status = el("td", "client-state");
       status.dataset.label = "Estado";
-      status.append(el("span", "client-status", row.status || "Sin indicar"));
+      status.append(
+        el("span", "client-status", row.is_active === false ? "De baja" : "En activo"),
+      );
       const action = el("td", "client-action");
       const open = el("button", "panel-text-button", "Ver ficha ↗");
       open.type = "button";
@@ -340,8 +395,12 @@
           rows: matches.slice(page * 25, (page + 1) * 25),
           total: matches.length,
           stats: {
-            clients: demoRows.filter((row) => category(row) === "client").length,
-            interested: demoRows.filter((row) => category(row) === "interested").length,
+            clients: demoRows.filter(
+              (row) => category(row) === "client" && row.is_active !== false,
+            ).length,
+            interested: demoRows.filter(
+              (row) => category(row) === "interested" && row.is_active !== false,
+            ).length,
             localities: new Set(demoRows.map((row) => row.locality)).size,
           },
         };
@@ -379,6 +438,8 @@
     }
   }
   function hide() {
+    currentClient = null;
+    lifecycleEpoch++;
     window.ClientTrash?.reset();
     get("clients-bulk").hidden = true;
     window.ClientProducts.reset();
@@ -470,6 +531,8 @@
     backdropPressed = false;
   });
   get("client-detail-dialog").addEventListener("close", () => {
+    currentClient = null;
+    lifecycleEpoch++;
     window.ClientProducts.reset();
     const saved = dialogScroll;
     dialogScroll = null;

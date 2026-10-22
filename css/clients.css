@@ -1241,6 +1241,161 @@ html:not([data-theme="dark"]) .client-company-mark[data-company="intesa"] {
 #clients-trash-notice {
   min-height: 1.5em;
 }
+
+/* Ficha: jerarquía editorial, situación explícita y cierre circular independiente. */
+#client-detail-dialog {
+  --contact-color: #76c5a3;
+  padding: 36px;
+}
+#client-detail-dialog[data-category="interested"] {
+  --contact-color: #8bbcf1;
+}
+#client-detail-dialog[data-activity="inactive"] {
+  --contact-color: #c4aa87;
+}
+#client-detail-dialog .client-file-header {
+  position: relative;
+  z-index: auto;
+  width: auto;
+  border-left: 4px solid var(--contact-color);
+  padding-left: 24px;
+}
+#client-detail-dialog .client-file-header .eyebrow {
+  color: var(--contact-color);
+}
+#client-detail-dialog .client-file-status {
+  line-height: 1.7;
+}
+#client-detail-close {
+  appearance: none;
+  position: absolute;
+  inset: 18px 18px auto auto;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  transform: none;
+  z-index: 20;
+}
+#client-detail-close svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+#client-detail-close:hover {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+#client-detail-close:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 5px var(--accent);
+}
+.client-life-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.client-life-actions button {
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 9px 16px;
+}
+@media (min-width: 900px) {
+  #client-detail-dialog .client-file-header {
+    padding-right: 240px;
+  }
+  .client-life-actions {
+    margin-top: 10px;
+  }
+  .client-life-actions > button {
+    position: absolute;
+    top: 36px;
+    right: 60px;
+  }
+}
+#client-activity-notice {
+  margin: 0;
+  max-width: 650px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.clients-table tr[data-category="client"] .client-select-cell {
+  border-left: 4px solid var(--category-color);
+}
+.clients-table tr[data-category="interested"] .client-select-cell {
+  border-left: 4px solid var(--category-color);
+}
+.clients-table tr[data-category="interested"] {
+  background: color-mix(in srgb, #729dd9 4%, var(--bg));
+}
+.clients-table .client-category {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.clients-table tr[data-activity="inactive"] {
+  --category-color: #baa98d;
+}
+.clients-table tr[data-activity="inactive"] .client-monogram {
+  border-style: dashed;
+}
+.clients-table tr[data-activity="inactive"] .client-status {
+  color: var(--muted);
+  background: transparent;
+  border-style: dashed;
+}
+.clients-table tr[data-category="client"][data-activity="active"] .client-status {
+  color: var(--category-color);
+  border-color: color-mix(in srgb, var(--category-color) 40%, var(--line));
+  background: color-mix(in srgb, var(--category-color) 8%, transparent);
+}
+.clients-table tr[data-category="interested"][data-activity="active"] .client-status {
+  color: var(--category-color);
+  background: transparent;
+}
+html[data-theme="light"] #client-detail-dialog {
+  --contact-color: #287050;
+}
+html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
+  --contact-color: #3468a3;
+}
+html[data-theme="light"] #client-detail-dialog[data-activity="inactive"] {
+  --contact-color: #816849;
+}
+@media (max-width: 600px) {
+  #client-detail-dialog {
+    padding: 28px 18px;
+    width: calc(100vw - 16px);
+  }
+  #client-detail-dialog .client-file-header {
+    padding: 0 0 20px 14px;
+  }
+  #client-detail-dialog .client-file-header .eyebrow {
+    padding-right: 40px;
+  }
+  #client-detail-name {
+    margin-top: 20px;
+  }
+  #client-detail-close {
+    inset: 12px 12px auto auto;
+  }
+}
 @media (max-width: 560px) {
   .trash-actions {
     width: 100%;
