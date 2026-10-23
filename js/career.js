@@ -214,14 +214,45 @@
     animate(content);
   }
   const legend = document.getElementById("career-levels");
-  levels.forEach((level) => {
-    const b = button("", () => show(level), "career-chip");
-    b.title = level.name;
-    b.setAttribute("aria-label", "Ver requisitos de " + level.name);
-    b.dataset.career = level.code;
-    b.append(node("span", level.short), node("b", "×" + number(level.factor)));
-    legend.append(b);
-  });
+  function renderNextRoles(code) {
+    legend.replaceChildren();
+    if (!code) {
+      legend.append(
+        node(
+          "p",
+          "Tu administrador debe asignarte un puesto para mostrar tus siguientes objetivos.",
+        ),
+      );
+      return;
+    }
+    const goals = window.CareerProgress.calculate(
+      { user_id: "current", position_code: code },
+      [],
+    ).map((goal) => goal.level);
+    if (goals.length === 1) {
+      const following = window.CareerProgress.calculate(
+        { user_id: "current", position_code: goals[0].code },
+        [],
+      ).map((goal) => goal.level);
+      const next =
+        following.find((level) => level.path === "Dirección de equipo") || following[0];
+      if (next) goals.push(next);
+    }
+    for (const level of goals.slice(0, 2)) {
+      const b = button("", () => show(level), "career-chip");
+      b.title = level.name;
+      b.setAttribute("aria-label", "Ver requisitos de " + level.name);
+      b.dataset.career = level.code;
+      b.append(
+        node("span", level.short),
+        node("strong", level.name),
+        node("b", "×" + number(level.factor)),
+      );
+      legend.append(b);
+    }
+    if (!goals.length)
+      legend.append(node("p", "Ya ocupas el último puesto incluido en el plan."));
+  }
   for (const select of [
     document.getElementById("my-team-position"),
     document.querySelector("#team-assignment-form [name=position]"),
@@ -392,9 +423,6 @@
   window.CareerPlan = {
     renderProgress,
     close: () => dialog.close(),
-    markCurrent: (code) =>
-      legend
-        .querySelectorAll("button")
-        .forEach((b) => b.toggleAttribute("data-current", b.dataset.career === code)),
+    markCurrent: renderNextRoles,
   };
 })();

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/career.css?v=career2" />
+    <link rel="stylesheet" href="../css/career.css?v=nextroles1" />
     <link rel="stylesheet" href="../css/team.css?v=clients2" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/clients.css?v=apex1" />
@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="../css/workspace.css?v=products1" />
     <link rel="stylesheet" href="../css/clipboard.css?v=products1" />
     <link rel="stylesheet" href="../css/client-products.css?v=clientdesign1" />
-    <link rel="stylesheet" href="../css/statistics.css?v=teamsources1" />
+    <link rel="stylesheet" href="../css/statistics.css?v=closecenter1" />
     <link rel="stylesheet" href="../css/confirm.css?v=apex1" />
     <link rel="stylesheet" href="../css/contract-controls.css?v=periodrange1" />
   </head>
@@ -915,14 +915,6 @@
               ◎ Volver a mi puesto
             </button>
           </div>
-          <div
-            class="team-legend"
-            id="career-levels"
-            aria-label="Plan de carrera: pulsa un puesto para ver sus requisitos"
-          ></div>
-          <button type="button" id="career-open" class="panel-secondary">
-            Plan de carrera ↗
-          </button>
           <p id="team-notice" class="panel-notice" role="status" hidden></p>
           <button type="button" id="team-open-profile" class="panel-secondary">
             Mi puesto ↗
@@ -957,6 +949,16 @@
               Desplázate para explorar · Pulsa una persona para conocer su puesto
             </p>
           </div>
+          <section class="team-career-summary" aria-label="Plan de carrera">
+            <button type="button" id="career-open" class="panel-text-button">
+              PLAN DE CARRERA
+            </button>
+            <div
+              class="team-legend"
+              id="career-levels"
+              aria-label="Tus próximos puestos: pulsa para ver los requisitos"
+            ></div>
+          </section>
         </section>
         <section id="statistics-view" aria-label="Estadísticas" hidden></section>
         <section id="profile-view" aria-label="Mi perfil" hidden>
@@ -1406,14 +1408,14 @@
     <script src="../js/photo-crop.js?v=team2" defer></script>
     <script src="../js/career-data.js?v=career1" defer></script>
     <script src="../js/career-progress.js?v=units1" defer></script>
-    <script src="../js/career.js?v=units1" defer></script>
+    <script src="../js/career.js?v=nextroles1" defer></script>
     <script src="../js/panel-selects.js?v=progress1" defer></script>
     <script src="../js/team.js?v=units1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=apex1" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
-    <script src="../js/statistics.js?v=teamsources1" defer></script>
+    <script src="../js/statistics.js?v=closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
     <script src="../js/panel.js?v=apex1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">

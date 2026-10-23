@@ -80,7 +80,12 @@
     const header = n("div", undefined, "stats-commission-header"),
       title = n("h2", "Lo que te genera tu equipo.");
     title.id = "stats-commission-title";
-    const close = n("button", "×", "stats-commission-close");
+    const close = n("button", undefined, "stats-commission-close");
+    const closeIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    closeIcon.setAttribute("viewBox", "0 0 24 24");
+    closeIcon.setAttribute("aria-hidden", "true");
+    closeIcon.innerHTML = '<path d="M6 6l12 12M18 6L6 18"/>';
+    close.append(closeIcon);
     close.type = "button";
     close.setAttribute("aria-label", "Cerrar desglose");
     close.onclick = () => dialog.close();

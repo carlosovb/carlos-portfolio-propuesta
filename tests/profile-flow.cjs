@@ -810,6 +810,31 @@ async function login(page, base) {
       0,
     );
     await treePage.locator("#team-member-close").click();
+    await treePage.evaluate(() => window.CareerPlan.markCurrent("team_manager"));
+    assert.deepEqual(
+      await treePage
+        .locator("#career-levels [data-career]")
+        .evaluateAll((nodes) => nodes.map((n) => n.dataset.career)),
+      ["zone_coordinator", "agency_director"],
+    );
+    await treePage.evaluate(() => window.CareerPlan.markCurrent("financial_consultant"));
+    assert.deepEqual(
+      await treePage
+        .locator("#career-levels [data-career]")
+        .evaluateAll((nodes) => nodes.map((n) => n.dataset.career)),
+      ["financial_consultant_senior_i", "team_manager"],
+    );
+    for (const width of [360, 1440]) {
+      await treePage.setViewportSize({ width, height: 1000 });
+      const bounds = await treePage.locator(".team-career-summary").boundingBox();
+      assert(
+        bounds.y > 600 && bounds.y + bounds.height <= 1000,
+        "Career plan sits at bottom",
+      );
+      await treePage.screenshot({
+        path: path.join(process.env.TEMP, "career-bottom-" + width + ".png"),
+      });
+    }
     await treePage.locator("#career-open").click();
     assert.equal(await treePage.locator(".career-level").count(), 9);
     await treePage.waitForTimeout(300);

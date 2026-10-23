@@ -494,3 +494,24 @@ html[data-theme="light"] .stats-commission-row > div:last-of-type strong {
     grid-column: 1/-1;
   }
 }
+
+.stats-commission-close {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stats-commission-close svg {
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  margin: 0;
+}

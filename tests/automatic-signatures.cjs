@@ -196,11 +196,33 @@ const assert = require("node:assert/strict");
             new RegExp(String(fixture.team)),
           );
         }
-        for(const width of [320,1440]){
-          await page.setViewportSize({width,height:900});
-          assert(await page.locator('.stats-commission-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth),'Modal fits viewport');
-          if(fixture.team===150)await page.screenshot({path:require('path').join(process.env.TEMP,'commission-breakdown-'+width+'.png')});
+        for (const width of [320, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          assert(
+            await page
+              .locator(".stats-commission-dialog")
+              .evaluate((el) => el.scrollWidth <= el.clientWidth),
+            "Modal fits viewport",
+          );
+          if (fixture.team === 150)
+            await page.screenshot({
+              path: require("path").join(
+                process.env.TEMP,
+                "commission-breakdown-" + width + ".png",
+              ),
+            });
         }
+        const centered = await page
+          .locator(".stats-commission-close")
+          .evaluate((button) => {
+            const b = button.getBoundingClientRect(),
+              icon = button.querySelector("svg").getBoundingClientRect();
+            return (
+              Math.abs(b.x + b.width / 2 - icon.x - icon.width / 2) < 1 &&
+              Math.abs(b.y + b.height / 2 - icon.y - icon.height / 2) < 1
+            );
+          });
+        assert(centered, "Close icon is centered");
         await page.getByRole("button", { name: "Cerrar desglose", exact: true }).click();
         await page.locator(".stats-commission-dialog").waitFor({ state: "detached" });
 
