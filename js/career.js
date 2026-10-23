@@ -364,15 +364,7 @@
                   ? "Faltan " + team.missing + " " + team.role
                   : "Cantidad cubierta · " + team.role,
               ),
-              node(
-                "span",
-                role.name +
-                  " · " +
-                  team.observed +
-                  " registrados / " +
-                  team.count +
-                  " requeridos",
-              ),
+              node("span", role.name),
             );
             const progress = node("progress");
             progress.max = team.count;
@@ -381,7 +373,16 @@
               "aria-label",
               team.role + ": " + team.observed + " de " + team.count,
             );
-            line.append(progress);
+            const caption = node("div", undefined, "career-progress-caption");
+            caption.append(
+              node("span", team.observed + " de " + team.count + " registrados"),
+              node(
+                "b",
+                Math.round((Math.min(team.observed, team.count) / team.count) * 100) +
+                  " %",
+              ),
+            );
+            line.append(caption, progress);
             box.append(line);
           });
         } else

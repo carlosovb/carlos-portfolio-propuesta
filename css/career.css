@@ -1133,3 +1133,41 @@ body.team-workspace .team-career-summary .career-chip span {
     flex-wrap: nowrap;
   }
 }
+
+/* Progreso propio del diseño: evita la barra nativa verde del navegador. */
+.career-team-progress progress {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 100px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--muted) 16%, var(--panel));
+  color: var(--accent);
+}
+.career-team-progress progress::-webkit-progress-bar {
+  background: color-mix(in srgb, var(--muted) 16%, var(--panel));
+  border-radius: 100px;
+}
+.career-team-progress progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 100px;
+}
+.career-team-progress progress::-moz-progress-bar {
+  background: var(--accent);
+  border-radius: 100px;
+}
+.career-progress-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 3px;
+}
+.career-progress-caption b {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}

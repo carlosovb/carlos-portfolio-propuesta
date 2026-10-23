@@ -653,7 +653,7 @@ async function login(page, base) {
       .click();
     assert.match(
       await treePage.locator("#team-member-progress").textContent(),
-      /Faltan 3 FC/,
+      /Faltan 2 FT/,
     );
     await treePage.screenshot({
       path: path.join(process.env.TEMP, "career-progress-mobile.png"),
@@ -810,6 +810,32 @@ async function login(page, base) {
       await treePage.locator("#team-member-progress .career-goal-tabs").count(),
       0,
     );
+    await treePage.evaluate(() =>
+      window.CareerPlan.renderProgress(
+        { user_id: "sample", position_code: "financial_consultant" },
+        [],
+        { financial_trainee: 1 },
+        { historical: 0, quarter: 0, totalQuarter: 0 },
+      ),
+    );
+    await treePage
+      .locator("#team-member-progress")
+      .getByRole("button", { name: "Gestor de Equipo", exact: true })
+      .click();
+    const careerBar = treePage.locator(".career-team-progress progress");
+    assert.equal(await careerBar.evaluate((el) => el.max), 3);
+    assert.equal(await careerBar.evaluate((el) => el.value), 1);
+    assert.equal(
+      await careerBar.evaluate((el) => getComputedStyle(el).appearance),
+      "none",
+    );
+    assert.match(
+      await treePage.locator(".career-progress-caption").textContent(),
+      /1 de 3 registrados33 %/,
+    );
+    await treePage
+      .locator(".career-team-progress")
+      .screenshot({ path: path.join(process.env.TEMP, "career-copper-progress.png") });
     await treePage.locator("#team-member-close").click();
     await treePage.evaluate(() => window.CareerPlan.markCurrent("team_manager"));
     assert.deepEqual(
