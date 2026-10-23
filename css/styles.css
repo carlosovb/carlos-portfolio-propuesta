@@ -3768,3 +3768,11 @@ html[data-theme] .page-progress {
     border-color: var(--line);
   }
 }
+
+/* Unión directa entre el método y las preguntas, tras retirar Formación. */
+#metodo > .wrap {
+  padding-block-end: clamp(32px, 4vw, 48px);
+}
+#metodo + #preguntas {
+  padding-block-start: clamp(40px, 4.5vw, 56px);
+}
