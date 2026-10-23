@@ -39,7 +39,7 @@
       name: "Gestor de Equipo",
       factor: 3.5,
       path: "Dirección de equipo",
-      base: { historical: 4000, team: [{ count: 3, role: "FC" }] },
+      base: { historical: 4000, team: [{ count: 3, role: "FT" }] },
     },
     {
       code: "zone_coordinator",

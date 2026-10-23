@@ -72,3 +72,14 @@ const actual = P.calculate(
 assert.equal(actual.recorded, 250);
 assert.equal(actual.missing, 750);
 assert.equal(actual.incomplete, true);
+
+const fc={user_id:'leader',position_code:'financial_consultant'};
+const branch=[fc,{user_id:'ft1',manager_id:'leader',position_code:'financial_trainee'},{user_id:'ft2',manager_id:'ft1',position_code:'financial_trainee'},{user_id:'fc1',manager_id:'leader',position_code:'financial_consultant'},{user_id:'external',manager_id:null,position_code:'financial_trainee'}];
+const managerGoal=P.calculate(fc,branch).find(goal=>goal.level.code==='team_manager');
+assert.deepEqual(managerGoal.base.team.map(row=>[row.role,row.count,row.observed,row.missing]),[['FT',3,2,1]],'GE requires three FT from the whole branch; FC and outsiders do not count');
+assert.equal(managerGoal.base.units[0].required,4000);
+const complete=P.calculate(fc,[...branch,{user_id:'ft3',manager_id:'fc1',position_code:'financial_trainee'}]).find(goal=>goal.level.code==='team_manager');
+assert.equal(complete.base.team[0].missing,0);
+const authorized=P.calculate(fc,[],{financial_trainee:1,financial_consultant:99}).find(goal=>goal.level.code==='team_manager');
+assert.equal(authorized.base.team[0].observed,1);assert.equal(authorized.base.team[0].missing,2);
+console.log('Gestor de Equipo: tres FT, descendientes indirectos y recuentos autorizados comprobados.');
