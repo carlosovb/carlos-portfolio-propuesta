@@ -262,6 +262,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           ],
         });
       }
+      if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
       if (url.pathname.endsWith("/rpc/get_my_team_profile"))
         return json({
           user_id: uid,
@@ -400,6 +401,16 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           limit: 8000,
         });
       }
+      if (url.pathname.endsWith("/rpc/get_my_clients_without_products"))
+        return json(
+          clients.filter(
+            (row) =>
+              row.client_type === "Cliente" &&
+              row.is_active !== false &&
+              !row.deleted_at &&
+              !products.some((p) => p.client_id === row.id),
+          ),
+        );
       if (url.pathname.endsWith("/rpc/import_my_clients")) {
         const seen = new Set(clients.map(parser.identity));
         const imported = [];
@@ -655,6 +666,18 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       1,
       "Completing the guide does not delete saved products",
     );
+    await page
+      .getByRole("button", { name: "Configurar clientes sin productos", exact: true })
+      .click();
+    await page.locator("#client-import-guide").waitFor();
+    await page.locator(".contract-editor").waitFor();
+    assert.match(await page.locator("#client-detail-name").textContent(), /Bruno/);
+    assert.match(
+      await page.locator("#client-import-guide .eyebrow").textContent(),
+      /CLIENTE 1 DE 1/,
+    );
+    await page.getByRole("button", { name: "Continuar más tarde", exact: true }).click();
+    await page.locator("#client-import-guide").waitFor({ state: "detached" });
     products = [];
     await page.evaluate(() => window.PortfolioBackend.invalidateCache());
 

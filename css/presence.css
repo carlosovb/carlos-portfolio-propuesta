@@ -1,0 +1,86 @@
+.presence-summary {
+  position: relative;
+  width: fit-content;
+  font-size: 12px;
+  max-width: 100%;
+}
+.presence-summary summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  background: var(--panel);
+  padding: 8px 12px;
+  color: var(--ink);
+}
+.presence-summary summary::-webkit-details-marker {
+  display: none;
+}
+.presence-summary summary::before,
+.consultant-presence::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.presence-summary .presence-ready::before,
+.consultant-presence[data-state="online"]::before {
+  background: #50c99b;
+  box-shadow: 0 0 0 3px #50c99b16;
+}
+.presence-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  gap: 10px;
+  min-width: 180px;
+  max-width: min(300px, 70vw);
+  max-height: 240px;
+  overflow: auto;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 10px 20px #0002;
+}
+.consultant-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.consultant-presence[data-state="online"] {
+  color: #58cba1;
+}
+html[data-theme="light"] .consultant-presence[data-state="online"] {
+  color: #237350;
+}
+.dashboard-presence {
+  margin-top: 1rem;
+}
+.team-presence {
+  margin-top: 10px;
+  pointer-events: auto;
+}
+.team-workspace .team-presence .presence-summary {
+  max-width: 240px;
+}
+@media (max-width: 700px) {
+  .team-workspace .team-presence .presence-summary summary {
+    font-size: 10px;
+    padding: 7px 9px;
+    max-width: 145px;
+  }
+  .team-workspace .team-presence {
+    margin-top: 7px;
+  }
+}

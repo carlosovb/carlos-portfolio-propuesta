@@ -11,10 +11,11 @@
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
     <link rel="stylesheet" href="../css/panel.css?v=team2" />
+    <link rel="stylesheet" href="../css/presence.css?v=presence1" />
     <link rel="stylesheet" href="../css/career.css?v=compactcareer1" />
     <link rel="stylesheet" href="../css/team.css?v=clients2" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
-    <link rel="stylesheet" href="../css/clients.css?v=importguide1" />
+    <link rel="stylesheet" href="../css/clients.css?v=presence1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
     <link rel="stylesheet" href="../css/premeeting.css?v=previo1" />
     <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
@@ -151,6 +152,7 @@
             <div>
               <p class="eyebrow" id="dashboard-date">Tu día de trabajo</p>
               <h2 id="dashboard-name">Tu día, con perspectiva.</h2>
+              <div class="dashboard-presence" data-panel-presence></div>
               <p>
                 Tus clientes, tus conversaciones y las herramientas que te ayudan a
                 avanzar.
@@ -521,6 +523,9 @@
             <div class="clients-heading-actions">
               <button type="button" id="clients-demo-toggle" class="panel-text-button">
                 Ver ejemplo ↗
+              </button>
+              <button type="button" id="clients-setup-products" class="panel-secondary">
+                Configurar clientes sin productos
               </button>
               <details class="clients-import-menu">
                 <summary>↥ Importar clientes</summary>
@@ -906,6 +911,7 @@
             <div>
               <p class="eyebrow">Cada persona, una parte del equipo</p>
               <h2>Tu equipo, conectado.</h2>
+              <div class="team-presence" data-panel-presence></div>
               <p>
                 Tu puesto, tus compañeros y las conexiones de tu equipo, en una sola
                 vista.
@@ -1362,7 +1368,7 @@
     <script src="../js/companies.js?v=picker1" defer></script>
     <script src="../js/confirm.js?v=apex1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=autorates1" defer></script>
+    <script src="../js/backend.js?v=presence1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/axa-portfolios-data.js?v=clientdesign1" defer></script>
@@ -1402,7 +1408,7 @@
         </button>
       </div>
     </dialog>
-    <script src="../js/clients.js?v=importguide1" defer></script>
+    <script src="../js/clients.js?v=presence1" defer></script>
     <script src="../js/client-trash.js?v=apex1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
@@ -1410,14 +1416,15 @@
     <script src="../js/career-progress.js?v=units1" defer></script>
     <script src="../js/career.js?v=nextroles1" defer></script>
     <script src="../js/panel-selects.js?v=progress1" defer></script>
-    <script src="../js/team.js?v=units1" defer></script>
+    <script src="../js/presence.js?v=presence1" defer></script>
+    <script src="../js/team.js?v=presence1-units1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=apex1" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
     <script src="../js/statistics.js?v=closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=apex1" defer></script>
+    <script src="../js/panel.js?v=presence1-apex1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

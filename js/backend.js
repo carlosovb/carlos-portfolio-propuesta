@@ -50,6 +50,9 @@
       [
         ...cachedRpcs,
         "get_career_progress",
+        "get_my_clients_without_products",
+        "update_panel_presence",
+        "get_panel_presence",
         "panel_access",
         "is_panel_owner",
         "premeeting_consultant",
@@ -467,6 +470,24 @@
           })
         ).json()
       ).length;
+    },
+    async updatePresence(sessionId, connected) {
+      return (
+        await authenticated("/rest/v1/rpc/update_panel_presence", {
+          method: "POST",
+          body: JSON.stringify({ p_session: sessionId, p_connected: connected }),
+          keepalive: !connected,
+          signal: AbortSignal.timeout(5000),
+        })
+      ).json();
+    },
+    async clientsWithoutProducts() {
+      return (
+        await authenticated("/rest/v1/rpc/get_my_clients_without_products", {
+          method: "POST",
+          body: "{}",
+        })
+      ).json();
     },
     async importClients(rows, preview = true) {
       return (

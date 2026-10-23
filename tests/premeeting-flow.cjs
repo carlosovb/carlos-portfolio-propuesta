@@ -62,6 +62,7 @@ const root = path.resolve(__dirname, ".."),
       saved = body;
       return json(true);
     }
+    if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
     if (url.pathname === "/auth/v1/token")
       return json({
         access_token: "fake",

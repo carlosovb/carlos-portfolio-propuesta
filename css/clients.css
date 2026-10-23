@@ -1592,3 +1592,17 @@ html[data-theme="light"] #client-detail-dialog[data-activity="inactive"] {
     padding: 8px 0;
   }
 }
+
+.clients-workspace-heading {
+  flex-wrap: wrap;
+}
+.clients-heading-actions {
+  flex-wrap: wrap;
+  flex-shrink: 1;
+  max-width: 100%;
+  gap: 10px;
+}
+#clients-setup-products {
+  max-width: 100%;
+  white-space: normal;
+}

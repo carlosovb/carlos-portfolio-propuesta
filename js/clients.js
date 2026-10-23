@@ -107,12 +107,16 @@
     get("clients-import-issues").replaceChildren();
   }
   function syncDemo() {
+    get("clients-setup-products").hidden = demo;
+    get("clients-setup-products").disabled = busy;
+    get("clients-setup-products").textContent = "Configurar clientes sin productos";
     get("clients-demo-banner").hidden = !demo;
     get("clients-demo-toggle").textContent = demo
       ? "Volver a mis clientes ↗"
       : "Ver ejemplo ↗";
   }
   function syncSelection() {
+    get("clients-setup-products").disabled = busy;
     get("clients-bulk").hidden = !selection.size;
     get("clients-selected-count").textContent = selection.size + " seleccionados";
     get("clients-delete-selected").disabled = busy || !selection.size;
@@ -190,6 +194,41 @@
     get("client-detail-dialog").classList.remove("client-import-guided");
     get("client-import-guide")?.remove();
   }
+  get("clients-setup-products").addEventListener("click", async () => {
+    if (!visible || !account || demo || busy) return;
+    const owner = account,
+      snapshot = revision,
+      ticket = ++operation,
+      button = get("clients-setup-products");
+    busy = true;
+    button.disabled = true;
+    button.textContent = "Buscando clientes pendientes…";
+    get("clients-file").disabled = true;
+    try {
+      const pending = await backend.clientsWithoutProducts();
+      if (!visible || account !== owner || revision !== snapshot) return;
+      if (!pending.length) {
+        notice(
+          "Todos tus clientes activos tienen productos registrados. No hay clientes pendientes de configurar.",
+        );
+        return;
+      }
+      beginImportGuide(pending);
+    } catch {
+      if (visible && account === owner && revision === snapshot)
+        notice(
+          "No se han podido cargar los clientes sin productos. Vuelve a intentarlo.",
+        );
+    } finally {
+      if (ticket === operation) {
+        busy = false;
+        button.disabled = false;
+        button.textContent = "Configurar clientes sin productos";
+        get("clients-file").disabled = false;
+        syncSelection();
+      }
+    }
+  });
   function beginImportGuide(imported) {
     const queue = (imported || []).filter(
       (row) => category(row) === "client" && row.is_active !== false,

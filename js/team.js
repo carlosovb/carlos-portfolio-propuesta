@@ -242,6 +242,7 @@
       hint.className = "team-node-hint";
       hint.textContent = "Ver perfil ↗";
       info.append(name, position, factor, hint);
+      if (window.PanelPresence) info.append(window.PanelPresence.badge(member.user_id));
       card.append(face, info);
       if (self) {
         const tag = document.createElement("span");

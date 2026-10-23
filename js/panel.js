@@ -13,6 +13,7 @@
       timeZone: "Atlantic/Canary",
     }).format(new Date(value));
   let active = false;
+  let loggingOut = false;
   let epoch = 0;
   let view = "home";
   let page = 0;
@@ -166,6 +167,7 @@
     get("panel-screen").hidden = false;
     resetInactivity();
     renderIdentity();
+    window.PanelPresence?.start();
     setView(account?.profile_complete === false ? "profile" : "home");
   }
 
@@ -219,7 +221,11 @@
   }
 
   async function logout(message = "Has cerrado sesión.") {
+    if (loggingOut) return;
+    loggingOut = true;
+    get("login-button").disabled = true;
     active = false;
+    const presenceStopped = window.PanelPresence?.stop();
     epoch++;
     loadingVersion++;
     clearTimeout(inactivityTimer);
@@ -261,7 +267,10 @@
     account = null;
     resetBulk();
     notice("login-notice", message);
+    await presenceStopped;
     await backend.signOut();
+    loggingOut = false;
+    get("login-button").disabled = !backend.ready;
   }
 
   get("invite-consultant-form").addEventListener("submit", async (event) => {
@@ -732,7 +741,7 @@
   );
   get("login-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!backend.ready) return;
+    if (!backend.ready || loggingOut) return;
     const form = event.currentTarget;
     get("login-button").disabled = true;
     notice("login-notice", "Comprobando acceso…");

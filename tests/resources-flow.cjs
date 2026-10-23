@@ -58,6 +58,7 @@ const server = http.createServer((req, res) => {
       });
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
     if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
+    if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
     if (url.pathname === "/auth/v1/token")
       return json({
         access_token: "fake",

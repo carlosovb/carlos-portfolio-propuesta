@@ -246,6 +246,52 @@ const assert = require("node:assert/strict");
     );
     await db.query("select public.set_client_active($1,true)", [client]);
     await db.query("select public.set_client_product_archived($1,false)", [parent]);
+    await db.exec("reset role");
+    await db.exec("grant usage on schema auth to authenticated");
+    await db.exec(fs.readFileSync("database/client-product-backlog.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/panel-presence.sql", "utf8"));
+    await as(other);
+    const backlog = async () =>
+      (await db.query("select public.get_my_clients_without_products() data")).rows[0]
+        .data;
+    assert.deepEqual(await backlog(), [], "Clients with existing products are excluded");
+    const presence = async (id, connected = true) =>
+      (await db.query("select public.update_panel_presence($1,$2) data", [id, connected]))
+        .rows[0].data;
+    const sid1 = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      sid2 = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    let online = await presence(sid1);
+    assert(online.some((p) => p.user_id === other));
+    online = await presence(sid2);
+    assert.equal(
+      online.filter((p) => p.user_id === other).length,
+      1,
+      "Multiple tabs count once",
+    );
+    online = await presence(sid1, false);
+    assert(
+      online.some((p) => p.user_id === other),
+      "One remaining tab keeps user online",
+    );
+    await as(member);
+    await presence(sid2, false);
+    assert(
+      (await db.query("select public.get_panel_presence() data")).rows[0].data.some(
+        (p) => p.user_id === other,
+      ),
+      "Cannot remove another consultant presence",
+    );
+    await assert.rejects(() => db.query("select * from private.panel_presence"));
+    await db.exec("reset role");
+    await db.query(
+      "update private.panel_presence set last_seen=now()-interval '100 seconds'",
+    );
+    await as(other);
+    assert.deepEqual(
+      (await db.query("select public.get_panel_presence() data")).rows[0].data,
+      [],
+      "Stale presence expires",
+    );
     const before = (await statistics()).scopes;
     await db.query("delete from public.client_products where id=$1", [parent]);
     assert.deepEqual(
@@ -286,7 +332,30 @@ const assert = require("node:assert/strict");
     );
     assert.equal(history.months.own[0].month, "2024-02-01");
     assert.equal(history.months.own[2].month, "2025-03-01");
+    const pending = await backlog();
+    assert.equal(pending.length, 1);
+    assert.equal(pending[0].id, client);
+    assert(!("owner_id" in pending[0]));
+    await db.query("select public.set_client_active($1,false)", [client]);
+    assert.deepEqual(await backlog(), []);
+    await db.query("select public.set_client_active($1,true)", [client]);
+    await db.query("select public.import_my_clients($1::jsonb,false)", [
+      JSON.stringify([
+        {
+          first_name: "Interesado",
+          last_name: "Sin productos",
+          client_type: "Interesado",
+        },
+      ]),
+    ]);
+    assert.equal((await backlog()).length, 1, "Interested contacts are excluded");
+    await as(owner);
+    assert.deepEqual(await backlog(), []);
+    await as(member);
+    assert.deepEqual(await backlog(), []);
     await db.exec("reset role;set role anon");
+    await assert.rejects(() => backlog());
+    await assert.rejects(() => presence(sid1));
     await assert.rejects(() => budget());
     await db.exec("reset role");
     assert.equal(
