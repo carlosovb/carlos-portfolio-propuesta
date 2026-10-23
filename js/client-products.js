@@ -61,6 +61,7 @@
       if (ticket !== epoch) return;
       rows = list;
       render();
+      return true;
     } catch {
       if (ticket === epoch)
         say(
@@ -162,10 +163,7 @@
         ),
       );
     const controls = node("div", undefined, "contract-actions contract-controls");
-    const add = button("+ Añadir producto", () => {
-      editing = {};
-      editor();
-    });
+    const add = button("+ Añadir producto", startNew);
     add.disabled = client.is_active === false;
     if (add.disabled) add.title = "Reactiva el contacto antes de añadir productos";
     controls.append(add);
@@ -833,5 +831,10 @@
       }
     });
   }
-  window.ClientProducts = { open, reset };
+  function startNew() {
+    if (!client || busy || client.is_active === false) return;
+    editing = {};
+    return editor();
+  }
+  window.ClientProducts = { open, reset, startNew, isBusy: () => busy };
 })();

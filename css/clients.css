@@ -1464,3 +1464,131 @@ html[data-theme="light"] #client-detail-dialog[data-activity="inactive"] {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 6%, var(--panel));
 }
+
+.client-import-guide {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 18px 22px;
+  margin: 1rem 0;
+}
+.client-import-guide h3 {
+  margin: 0.3rem 0;
+  font-size: 1.4rem;
+}
+.client-import-guide .eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+}
+.client-import-guide progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  margin: 14px 0;
+  accent-color: var(--accent);
+}
+.client-import-guide-status {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.client-import-guide-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.client-import-guided .client-file-tabs,
+.client-import-guided .client-life-actions,
+.client-import-guided #client-detail-fields,
+.client-import-guided .contract-metrics,
+.client-import-guided .contract-tabs,
+.client-import-guided .client-products-heading {
+  display: none !important;
+}
+.client-import-guided .client-file-layout {
+  grid-template-columns: 1fr;
+}
+.client-import-guided .client-file-header h2 {
+  font-size: clamp(24px, 3vw, 36px);
+}
+@media (max-width: 550px) {
+  .client-import-guide {
+    padding: 16px;
+  }
+  .client-import-guide-actions {
+    gap: 0.5rem;
+  }
+  .client-import-guide-actions .btn {
+    width: 100%;
+  }
+}
+
+#client-detail-dialog.client-import-guided .client-file-header {
+  padding-bottom: 14px;
+  margin-bottom: 0;
+}
+.client-import-guided .client-file-header h2 {
+  margin: 0.5rem 0;
+}
+.client-import-guide {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 20px;
+  padding: 16px 20px;
+}
+.client-import-guide .eyebrow {
+  grid-column: 1;
+  grid-row: 1;
+}
+.client-import-guide h3 {
+  grid-column: 1;
+  grid-row: 2;
+}
+.client-import-guide progress {
+  grid-column: 1/-1;
+  grid-row: 3;
+  margin: 8px 0;
+}
+.client-import-guide-status {
+  grid-column: 1/-1;
+  grid-row: 4;
+  margin: 0;
+}
+.client-import-guide-actions {
+  grid-column: 2;
+  grid-row: 1/3;
+}
+.client-import-guide-actions .btn {
+  padding: 12px 18px;
+  font-size: 13px;
+}
+.client-import-guided .contract-editor > h4 {
+  display: none;
+}
+.client-import-guided #client-products-section[data-editing="true"] .contract-editor {
+  margin-top: 0;
+  padding-top: 16px;
+}
+@media (max-width: 650px) {
+  .client-import-guide {
+    display: block;
+    padding: 14px;
+  }
+  .client-import-guide h3 {
+    font-size: 1.2rem;
+  }
+  .client-import-guide-status {
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .client-import-guide-actions {
+    gap: 10px;
+  }
+  .client-import-guide-actions .btn {
+    width: auto;
+  }
+  .client-import-guide-actions .panel-text-button {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+}

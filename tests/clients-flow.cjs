@@ -402,6 +402,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       }
       if (url.pathname.endsWith("/rpc/import_my_clients")) {
         const seen = new Set(clients.map(parser.identity));
+        const imported = [];
         let added = 0,
           duplicates = 0;
         for (const row of body.p_rows) {
@@ -417,10 +418,12 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
               ...row,
               id: "44444444-4444-4444-8444-" + String(writes).padStart(12, "0"),
             });
+            if (row.client_type === "Cliente") imported.push(clients.at(-1));
           }
         }
         if (body.p_preview) previewCalls++;
         return json({
+          new_clients: body.p_preview ? [] : imported,
           received: body.p_rows.length,
           added,
           duplicates,
@@ -598,6 +601,64 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.waitForFunction(
       () => document.querySelector("#clients-count").textContent === "2",
     );
+    await page.locator("#client-import-guide").waitFor();
+    await page.locator(".contract-editor").waitFor();
+    assert.match(
+      await page.locator("#client-import-guide .eyebrow").textContent(),
+      /CLIENTE 1 DE 2/,
+    );
+    assert.match(await page.locator("#client-detail-name").textContent(), /Ana/);
+    const guided = page.locator(".contract-editor");
+    await guided.locator('input[name=company][value="AXA"]').check();
+    await guided.locator('input[name=product][value="PIAS Proyecto Futuro"]').check();
+    await guided.locator('input[name=portfolio][value="Equilibrada+"]').check();
+    await guided.locator("[name=amount]").fill("50");
+    await guided.locator("[name=units]").fill("20");
+    await guided.getByRole("button", { name: "Guardar producto", exact: true }).click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector(".client-import-guide-status")
+        ?.textContent.includes("1 productos guardados"),
+    );
+    assert.equal(products.length, 1);
+    const savedClient = products[0].client_id;
+    await page.getByRole("button", { name: "Siguiente cliente →", exact: true }).click();
+    await page.waitForFunction(() =>
+      document.querySelector("#client-detail-name")?.textContent.includes("Bruno"),
+    );
+    await page.locator(".contract-editor").waitFor();
+    assert.match(
+      await page.locator("#client-import-guide .eyebrow").textContent(),
+      /CLIENTE 2 DE 2/,
+    );
+    assert.equal(
+      products[0].client_id,
+      savedClient,
+      "Moving to next client preserves the saved product",
+    );
+    for (const width of [360, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert(
+        await page
+          .locator("#client-detail-dialog")
+          .evaluate((el) => el.scrollWidth <= el.clientWidth),
+        "Guided editor fits viewport",
+      );
+      await page.screenshot({
+        path: path.join(process.env.TEMP, "client-import-guide-" + width + ".png"),
+      });
+    }
+    await page.getByRole("button", { name: "Terminar revisión", exact: true }).click();
+    await page.locator("#client-import-guide").waitFor({ state: "detached" });
+    assert.equal(
+      products.length,
+      1,
+      "Completing the guide does not delete saved products",
+    );
+    products = [];
+    await page.evaluate(() => window.PortfolioBackend.invalidateCache());
+
+    await page.locator("#client-import-guide").waitFor({ state: "detached" });
     assert.equal(clients.length, 2);
     assert.equal(Object.keys(clients[0]).length, 13);
     assert.equal(JSON.stringify(clients).includes("NO CONSERVAR"), false);
@@ -620,6 +681,9 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       await radio.check();
     }
 
+    await contract
+      .locator('input[name=company][value="AXA"]')
+      .waitFor({ state: "visible" });
     assert.equal(await contract.locator(".product-conditions").isVisible(), false);
     await choose("company", "AXA");
     assert.equal(

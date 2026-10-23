@@ -23,6 +23,7 @@
   let dialogScroll = null,
     currentClient = null,
     lifecycleEpoch = 0;
+  let importGuide = null;
   const compactClient = matchMedia("(max-width: 850px)");
   compactClient.addEventListener("change", (event) => {
     const additional = get("client-detail-fields").querySelector(".client-additional");
@@ -179,10 +180,133 @@
     workspace.detailTab("products");
     get("client-detail-dialog").showModal();
     get("client-detail-dialog").scrollTop = 0;
-    window.ClientProducts.open(row, demo);
+    const productsReady = window.ClientProducts.open(row, demo);
     get("client-detail-close").focus({ preventScroll: true });
     window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
+    return productsReady;
   }
+  function stopImportGuide() {
+    importGuide = null;
+    get("client-detail-dialog").classList.remove("client-import-guided");
+    get("client-import-guide")?.remove();
+  }
+  function beginImportGuide(imported) {
+    const queue = (imported || []).filter(
+      (row) => category(row) === "client" && row.is_active !== false,
+    );
+    if (!queue.length) return;
+    stopImportGuide();
+    importGuide = { queue, index: 0, configured: new Set(), loading: false };
+    showImportGuideClient();
+  }
+  async function showImportGuideClient() {
+    const guide = importGuide;
+    if (!guide || !visible) return;
+    guide.loading = true;
+    get("client-import-guide")?.remove();
+    const row = guide.queue[guide.index],
+      dialog = get("client-detail-dialog");
+    const ready = detail(row, get("clients-file"));
+    dialog.classList.add("client-import-guided");
+    const banner = el("section", "client-import-guide");
+    banner.id = "client-import-guide";
+    banner.setAttribute("aria-label", "Configurar productos de los clientes importados");
+    const step = el(
+        "p",
+        "eyebrow",
+        "CLIENTE " + (guide.index + 1) + " DE " + guide.queue.length,
+      ),
+      heading = el("h3", null, "¿Qué productos tiene?");
+    const progress = el("progress");
+    progress.max = guide.queue.length;
+    progress.value = guide.index;
+    progress.setAttribute("aria-label", "Clientes revisados");
+    const status = el(
+      "p",
+      "client-import-guide-status",
+      "Añade sus productos y continúa. Puedes guardar varios para esta persona.",
+    );
+    status.setAttribute("role", "status");
+    const actions = el("div", "client-import-guide-actions"),
+      next = el(
+        "button",
+        "btn",
+        guide.index === guide.queue.length - 1
+          ? "Terminar revisión"
+          : "Siguiente cliente →",
+      ),
+      later = el("button", "panel-text-button", "Continuar más tarde");
+    next.type = later.type = "button";
+    next.disabled = true;
+    next.onclick = async () => {
+      if (importGuide !== guide || guide.loading || window.ClientProducts.isBusy())
+        return;
+      const editor = dialog.querySelector(".contract-editor");
+      if (editor && editor.querySelector("[name=amount]")?.value) {
+        const leave = await window.SiteConfirm.ask(
+          "Este producto todavía no se ha guardado. ¿Quieres pasar al siguiente cliente sin guardarlo?",
+          { title: "Producto sin guardar", accept: "Continuar sin guardar" },
+        );
+        if (!leave || importGuide !== guide) return;
+      }
+      guide.index++;
+      if (guide.index >= guide.queue.length) {
+        const configured = guide.configured.size,
+          total = guide.queue.length;
+        dialog.close();
+        stopImportGuide();
+        notice(
+          "Revisión terminada: " +
+            configured +
+            " de " +
+            total +
+            " clientes con productos guardados. Puedes completar los demás desde sus fichas.",
+        );
+        return;
+      }
+      showImportGuideClient();
+    };
+    later.onclick = () => {
+      if (window.ClientProducts.isBusy()) return;
+      dialog.close();
+      stopImportGuide();
+      notice(
+        "Los productos guardados ya están en tu cartera. Puedes completar el resto desde la ficha de cada cliente.",
+      );
+    };
+    actions.append(next, later);
+    banner.append(step, heading, progress, status, actions);
+    dialog.querySelector(".client-file-header").after(banner);
+    try {
+      const loaded = await ready;
+      if (importGuide !== guide || !dialog.open) return;
+      if (loaded) await window.ClientProducts.startNew();
+      else
+        status.textContent =
+          "No se pudieron cargar los productos. Puedes reabrir esta ficha después o pasar al siguiente cliente.";
+    } finally {
+      if (importGuide === guide) {
+        guide.loading = false;
+        next.disabled = false;
+      }
+    }
+  }
+  window.addEventListener("client-products-changed", (event) => {
+    const guide = importGuide;
+    if (
+      !guide ||
+      event.detail.demo ||
+      guide.queue[guide.index]?.id !== event.detail.clientId
+    )
+      return;
+    if (event.detail.productCount > 0) guide.configured.add(event.detail.clientId);
+    else guide.configured.delete(event.detail.clientId);
+    const status = get("client-import-guide")?.querySelector("[role=status]");
+    if (status)
+      status.textContent =
+        event.detail.productCount +
+        " productos guardados. Puedes añadir otro o pasar al siguiente cliente.";
+  });
   function renderActivity(row) {
     const active = row.is_active !== false;
     const dialog = get("client-detail-dialog");
@@ -438,6 +562,7 @@
     }
   }
   function hide() {
+    stopImportGuide();
     currentClient = null;
     lifecycleEpoch++;
     window.ClientTrash?.reset();
@@ -531,6 +656,7 @@
     backdropPressed = false;
   });
   get("client-detail-dialog").addEventListener("close", () => {
+    stopImportGuide();
     currentClient = null;
     lifecycleEpoch++;
     window.ClientProducts.reset();
@@ -644,6 +770,7 @@
           (result.invalid + data.issues.length) +
           " por revisar.",
       );
+      beginImportGuide(result.new_clients);
     } catch {
       if (snapshot === revision && visible) {
         notice(

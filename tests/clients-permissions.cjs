@@ -61,6 +61,7 @@ const fs = require("fs"),
     const sql = fs.readFileSync("database/clients-setup.sql", "utf8");
     await db.exec(sql);
     await db.exec(sql);
+    await db.exec(fs.readFileSync("database/client-import-product-guide.sql", "utf8"));
     await as(member);
     const batch = [
       a,
@@ -83,9 +84,17 @@ const fs = require("fs"),
     );
     result = await rpc(batch, false);
     assert.equal(result.added, 2);
+    assert.equal(result.new_clients.length, 2);
+    assert(
+      result.new_clients.every(
+        (row) => row.id && !("owner_id" in row) && !("identity_name" in row),
+      ),
+    );
+
     assert.equal(result.invalid, 1);
     result = await rpc(batch, false);
     assert.equal(result.added, 0);
+    assert.deepEqual(result.new_clients, []);
     assert.equal(result.duplicates, 3);
     await rpc([{ ...a, email: "replacement@example.invalid", owner_id: other }], false);
     assert.equal(
@@ -205,6 +214,17 @@ const fs = require("fs"),
         .total,
       0,
       "El administrador no lee carteras ajenas",
+    );
+    await as(member);
+    const interested = await rpc(
+      [{ first_name: "Interesado", last_name: "Prueba", client_type: "Interesado" }],
+      false,
+    );
+    assert.equal(interested.added, 1);
+    assert.deepEqual(
+      interested.new_clients,
+      [],
+      "Interested contacts are excluded from product setup",
     );
     await db.exec("reset role;set role anon");
     await assert.rejects(() => db.query("select * from public.portfolio_clients"));
