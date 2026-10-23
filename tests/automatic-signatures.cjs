@@ -116,6 +116,85 @@ const assert = require("node:assert/strict");
       { [owner]: 3.5, [member]: 2.5 },
       "Server ignores supplied rates and snapshots the whole chain",
     );
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/statistics-range.sql", "utf8"));
+    const fixtures = [];
+    for (const [id, own, team, count] of [
+      [other, 200, 0, 1],
+      [member, 0, 50, 2],
+      [owner, 0, 150, 4],
+    ]) {
+      await as(id);
+      const value = (
+        await db.query(
+          "select public.get_unit_statistics_range('2024-02-01','2024-02-01') data",
+        )
+      ).rows[0].data;
+      assert.equal(value.scopes.own?.own_euros || 0, own);
+      assert.equal(value.scopes.team?.team_euros || 0, team);
+      assert.equal(value.people.length, count);
+      const self = value.people.find((p) => p.user_id === id);
+      assert.equal(self.own_euros, own);
+      assert.equal(self.team_euros, team);
+      assert.equal(value.months.own?.[0]?.own_euros || 0, own);
+      assert.equal(value.months.team?.[0]?.team_euros || 0, team);
+      assert.equal(value.scopes.global.units, 100);
+      assert.equal(value.scopes.global.own_euros + value.scopes.global.team_euros, 400);
+      fixtures.push({ id, own, team, value });
+    }
+    const { chromium } = require("playwright");
+    const browser = await chromium.launch({
+      executablePath: process.env.CHROME_EXECUTABLE,
+      headless: true,
+    });
+    try {
+      const page = await browser.newPage();
+      for (const fixture of fixtures) {
+        await page.setContent('<div id="statistics-view"></div>');
+        await page.evaluate(
+          (value) => (window.PortfolioBackend = { getUnitStatistics: async () => value }),
+          fixture.value,
+        );
+        await page.addScriptTag({ path: "js/date-picker.js" });
+        await page.addScriptTag({ path: "js/statistics.js" });
+        await page.evaluate(() => window.StatisticsPanel.load());
+        await page.locator("input[name=from]").fill("2024-02");
+        await page.locator("input[name=to]").fill("2024-02");
+        await page.getByRole("button", { name: "Ver periodo", exact: true }).click();
+        await page.locator(".stats-metrics").waitFor();
+        await page.getByRole("button", { name: "Propias", exact: true }).click();
+        const euros = async () =>
+          Number(
+            (await page.locator(".stats-metric[data-kind=money] strong").textContent())
+              .replace(/[^0-9,]/g, "")
+              .replace(",", "."),
+          );
+        assert.equal(await euros(), fixture.own);
+        await page.getByRole("button", { name: "Equipo inferior", exact: true }).click();
+        assert.equal(await euros(), fixture.team);
+        await page.locator(".stats-chart [data-metric=euros]").click();
+        const feb = page.locator(".stats-bars>div").nth(28);
+        assert.match(
+          await feb.getAttribute("title"),
+          new RegExp("Equipo: " + fixture.team),
+        );
+        assert.equal(
+          await page.locator(".stats-person").count(),
+          fixture.value.people.length,
+        );
+        await page.getByRole("button", { name: "Equipo completo", exact: true }).click();
+        assert.equal(await euros(), 400);
+        console.log(
+          "Cuenta verificada: propias " +
+            fixture.own +
+            " EUR / equipo " +
+            fixture.team +
+            " EUR; global 400 EUR y 100 UD.",
+        );
+      }
+    } finally {
+      await browser.close();
+    }
     await as(owner);
     await db.query("select public.save_team_assignment($1,'financial_consultant',null)", [
       owner,
