@@ -831,6 +831,16 @@ async function login(page, base) {
         bounds.y > 600 && bounds.y + bounds.height <= 1000,
         "Career plan sits at bottom",
       );
+      const zoom = await treePage.locator(".team-map-controls").boundingBox();
+      const profile = await treePage.locator("#team-open-profile").boundingBox();
+      const overlaps = (a, b) =>
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
+      assert(!overlaps(bounds, zoom), "Plan and zoom must not overlap");
+      assert(!overlaps(profile, zoom), "My position and zoom must not overlap");
+      assert(zoom.y + zoom.height > 950, "Zoom is at the bottom right");
       await treePage.screenshot({
         path: path.join(process.env.TEMP, "career-bottom-" + width + ".png"),
       });
