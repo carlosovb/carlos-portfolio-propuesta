@@ -400,7 +400,7 @@
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
       const query = new URLSearchParams({
         select:
-          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,signature_rates,archived_at,is_apex,parent_product_id",
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,archived_at,is_apex,parent_product_id",
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });
@@ -426,7 +426,6 @@
         units: fields.units,
         signed_on: fields.signed_on,
         signed_multiplier: fields.signed_multiplier,
-        signature_rates: fields.signature_rates,
       };
       const query = new URLSearchParams({ select: "id" });
       if (id) {

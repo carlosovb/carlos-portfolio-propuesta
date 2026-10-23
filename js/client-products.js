@@ -510,11 +510,9 @@
     const selectedProduct = editing,
       ticket = epoch;
     box.textContent = "Preparando los datos de la firma…";
-    let me, directory;
+    let me;
     try {
-      [me, directory] = demo
-        ? [{ user_id: "demo" }, []]
-        : await Promise.all([backend.getMyTeamProfile(), backend.listTeam()]);
+      me = demo ? { user_id: "demo" } : await backend.getMyTeamProfile();
     } catch {
       if (ticket === epoch && selectedProduct === editing) {
         host.dataset.editing = "false";
@@ -604,7 +602,7 @@
       node("summary", "Cómo se calculan las unidades y comisiones"),
       node(
         "p",
-        "La aportación del cliente no es tu comisión. Las unidades cuentan una vez, en el mes de firma, con los multiplicadores confirmados de entonces. Lo desconocido queda pendiente.",
+        "La aportación del cliente no es tu comisión. Las unidades cuentan una vez, en el mes de firma, con los multiplicadores guardados para esa firma. Lo desconocido queda pendiente.",
       ),
     );
     const today = new Intl.DateTimeFormat("sv-SE", {
@@ -636,54 +634,14 @@
       { options: multipliers },
     );
     multiplier.required = apex;
-    const structure = node("details"),
-      rates = {};
-    structure.className = "contract-structure";
-    structure.append(node("summary", "Multiplicadores del equipo"));
-    if (editing.signed_on) Object.assign(rates, editing.signature_rates || {});
-    else {
-      const seen = new Set([me.user_id]);
-      let parent =
-        directory.find((p) => p.user_id === me.user_id)?.manager_id || me.manager_id;
-      while (parent && !seen.has(parent)) {
-        seen.add(parent);
-        rates[parent] = null;
-        parent = directory.find((p) => p.user_id === parent)?.manager_id;
-      }
-    }
-    Object.entries(rates).forEach(([id, value]) => {
-      const person = directory.find((p) => p.user_id === id);
-      field(
-        structure,
-        person?.name ||
-          ((person?.first_name || "") + " " + (person?.last_name || "")).trim() ||
-          "Responsable de la firma",
-        "rate_" + id,
-        value,
-        { options: multipliers },
-      );
-    });
-    if (!Object.keys(rates).length)
-      structure.append(node("p", "Esta firma no tiene responsables por encima."));
-    if (!editing.signed_on)
-      structure.append(
-        node(
-          "p",
-          "La estructura propuesta es la actual. Si era diferente en la fecha de firma, revísala antes de registrar este producto.",
-        ),
-      );
-    signature.append(structure);
-    const confirmation = node(
-      "label",
-      "Confirmo los multiplicadores de esta firma; los pendientes quedan sin calcular.",
+    signature.append(
+      node(
+        "p",
+        "Las comisiones del equipo se calculan automáticamente según los responsables de esta firma.",
+        "stats-caption",
+      ),
+      calculationHelp,
     );
-    const check = node("input");
-    check.type = "checkbox";
-    check.required = !!signed.value;
-    signed.addEventListener("change", () => (check.required = !!signed.value));
-    confirmation.prepend(check);
-    confirmation.className = "contract-confirmation";
-    signature.append(confirmation, calculationHelp);
     conditions.append(signature);
     form.append(conditions);
     const actions = node("div", undefined, "contract-actions"),
@@ -845,12 +803,6 @@
         signed_on: values.signed_on || null,
         signed_multiplier:
           values.signed_multiplier === "" ? null : Number(values.signed_multiplier),
-        signature_rates: Object.fromEntries(
-          Object.keys(rates).map((id) => [
-            id,
-            values["rate_" + id] === "" ? null : Number(values["rate_" + id]),
-          ]),
-        ),
       };
       const ticket = epoch,
         target = client.id,

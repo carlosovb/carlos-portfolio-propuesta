@@ -728,7 +728,6 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(await contract.locator("[name=signed_multiplier]").inputValue(), "3.5");
     await contract.locator("[name=signed_on]").fill("2024-02-29");
     await contract.locator("[name=signed_multiplier]").selectOption("2.5");
-    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.locator(".contract-card").waitFor();
     assert.equal(products.length, 1);
@@ -736,6 +735,10 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(products[0].product, "PIAS Proyecto Futuro");
     assert.equal(products[0].signed_on, "2024-02-29");
     assert.equal(products[0].signed_multiplier, 2.5);
+    assert.equal(await contract.locator("[name^=rate_]").count(), 0);
+    assert.equal(await page.locator(".contract-structure").count(), 0);
+    assert.equal(products[0].signature_rates, undefined);
+
     // APEX belongs to its parent and has its own signature and production.
     await page.locator(".contract-detail summary").click();
     await page.getByRole("button", { name: "+ Añadir APEX", exact: true }).click();
@@ -779,7 +782,6 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       });
     }
     await page.keyboard.press("Escape");
-    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar APEX", exact: true }).click();
     await page.locator(".contract-card").waitFor();
     assert.equal(products.length, 2);
@@ -788,6 +790,10 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(apex.units, 10);
     assert.equal(apex.signed_multiplier, 3.5);
     assert.equal(products[0].signed_multiplier, 2.5);
+    assert.equal(await contract.locator("[name^=rate_]").count(), 0);
+    assert.equal(await page.locator(".contract-structure").count(), 0);
+    assert.equal(products[0].signature_rates, undefined);
+
     assert.equal(await page.locator(".contract-card").count(), 1);
     await page.locator(".contract-detail summary").click();
     await page.locator(".contract-apex-entry").waitFor();
@@ -796,7 +802,6 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=amount]").fill("7500");
     await contract.locator("[name=units]").fill("1");
     await contract.locator("[name=signed_multiplier]").selectOption("2");
-    await contract.locator(".contract-signature input[type=checkbox]").check();
     await page.waitForTimeout(220);
     assert.equal(
       await contract.locator("[name=amount]").evaluate((el) => el.checkValidity()),
@@ -849,7 +854,6 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[data-payment=single]").click();
     await contract.locator("[name=amount]").fill("1000");
     await contract.locator("[name=units]").fill("");
-    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(() =>
       document.querySelector(".contract-card").textContent.includes("aportación única"),
@@ -880,7 +884,6 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=manual_product]").fill("Segundo producto");
     await contract.locator("[name=manual_portfolio]").fill("Cartera Intesa de ejemplo");
     await contract.locator("[name=amount]").fill("30");
-    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(
       () => document.querySelectorAll(".contract-card").length === 2,
