@@ -714,6 +714,18 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     );
     await contract.locator("[name=amount]").fill("50");
     await contract.locator("[name=units]").fill("2.5");
+    assert.equal(
+      await contract.locator("[name=signed_on]").inputValue(),
+      await page.evaluate(() =>
+        new Intl.DateTimeFormat("sv-SE", {
+          timeZone: "Atlantic/Canary",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date()),
+      ),
+    );
+    assert.equal(await contract.locator("[name=signed_multiplier]").inputValue(), "3.5");
     await contract.locator("[name=signed_on]").fill("2024-02-29");
     await contract.locator("[name=signed_multiplier]").selectOption("2.5");
     await contract.locator(".contract-signature input[type=checkbox]").check();
@@ -868,6 +880,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=manual_product]").fill("Segundo producto");
     await contract.locator("[name=manual_portfolio]").fill("Cartera Intesa de ejemplo");
     await contract.locator("[name=amount]").fill("30");
+    await contract.locator(".contract-signature input[type=checkbox]").check();
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(
       () => document.querySelectorAll(".contract-card").length === 2,

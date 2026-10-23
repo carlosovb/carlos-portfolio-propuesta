@@ -607,17 +607,22 @@
         "La aportación del cliente no es tu comisión. Las unidades cuentan una vez, en el mes de firma, con los multiplicadores confirmados de entonces. Lo desconocido queda pendiente.",
       ),
     );
-    const signed = field(signature, "Fecha de firma", "signed_on", editing.signed_on, {
-      type: "date",
-    });
-    signed.required = apex;
-    signed.min = apex && parent?.signed_on ? parent.signed_on : "2000-01-01";
-    signed.max = new Intl.DateTimeFormat("sv-SE", {
+    const today = new Intl.DateTimeFormat("sv-SE", {
       timeZone: "Atlantic/Canary",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
     }).format(new Date());
+    const signed = field(
+      signature,
+      "Fecha de firma",
+      "signed_on",
+      editing.id ? editing.signed_on : today,
+      { type: "date" },
+    );
+    signed.required = apex;
+    signed.min = apex && parent?.signed_on ? parent.signed_on : "2000-01-01";
+    signed.max = today;
     window.DatePicker.mount(signed);
     const multipliers = [
       ["", "Pendiente de confirmar"],
@@ -627,7 +632,7 @@
       signature,
       "Tu multiplicador al firmar",
       "signed_multiplier",
-      editing.signed_multiplier,
+      editing.id ? editing.signed_multiplier : me.multiplier,
       { options: multipliers },
     );
     multiplier.required = apex;
