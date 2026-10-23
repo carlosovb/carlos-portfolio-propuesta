@@ -36,6 +36,31 @@ const { chromium } = require("playwright"),
       await page.locator(".presence-list").first().textContent(),
       "Consultor de prueba",
     );
+    await page.locator(".presence-list span").first().click();
+    assert.equal(
+      await page.locator(".presence-summary[open]").count(),
+      1,
+      "Clicking inside keeps the list open",
+    );
+    await page.locator("#badge").click();
+    assert.equal(
+      await page.locator(".presence-summary[open]").count(),
+      0,
+      "Outside click closes the list",
+    );
+    await page.locator(".presence-summary summary").first().click();
+    await page.keyboard.press("Escape");
+    assert.equal(
+      await page.locator(".presence-summary[open]").count(),
+      0,
+      "Escape closes the list",
+    );
+    assert(
+      await page
+        .locator(".presence-summary summary")
+        .first()
+        .evaluate((el) => el === document.activeElement),
+    );
     await page.evaluate(async () => {
       window.currentPresence = [];
       await window.PanelPresence.refresh();

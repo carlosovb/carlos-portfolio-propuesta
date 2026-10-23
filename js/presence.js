@@ -119,6 +119,26 @@
       new Promise((resolve) => setTimeout(resolve, 2500)),
     ]);
   }
+  document.addEventListener("pointerdown", (event) => {
+    document.querySelectorAll(".presence-summary[open]").forEach((details) => {
+      if (!details.contains(event.target)) details.open = false;
+    });
+  });
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Escape") return;
+      const opened = [...document.querySelectorAll(".presence-summary[open]")];
+      if (!opened.length) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const focused =
+        opened.find((details) => details.contains(document.activeElement)) || opened[0];
+      opened.forEach((details) => (details.open = false));
+      focused.querySelector("summary").focus({ preventScroll: true });
+    },
+    true,
+  );
   document.addEventListener("visibilitychange", () => {
     if (active && document.visibilityState === "visible") refresh();
   });
