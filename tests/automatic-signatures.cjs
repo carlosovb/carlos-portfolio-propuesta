@@ -140,6 +140,12 @@ const assert = require("node:assert/strict");
       assert.equal(value.months.team?.[0]?.team_euros || 0, team);
       assert.equal(value.scopes.global.units, 100);
       assert.equal(value.scopes.global.own_euros + value.scopes.global.team_euros, 400);
+      assert.equal(value.team_sources.length, team ? 1 : 0);
+      if (team) {
+        assert.equal(value.team_sources[0].user_id, other);
+        assert.equal(value.team_sources[0].units, 100);
+        assert.equal(value.team_sources[0].euros, team);
+      }
       fixtures.push({ id, own, team, value });
     }
     const { chromium } = require("playwright");
@@ -151,6 +157,8 @@ const assert = require("node:assert/strict");
       const page = await browser.newPage();
       for (const fixture of fixtures) {
         await page.setContent('<div id="statistics-view"></div>');
+        await page.addStyleTag({ path: "css/base.css" });
+        await page.addStyleTag({ path: "css/statistics.css" });
         await page.evaluate(
           (value) => (window.PortfolioBackend = { getUnitStatistics: async () => value }),
           fixture.value,
@@ -172,6 +180,30 @@ const assert = require("node:assert/strict");
         assert.equal(await euros(), fixture.own);
         await page.getByRole("button", { name: "Equipo inferior", exact: true }).click();
         assert.equal(await euros(), fixture.team);
+        await page.locator(".stats-split .stats-commission-open").click();
+        await page.locator(".stats-commission-dialog").waitFor();
+        assert.equal(
+          await page.locator(".stats-commission-row").count(),
+          fixture.team ? 1 : 0,
+        );
+        if (fixture.team) {
+          assert.match(
+            await page.locator(".stats-commission-row").textContent(),
+            /100 U/,
+          );
+          assert.match(
+            await page.locator(".stats-commission-total").textContent(),
+            new RegExp(String(fixture.team)),
+          );
+        }
+        for(const width of [320,1440]){
+          await page.setViewportSize({width,height:900});
+          assert(await page.locator('.stats-commission-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth),'Modal fits viewport');
+          if(fixture.team===150)await page.screenshot({path:require('path').join(process.env.TEMP,'commission-breakdown-'+width+'.png')});
+        }
+        await page.getByRole("button", { name: "Cerrar desglose", exact: true }).click();
+        await page.locator(".stats-commission-dialog").waitFor({ state: "detached" });
+
         await page.locator(".stats-chart [data-metric=euros]").click();
         const feb = page.locator(".stats-bars>div").nth(28);
         assert.match(

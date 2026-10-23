@@ -28,6 +28,12 @@ begin
  ), months as (
    select scope,date_trunc('month',signed_on)::date month_start,jsonb_build_object('month',date_trunc('month',signed_on)::date,'units',coalesce(sum(units) filter(where is_own or scope<>'global'),0),'euros',coalesce(sum(euros),0),'own_units',coalesce(sum(units) filter(where is_own),0),'team_units',coalesce(sum(units) filter(where not is_own),0),'own_euros',coalesce(sum(euros) filter(where is_own),0),'team_euros',coalesce(sum(euros) filter(where not is_own),0),'pending',count(*) filter(where euros is null)) value
    from scopes group by scope,date_trunc('month',signed_on)
+ ), team_sources as (
+   select s.producer user_id,coalesce(nullif(trim(p.first_name||' '||p.last_name),''),'Consultor del equipo') name,
+     sum(s.units) units,coalesce(sum(s.euros),0) euros,count(*) signatures,count(*) filter(where s.euros is null) pending
+   from source s left join public.consultant_profiles p on p.user_id=s.producer
+   where s.beneficiary=auth.uid() and not s.is_own
+   group by s.producer,p.first_name,p.last_name
  ), people as (
    select b.user_id,p.first_name||' '||p.last_name name,
     coalesce(sum(s.units) filter(where s.is_own),0) own_units,
@@ -43,6 +49,7 @@ begin
    'scopes',coalesce((select jsonb_object_agg(scope,value) from summary),'{}'::jsonb),
    'days',coalesce((select jsonb_object_agg(scope,items) from (select scope,jsonb_agg(value order by signed_on) items from days group by scope) d),'{}'::jsonb),
    'months',coalesce((select jsonb_object_agg(scope,items) from (select scope,jsonb_agg(value order by month_start) items from months group by scope) m),'{}'::jsonb),
+   'team_sources',coalesce((select jsonb_agg(to_jsonb(t) order by euros desc,name) from team_sources t),'[]'::jsonb),
    'people',coalesce((select jsonb_agg(to_jsonb(p) order by name) from people p),'[]'::jsonb),
    'incomplete_team',(select count(*) from public.client_products p join public.portfolio_clients c on c.id=p.client_id where c.owner_id in(select user_id from permitted where user_id<>auth.uid()) and (p.signed_on is null or p.units is null)),
    'undated_own',(select count(*) from public.client_products p join public.portfolio_clients c on c.id=p.client_id where c.owner_id=auth.uid() and (p.signed_on is null or p.units is null)),

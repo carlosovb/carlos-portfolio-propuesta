@@ -74,6 +74,83 @@
       render();
     }
   }
+  function openTeamSources(opener) {
+    const dialog = n("dialog", undefined, "stats-commission-dialog");
+    dialog.setAttribute("aria-labelledby", "stats-commission-title");
+    const header = n("div", undefined, "stats-commission-header"),
+      title = n("h2", "Lo que te genera tu equipo.");
+    title.id = "stats-commission-title";
+    const close = n("button", "×", "stats-commission-close");
+    close.type = "button";
+    close.setAttribute("aria-label", "Cerrar desglose");
+    close.onclick = () => dialog.close();
+    header.append(title, close);
+    const rows = data.team_sources || [],
+      total = rows.reduce((sum, row) => sum + Number(row.euros || 0), 0);
+    dialog.append(
+      header,
+      n(
+        "p",
+        "De " +
+          monthName(from) +
+          " a " +
+          monthName(to) +
+          " · Tu comisión por las firmas de cada consultor.",
+        "stats-caption",
+      ),
+      n("strong", eur(total), "stats-commission-total"),
+    );
+    const list = n("div", undefined, "stats-commission-list");
+    for (const row of rows) {
+      const item = n("article", undefined, "stats-commission-row"),
+        person = n("div"),
+        units = n("div"),
+        money = n("div");
+      person.append(
+        n("h3", row.name),
+        n("small", num(row.signatures) + " firmas registradas"),
+      );
+      units.append(n("small", "Unidades firmadas"), n("strong", num(row.units) + " U"));
+      money.append(n("small", "Te corresponde"), n("strong", eur(row.euros)));
+      item.append(person, units, money);
+      if (row.pending)
+        item.append(
+          n(
+            "p",
+            num(row.pending) + " firmas con comisión pendiente de cálculo.",
+            "stats-warning",
+          ),
+        );
+      list.append(item);
+    }
+    if (!rows.length)
+      list.append(
+        n("p", "No hay firmas del equipo que te generen comisión en este periodo."),
+      );
+    dialog.append(list);
+    host.append(dialog);
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) {
+        const r = dialog.getBoundingClientRect();
+        if (
+          event.clientX < r.left ||
+          event.clientX > r.right ||
+          event.clientY < r.top ||
+          event.clientY > r.bottom
+        )
+          dialog.close();
+      }
+    });
+    dialog.addEventListener(
+      "close",
+      () => {
+        dialog.remove();
+        if (opener?.isConnected) opener.focus({ preventScroll: true });
+      },
+      { once: true },
+    );
+    dialog.showModal();
+  }
   function render() {
     host.replaceChildren();
     const hero = n("div", undefined, "stats-heading");
@@ -206,6 +283,16 @@
       const a = n("article", undefined, "stats-metric");
       a.dataset.kind = kind;
       a.append(n("small", label), n("strong", value));
+      if (kind === "money" && scope === "team") {
+        const b = n("button", "Ver desglose por consultor ↗", "stats-commission-open");
+        b.type = "button";
+        b.onclick = () => openTeamSources(b);
+        a.append(b);
+        a.classList.add("stats-metric-clickable");
+        a.onclick = (event) => {
+          if (event.target !== b) openTeamSources(b);
+        };
+      }
       metrics.append(a);
     });
     host.append(metrics);
@@ -222,6 +309,18 @@
       n("strong", eur(s.team_euros)),
       n("span", num(s.team_units) + " U vinculadas a comisiones de equipo"),
     );
+    const breakdown = n(
+      "button",
+      "Ver tu desglose por consultor ↗",
+      "stats-commission-open",
+    );
+    breakdown.type = "button";
+    breakdown.onclick = () => openTeamSources(breakdown);
+    team.append(breakdown);
+    team.classList.add("stats-team-clickable");
+    team.onclick = (event) => {
+      if (event.target !== breakdown) openTeamSources(breakdown);
+    };
     split.append(own, team);
     host.append(split);
     if (scope === "global")
