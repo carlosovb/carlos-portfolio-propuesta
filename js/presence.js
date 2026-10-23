@@ -8,6 +8,17 @@
     rows = null,
     checkedAt = 0,
     pending = null;
+  const roleNames = {
+    financial_trainee: "FT",
+    financial_consultant: "FC",
+    financial_consultant_senior_i: "FC I",
+    financial_consultant_senior_ii: "FC II",
+    team_manager: "GE",
+    zone_coordinator: "CZ",
+    agency_director: "DA",
+    regional_director: "DR",
+    national_director: "DN",
+  };
   const widgets = [...document.querySelectorAll("[data-panel-presence]")];
   function render() {
     const fresh = rows !== null && Date.now() - checkedAt < 95000;
@@ -27,8 +38,25 @@
       list.className = "presence-list";
       if (fresh) {
         for (const row of rows) {
-          const item = document.createElement("span");
-          item.textContent = row.name;
+          const item = document.createElement("div"),
+            role = document.createElement("span"),
+            info = document.createElement("span"),
+            name = document.createElement("strong");
+          item.className = "presence-person";
+          role.className = "presence-role";
+          role.dataset.position = row.position_code || "unassigned";
+          role.textContent = roleNames[row.position_code] || "—";
+          role.title = row.position || "Puesto pendiente de asignar";
+          info.className = "presence-person-info";
+          name.className = "presence-name";
+          name.textContent = row.name;
+          info.append(name);
+          if (row.office_code) {
+            const office = document.createElement("small");
+            office.textContent = row.office_code;
+            info.append(office);
+          }
+          item.append(role, info);
           list.append(item);
         }
         if (!rows.length)

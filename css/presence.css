@@ -84,3 +84,64 @@ html[data-theme="light"] .consultant-presence[data-state="online"] {
     margin-top: 7px;
   }
 }
+
+.presence-person {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.presence-person-info {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.presence-name {
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.presence-person small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.presence-role {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 5px 7px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+}
+.presence-role[data-position="financial_trainee"],
+.presence-role[data-position="financial_consultant"] {
+  color: #80b7ea;
+  background: #80b7ea12;
+  border-color: #80b7ea44;
+}
+.presence-role[data-position="team_manager"],
+.presence-role[data-position="zone_coordinator"] {
+  color: #7fc7a7;
+  background: #7fc7a712;
+  border-color: #7fc7a744;
+}
+html[data-theme="light"] .presence-role[data-position="financial_trainee"],
+html[data-theme="light"] .presence-role[data-position="financial_consultant"] {
+  color: #276aa0;
+}
+html[data-theme="light"] .presence-role[data-position="team_manager"],
+html[data-theme="light"] .presence-role[data-position="zone_coordinator"] {
+  color: #237350;
+}
+.presence-list {
+  min-width: 240px;
+  box-sizing: border-box;
+  max-width: min(340px, calc(100vw - 40px));
+}

@@ -16,6 +16,7 @@
   let CARD_HEIGHT = 320;
   let LEVEL_GAP = 410;
   let clientCounts = null;
+  let officeBusy = false;
   const photos = new Map();
   const places = new Map();
   const fullName = (person) =>
@@ -97,6 +98,15 @@
     get("team-member-photo").replaceChildren();
     ["my-team-multiplier", "my-team-manager"].forEach((id) => (get(id).value = ""));
     get("my-team-position").value = "";
+    get("my-office-form").reset();
+    get("my-office").disabled = true;
+    get("save-my-office").disabled = true;
+    get("new-office-fields").hidden = true;
+    get("new-office-code").disabled = true;
+    officeBusy = false;
+    get("create-office").disabled = false;
+    get("team-save-start-date").disabled = false;
+    notice("office-notice", "");
     [
       "team-member-name",
       "team-member-position",
@@ -277,6 +287,7 @@
     get("team-member-clients").textContent = totals?.clients ?? "—";
     get("team-member-interested").textContent = totals?.interested ?? "—";
     avatar(get("team-member-photo"), member, true);
+    get("team-progress-details").open = false;
     const progressHost = get("team-member-progress");
     progressHost.replaceChildren();
     const canView =
@@ -316,6 +327,13 @@
         "El progreso de promoción es privado para este consultor y los responsables de su rama.";
     const form = get("team-assignment-form");
     form.hidden = account?.role !== "admin";
+    form.elements.consultant_since.value = member.consultant_since || "";
+    form.elements.consultant_since.max = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Atlantic/Canary",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
     form.elements.position.value = member.position_code || "";
     form.elements.manager.replaceChildren(
       new Option("Responsable principal (por defecto)", ""),
@@ -408,8 +426,13 @@
     account = details;
     clearPhotos();
     try {
-      const mine = await backend.getMyTeamProfile();
+      const [mine, office] = await Promise.all([
+        backend.getMyTeamProfile(),
+        backend.getMyOffice().catch(() => null),
+      ]);
       if (snapshot !== revision) return;
+      renderOffice(office);
+
       me = mine;
       get("my-team-position").value = mine?.position_code || "";
       window.PanelSelects.sync();
@@ -433,6 +456,103 @@
         );
     }
   }
+  function renderOffice(data, selected) {
+    const select = get("my-office");
+    select.replaceChildren();
+    for (const code of data?.offices || ["LPA1"]) {
+      const option = document.createElement("option");
+      option.value = code;
+      option.textContent = code;
+      select.append(option);
+    }
+    if (account?.role === "admin") {
+      const option = document.createElement("option");
+      option.value = "__add__";
+      option.textContent = "＋ Añadir oficina…";
+      select.append(option);
+    }
+    select.value = selected || data?.office_code || "LPA1";
+    select.disabled = !data;
+    get("save-my-office").disabled = !data;
+    get("new-office-fields").hidden = true;
+    get("new-office-code").disabled = true;
+    window.PanelSelects.sync();
+    if (!data)
+      notice(
+        "office-notice",
+        "No se ha podido cargar la oficina. Pulsa Actualizar para reintentar.",
+      );
+  }
+  get("my-office").addEventListener("change", () => {
+    const adding = get("my-office").value === "__add__";
+    get("new-office-fields").hidden = !adding;
+    get("new-office-code").disabled = !adding;
+    get("new-office-code").required = adding;
+    get("save-my-office").disabled = adding;
+    notice("office-notice", "");
+    if (adding) get("new-office-code").focus();
+  });
+  async function createOffice() {
+    if (officeBusy || !account || account.role !== "admin") return;
+    const input = get("new-office-code");
+    if (!input.reportValidity()) return;
+    const code = input.value.trim().toUpperCase();
+    if (!code) return;
+    const snapshot = revision;
+    officeBusy = true;
+    get("create-office").disabled = true;
+    try {
+      const data = await backend.createOffice(code);
+      if (snapshot !== revision || !account) return;
+      renderOffice(data, code);
+      input.value = "";
+      notice(
+        "office-notice",
+        "Oficina añadida. Pulsa Guardar oficina si quieres asignártela.",
+      );
+    } catch {
+      if (snapshot === revision)
+        notice(
+          "office-notice",
+          "No se ha podido añadir la oficina. Usa de 2 a 12 letras, números o guiones.",
+        );
+    } finally {
+      if (snapshot === revision) {
+        officeBusy = false;
+        get("create-office").disabled = false;
+      }
+    }
+  }
+  get("create-office").addEventListener("click", createOffice);
+  get("my-office-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!account || officeBusy) return;
+    if (get("my-office").value === "__add__") {
+      createOffice();
+      return;
+    }
+    const snapshot = revision;
+    officeBusy = true;
+    get("save-my-office").disabled = true;
+    try {
+      const data = await backend.saveMyOffice(get("my-office").value);
+      if (snapshot !== revision || !account) return;
+      renderOffice(data);
+      notice("office-notice", "Oficina guardada.");
+      window.PanelPresence?.refresh();
+    } catch {
+      if (snapshot === revision)
+        notice(
+          "office-notice",
+          "No se ha podido guardar la oficina. Completa primero tus datos del perfil y vuelve a intentarlo.",
+        );
+    } finally {
+      if (snapshot === revision) {
+        officeBusy = false;
+        get("save-my-office").disabled = false;
+      }
+    }
+  });
   async function editPhoto(file) {
     if (saving || !account) return;
     const snapshot = revision;
@@ -458,6 +578,37 @@
       get("team-photo-input").value = "";
     }
   }
+  get("team-save-start-date").addEventListener("click", async () => {
+    if (saving || account?.role !== "admin" || !selected) return;
+    const input = get("team-assignment-form").elements.consultant_since;
+    if (!input.value || !input.reportValidity()) {
+      notice("team-member-notice", "Selecciona una fecha de inicio válida.");
+      return;
+    }
+    const snapshot = revision,
+      target = selected.user_id,
+      date = input.value;
+    saving = true;
+    get("team-save-start-date").disabled = true;
+    try {
+      const updated = await backend.adminSetConsultantSince(target, date);
+      if (!updated) throw Error("Not saved");
+      if (snapshot !== revision || selected?.user_id !== target) return;
+      selected.consultant_since = date;
+      notice("team-member-notice", "Fecha de inicio actualizada.");
+    } catch {
+      if (snapshot === revision)
+        notice(
+          "team-member-notice",
+          "No se ha podido actualizar la fecha. Solo los administradores pueden modificarla.",
+        );
+    } finally {
+      if (snapshot === revision) {
+        saving = false;
+        get("team-save-start-date").disabled = false;
+      }
+    }
+  });
   get("team-photo-input").addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (file) editPhoto(file);

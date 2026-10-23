@@ -851,3 +851,33 @@
 .bulk-row > .request-row {
   min-width: 0;
 }
+
+@media (min-width: 851px) {
+  .panel-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+  }
+  .panel-sidebar .panel-version {
+    margin-top: auto;
+    padding-top: 28px;
+    text-align: center;
+    letter-spacing: 0.08em;
+  }
+}
+@media (max-width: 850px) {
+  .panel-sidebar .panel-version {
+    display: none;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+  }
+  .panel-sidebar.menu-open .panel-version {
+    display: block;
+  }
+}

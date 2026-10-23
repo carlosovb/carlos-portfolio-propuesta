@@ -81,6 +81,10 @@
     trigger.append(icon);
     trigger.type = "button";
     trigger.disabled = input.disabled || input.readOnly;
+    new MutationObserver(() => {
+      trigger.disabled = input.disabled || input.readOnly;
+      if (trigger.disabled && opened?.wrap === wrap) close();
+    }).observe(input, { attributes: true, attributeFilter: ["disabled", "readonly"] });
     trigger.setAttribute("aria-label", "Abrir calendario: " + fieldLabel);
     trigger.setAttribute("aria-expanded", "false");
     const popup = el("span", null, "contract-calendar");

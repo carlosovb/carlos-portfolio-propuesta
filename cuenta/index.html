@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/base.css?v=account-layout2" />
     <link rel="stylesheet" href="../css/styles.css?v=account-layout2" />
     <link rel="stylesheet" href="../css/panel.css?v=account-layout2" />
+    <link rel="stylesheet" href="../css/contract-controls.css?v=office1" />
     <link rel="stylesheet" href="../css/account.css?v=account-layout2" />
   </head>
   <body class="panel-page account-page">
@@ -52,6 +53,10 @@
               maxlength="30"
               required
             />
+          </label>
+          <label>
+            ¿Desde cuándo eres consultor de OVB?
+            <input name="consultant_since" type="date" min="1900-01-01" required />
           </label>
           <label>
             Correo de acceso
@@ -110,7 +115,8 @@
       </div>
     </main>
     <script src="../js/backend-config.js?v=account-layout2" defer></script>
-    <script src="../js/backend.js?v=apex1" defer></script>
-    <script src="../js/account.js?v=activation-password3" defer></script>
+    <script src="../js/backend.js?v=office-referrals1" defer></script>
+    <script src="../js/date-picker.js?v=office1" defer></script>
+    <script src="../js/account.js?v=office1" defer></script>
   </body>
 </html>

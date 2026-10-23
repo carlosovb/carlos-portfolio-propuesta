@@ -21,6 +21,7 @@
     "search_my_clients",
     "get_client_view_preference",
     "get_my_team_profile",
+    "get_my_office",
     "get_team_directory",
     "get_team_client_counts",
     "list_consultants",
@@ -543,6 +544,35 @@
         body: JSON.stringify({ p_id: id }),
       });
     },
+    async adminSetConsultantSince(userId, date) {
+      return (
+        await authenticated("/rest/v1/rpc/admin_set_consultant_since", {
+          method: "POST",
+          body: JSON.stringify({ p_user: userId, p_since: date }),
+        })
+      ).json();
+    },
+    async getMyOffice() {
+      return (
+        await authenticated("/rest/v1/rpc/get_my_office", { method: "POST", body: "{}" })
+      ).json();
+    },
+    async saveMyOffice(code) {
+      return (
+        await authenticated("/rest/v1/rpc/save_my_office", {
+          method: "POST",
+          body: JSON.stringify({ p_office: code }),
+        })
+      ).json();
+    },
+    async createOffice(code) {
+      return (
+        await authenticated("/rest/v1/rpc/create_consultant_office", {
+          method: "POST",
+          body: JSON.stringify({ p_code: code }),
+        })
+      ).json();
+    },
     async getMyTeamProfile() {
       return (
         await authenticated("/rest/v1/rpc/get_my_team_profile", {
@@ -650,6 +680,7 @@
           p_first_name: fields.first_name,
           p_last_name: fields.last_name,
           p_phone: fields.phone,
+          p_consultant_since: fields.consultant_since || null,
         }),
       });
       accessDetails = await response.json();

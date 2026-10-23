@@ -15,7 +15,9 @@
   }
   function configureForm() {
     const recovery = link.type === "recovery";
-    get("account-step").textContent = recovery ? "Nueva contraseña" : "02 · Perfil y contraseña";
+    get("account-step").textContent = recovery
+      ? "Nueva contraseña"
+      : "02 · Perfil y contraseña";
     get("account-title").textContent = recovery
       ? "Elige una contraseña nueva."
       : "Bienvenido a tu espacio.";
@@ -27,6 +29,14 @@
     form.elements.first_name.value = details?.profile?.first_name || "";
     form.elements.last_name.value = details?.profile?.last_name || "";
     form.elements.phone.value = details?.profile?.phone || "";
+    form.elements.consultant_since.value = details?.profile?.consultant_since || "";
+    form.elements.consultant_since.readOnly = !!details?.profile?.consultant_since;
+    form.elements.consultant_since.max = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Atlantic/Canary",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
     form.elements.email.value = details?.email || "";
     form.hidden = false;
   }
@@ -40,17 +50,19 @@
       "Introduce el correo con el que te dieron de alta.";
     get("recovery-form").hidden = false;
   } else if (["invite", "recovery"].includes(link.type) && !link.error) {
-    get("account-title").textContent = link.type === 'recovery' ? 'Recupera tu acceso.' : 'Activa tu cuenta.';
-    get("account-description").textContent = 'Tu enlace está listo para comprobarse. Pulsa el botón para continuar de forma segura.';
+    get("account-title").textContent =
+      link.type === "recovery" ? "Recupera tu acceso." : "Activa tu cuenta.";
+    get("account-description").textContent =
+      "Tu enlace está listo para comprobarse. Pulsa el botón para continuar de forma segura.";
     get("verify-account-link").hidden = false;
   } else {
-    get("account-step").textContent = 'Necesitas tu invitación';
-    get("account-title").textContent = 'Abre tu enlace personal.';
-    get("account-description").textContent = 'Utiliza el enlace completo que te ha enviado el administrador para preparar tu cuenta.';
+    get("account-step").textContent = "Necesitas tu invitación";
+    get("account-title").textContent = "Abre tu enlace personal.";
+    get("account-description").textContent =
+      "Utiliza el enlace completo que te ha enviado el administrador para preparar tu cuenta.";
     message(
       "Necesitas un enlace válido de invitación o recuperación. Si ha caducado, solicita uno nuevo al administrador.",
     );
-
   }
 
   get("verify-account-link").addEventListener("click", async () => {
@@ -100,6 +112,7 @@
           first_name: form.elements.first_name.value.trim(),
           last_name: form.elements.last_name.value.trim(),
           phone: form.elements.phone.value.trim(),
+          consultant_since: form.elements.consultant_since.value,
         });
       }
       // En una invitación siempre guardar la contraseña elegida, aunque Auth ya

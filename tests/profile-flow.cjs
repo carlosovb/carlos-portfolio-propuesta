@@ -59,6 +59,26 @@ async function mock(context, state) {
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
     if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
+    if (url.pathname.endsWith("/rpc/get_my_office"))
+      return json({
+        office_code: state.office || "LPA1",
+        offices: state.offices || ["LPA1"],
+      });
+    if (url.pathname.endsWith("/rpc/create_consultant_office")) {
+      if (state.role !== "admin") return json({}, 403);
+      state.offices = [
+        ...new Set([...(state.offices || ["LPA1"]), body.p_code.toUpperCase()]),
+      ];
+      return json({ office_code: state.office || "LPA1", offices: state.offices });
+    }
+    if (url.pathname.endsWith("/rpc/save_my_office")) {
+      state.office = body.p_office;
+      return json({ office_code: state.office, offices: state.offices || ["LPA1"] });
+    }
+    if (url.pathname.endsWith("/rpc/admin_set_consultant_since")) {
+      state.changedStart = body;
+      return json(state.role === "admin");
+    }
     if (url.pathname === "/auth/v1/token")
       return body.password === "incorrecta" ? json({}, 400) : json(session);
     if (url.pathname === "/auth/v1/verify") {
@@ -86,6 +106,7 @@ async function mock(context, state) {
     if (url.pathname.endsWith("/rpc/is_panel_owner")) return json(state.role === "admin");
     if (url.pathname.endsWith("/rpc/save_my_profile")) {
       assert.deepEqual(Object.keys(body).sort(), [
+        "p_consultant_since",
         "p_first_name",
         "p_last_name",
         "p_phone",
@@ -94,6 +115,7 @@ async function mock(context, state) {
         first_name: body.p_first_name,
         last_name: body.p_last_name,
         phone: body.p_phone,
+        consultant_since: body.p_consultant_since,
       };
       return json(access());
     }
@@ -313,11 +335,30 @@ async function login(page, base) {
       await page.locator('#profile-form [name="first_name"]').fill("Nombre actualizado");
       await page.locator('#profile-form [name="last_name"]').fill("Apellidos de prueba");
       await page.locator('#profile-form [name="phone"]').fill("000000001");
+      await page.locator('#profile-form [name="consultant_since"]').fill("2020-01-01");
       await page.locator("#save-profile").click();
       await page.waitForFunction(() =>
         document.querySelector("#profile-notice").textContent.includes("guardado"),
       );
       assert.equal(data.profile.first_name, "Nombre actualizado");
+      assert.equal(
+        await page
+          .locator('#profile-form [name="consultant_since"]')
+          .evaluate((el) => el.readOnly),
+        true,
+      );
+      assert.equal(await page.locator(".panel-version").textContent(), "v0.5");
+      await page.locator("#my-office").selectOption("__add__", { force: true });
+      await page.locator("#new-office-code").fill("LPA2");
+      await page.locator("#create-office").click();
+      await page.waitForFunction(
+        () => document.querySelector("#my-office").value === "LPA2",
+      );
+      await page.locator("#save-my-office").click();
+      await page.waitForFunction(() =>
+        document.querySelector("#office-notice").textContent.includes("guardada"),
+      );
+      assert.equal(data.office, "LPA2");
       assert.equal(await page.locator("#profile-role").getAttribute("readonly"), "");
       await page.locator('[name="current_password"]').fill("incorrecta");
       await page.locator('[name="new_password"]').fill("contraseña nueva de prueba");
@@ -381,6 +422,7 @@ async function login(page, base) {
     await page.locator('[name="first_name"]').fill("Consultor");
     await page.locator('[name="last_name"]').fill("De prueba");
     await page.locator('[name="phone"]').fill("000000000");
+    await page.locator('[name="consultant_since"]').fill("2020-01-01");
     await page.locator('[name="password"]').fill("contraseña personal de prueba");
     await page.locator('[name="confirm_password"]').fill("contraseña personal de prueba");
     await page.locator("#complete-account").click();
@@ -389,7 +431,9 @@ async function login(page, base) {
     assert.equal(data.passwordChanges, 1);
     assert.equal(data.requestReads, 0);
     assert.equal(
-      await page.locator('#panel-navigation [data-view="consultants"]').isVisible(),
+      await page
+        .locator('#panel-navigation [data-view="consultants"]')
+        .evaluate((el) => el.hidden),
       false,
     );
     assert.equal(
@@ -645,6 +689,11 @@ async function login(page, base) {
     if (process.env.TEAM_SCREENSHOT)
       await treePage.screenshot({ path: process.env.TEAM_SCREENSHOT });
     await treePage.locator(".team-node-self").click();
+    assert.equal(
+      await treePage.locator("#team-progress-details").evaluate((el) => el.open),
+      false,
+    );
+    await treePage.locator("#team-progress-details > summary").click();
     await treePage.locator(".career-goal-tabs button").first().waitFor();
     assert.equal(await treePage.locator(".career-goal-tabs button").count(), 2);
     await treePage
@@ -767,6 +816,16 @@ async function login(page, base) {
     await treePage.locator(".team-node-self").click();
     await treePage.locator("#team-assignment-form").waitFor();
     await treePage
+      .locator('#team-assignment-form [name="consultant_since"]')
+      .fill("2019-05-04");
+    await treePage.locator("#team-save-start-date").click();
+    await treePage.waitForFunction(() =>
+      document
+        .querySelector("#team-member-notice")
+        .textContent.includes("Fecha de inicio actualizada"),
+    );
+    assert.equal(treeData.changedStart.p_since, "2019-05-04");
+    await treePage
       .locator("#team-assignment-form")
       .getByRole("combobox", { name: "Puesto", exact: true })
       .click();
@@ -818,6 +877,7 @@ async function login(page, base) {
         { historical: 0, quarter: 0, totalQuarter: 0 },
       ),
     );
+    await treePage.locator("#team-progress-details").evaluate((el) => (el.open = true));
     await treePage
       .locator("#team-member-progress")
       .getByRole("button", { name: "Gestor de Equipo", exact: true })

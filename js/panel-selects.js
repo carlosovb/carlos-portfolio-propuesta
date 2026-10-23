@@ -157,7 +157,7 @@
     sync();
   }
   for (const select of document.querySelectorAll(
-    "#my-team-position,#team-assignment-form select",
+    "#my-team-position,#my-office,#team-assignment-form select",
   ))
     enhance(select);
   document.addEventListener("pointerdown", (e) => {

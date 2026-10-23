@@ -14,7 +14,14 @@ const { chromium } = require("playwright"),
     await page.addStyleTag({ path: "css/presence.css" });
     await page.evaluate(() => {
       window.crypto.randomUUID = () => "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
-      window.currentPresence = [{ user_id: "one", name: "Consultor de prueba" }];
+      window.currentPresence = [
+        {
+          user_id: "one",
+          name: "Consultor de prueba",
+          position_code: "financial_consultant_senior_ii",
+          office_code: "LPA1",
+        },
+      ];
       window.calls = [];
       window.PortfolioBackend = {
         updatePresence: async (id, connected) => {
@@ -33,8 +40,13 @@ const { chromium } = require("playwright"),
     assert.equal(await page.locator(".presence-ready").count(), 2);
     await page.locator(".presence-summary summary").first().click();
     assert.equal(
-      await page.locator(".presence-list").first().textContent(),
+      await page.locator(".presence-name").first().textContent(),
       "Consultor de prueba",
+    );
+    assert.equal(await page.locator(".presence-role").first().textContent(), "FC II");
+    assert.equal(
+      await page.locator(".presence-person small").first().textContent(),
+      "LPA1",
     );
     await page.locator(".presence-list span").first().click();
     assert.equal(
@@ -67,7 +79,14 @@ const { chromium } = require("playwright"),
     });
     assert.equal(await page.locator("[data-state=offline]").count(), 1);
     await page.evaluate(async () => {
-      window.currentPresence = [{ user_id: "one", name: "Consultor de prueba" }];
+      window.currentPresence = [
+        {
+          user_id: "one",
+          name: "Consultor de prueba",
+          position_code: "financial_consultant_senior_ii",
+          office_code: "LPA1",
+        },
+      ];
       await window.PanelPresence.refresh();
     });
     for (const width of [320, 1440]) {

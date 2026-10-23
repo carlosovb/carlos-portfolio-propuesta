@@ -1252,3 +1252,58 @@
 .team-photo-options-content .panel-text-button {
   padding: 6px 10px;
 }
+
+.my-office-form {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 320px);
+  margin: 24px auto 0;
+  text-align: left;
+}
+.my-office-form label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.my-office-form .panel-select {
+  width: 100%;
+  min-width: 0;
+}
+.my-office-form > button {
+  justify-self: start;
+}
+#new-office-fields {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+#new-office-fields button {
+  margin-top: 12px;
+}
+#office-notice {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.team-progress-details {
+  border-top: 1px solid var(--line, #344354);
+  padding-top: 20px;
+  margin-top: 24px;
+}
+.team-progress-details > summary {
+  cursor: pointer;
+  color: var(--accent, #e7b38a);
+  font-weight: 700;
+  padding: 12px 0;
+}
+.team-progress-details > summary span {
+  font-weight: 400;
+  color: var(--muted, #bdc6d2);
+  font-size: 0.8rem;
+  margin-left: 12px;
+}
+.team-progress-details[open] > summary {
+  margin-bottom: 16px;
+}

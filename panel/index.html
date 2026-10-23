@@ -10,10 +10,10 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=team2" />
-    <link rel="stylesheet" href="../css/presence.css?v=presence1" />
+    <link rel="stylesheet" href="../css/panel.css?v=officeversion1-team2" />
+    <link rel="stylesheet" href="../css/presence.css?v=office-referrals1" />
     <link rel="stylesheet" href="../css/career.css?v=copperprogress1" />
-    <link rel="stylesheet" href="../css/team.css?v=clients2" />
+    <link rel="stylesheet" href="../css/team.css?v=office1" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/clients.css?v=presence1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
@@ -111,7 +111,7 @@
             Equipo
             <span>↗</span>
           </button>
-          <button type="button" data-view="consultants" data-admin-only>
+          <button type="button" data-view="consultants">
             Consultores
             <span>↗</span>
           </button>
@@ -130,6 +130,7 @@
         <small class="session-note">
           La sesión se cierra tras 30 minutos sin actividad.
         </small>
+        <small class="panel-version" aria-label="Versión de la web">v0.5</small>
       </aside>
       <main class="panel-main">
         <div class="panel-heading">
@@ -1003,6 +1004,38 @@
                     <small>JPG, PNG o WebP · Máximo 5 MB</small>
                   </div>
                 </details>
+                <form id="my-office-form" class="my-office-form">
+                  <label>
+                    Oficina
+                    <select id="my-office" name="office" disabled>
+                      <option value="LPA1">LPA1</option>
+                    </select>
+                  </label>
+                  <button
+                    type="submit"
+                    id="save-my-office"
+                    class="panel-secondary"
+                    disabled
+                  >
+                    Guardar oficina
+                  </button>
+                  <div id="new-office-fields" hidden>
+                    <label>
+                      Código de la nueva oficina
+                      <input
+                        id="new-office-code"
+                        maxlength="12"
+                        pattern="[A-Za-z0-9][A-Za-z0-9-]{1,11}"
+                        placeholder="Ej. LPA2"
+                        disabled
+                      />
+                    </label>
+                    <button type="button" id="create-office" class="panel-secondary">
+                      Añadir oficina
+                    </button>
+                  </div>
+                  <p id="office-notice" class="panel-muted" role="status" hidden></p>
+                </form>
               </div>
               <div class="profile-professional-summary">
                 <p class="eyebrow">Mi perfil · Tu lugar en el equipo</p>
@@ -1075,6 +1108,14 @@
                     required
                   />
                 </label>
+                <label>
+                  Consultor de OVB desde
+                  <input name="consultant_since" type="date" min="1900-01-01" />
+                </label>
+                <small class="panel-muted">
+                  Una vez guardada, solo un administrador puede corregir esta fecha desde
+                  Equipo.
+                </small>
                 <label>
                   Correo de acceso
                   <input id="profile-email" type="email" readonly />
@@ -1236,11 +1277,17 @@
             </dl>
           </div>
         </div>
-        <section
-          id="team-member-progress"
-          class="career-member-progress"
-          aria-label="Progreso profesional"
-        ></section>
+        <details id="team-progress-details" class="team-progress-details">
+          <summary>
+            Su siguiente paso
+            <span>Ver progreso de carrera</span>
+          </summary>
+          <section
+            id="team-member-progress"
+            class="career-member-progress"
+            aria-label="Progreso profesional"
+          ></section>
+        </details>
         <form id="team-assignment-form" hidden>
           <p class="eyebrow">Administración del equipo</p>
           <label>
@@ -1256,6 +1303,13 @@
             Depende de
             <select name="manager"></select>
           </label>
+          <label>
+            Consultor de OVB desde
+            <input name="consultant_since" type="date" min="1900-01-01" />
+          </label>
+          <button type="button" class="panel-secondary" id="team-save-start-date">
+            Guardar fecha de inicio
+          </button>
           <button type="submit" class="btn" id="team-save-assignment">
             Guardar puesto y responsable
           </button>
@@ -1368,13 +1422,13 @@
     <script src="../js/companies.js?v=picker1" defer></script>
     <script src="../js/confirm.js?v=apex1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=presence1" defer></script>
+    <script src="../js/backend.js?v=office-referrals1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/axa-portfolios-data.js?v=clientdesign1" defer></script>
     <script src="../js/axa-portfolios.js?v=clientdesign1" defer></script>
     <script src="../js/contract-controls.js?v=apex2" defer></script>
-    <script src="../js/date-picker.js?v=periodrange1" defer></script>
+    <script src="../js/date-picker.js?v=office-referrals1" defer></script>
     <script src="../js/product-picker.js?v=apex1" defer></script>
     <script src="../js/client-products.js?v=importguide1" defer></script>
     <script src="../js/clients-workspace.js?v=clientdesign1" defer></script>
@@ -1415,16 +1469,16 @@
     <script src="../js/career-data.js?v=ge-3ft1" defer></script>
     <script src="../js/career-progress.js?v=units1" defer></script>
     <script src="../js/career.js?v=copperprogress1" defer></script>
-    <script src="../js/panel-selects.js?v=progress1" defer></script>
-    <script src="../js/presence.js?v=presence-outside1" defer></script>
-    <script src="../js/team.js?v=presence1-units1" defer></script>
+    <script src="../js/panel-selects.js?v=office1-progress1" defer></script>
+    <script src="../js/presence.js?v=office-referrals1" defer></script>
+    <script src="../js/team.js?v=office-referrals1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=apex1" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
     <script src="../js/statistics.js?v=closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=presence1-apex1" defer></script>
+    <script src="../js/panel.js?v=office-referrals1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

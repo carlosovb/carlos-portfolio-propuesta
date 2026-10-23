@@ -37,7 +37,9 @@ async function handleInvite(req) {
     // Auth verifica la identidad y Postgres comprueba el rol real del solicitante.
     const identity = await call("/auth/v1/user");
     if (!identity.ok) return reply(401, "Unauthorized");
-    const check = await call("/rest/v1/rpc/is_panel_owner", {
+    const caller = await identity.json();
+    if (!/^[0-9a-f-]{36}$/i.test(caller.id || "")) return reply(401, "Unauthorized");
+    const check = await call("/rest/v1/rpc/team_view_allowed", {
       method: "POST",
       body: "{}",
     });
@@ -86,7 +88,13 @@ async function handleInvite(req) {
       typeof input?.email === "string" ? input.email.trim().toLowerCase() : "";
     if (email.length > 254 || !/^[^\s@]+@ovb\.es$/.test(email))
       return reply(400, "Invalid email");
-    // Solo esta llamada usa el privilegio administrativo. Nunca se devuelve su respuesta.
+    const prepared = await call("/rest/v1/rpc/prepare_consultant_invitation", {
+      method: "POST",
+      body: JSON.stringify({ p_email: email }),
+    });
+    if (!prepared.ok || (await prepared.json()) !== true)
+      return reply(409, "Invitation unavailable");
+    // Auth y el registro de la jerarquía usan privilegio administrativo solo en servidor.
     const result = await call(
       "/auth/v1/admin/generate_link?redirect_to=" + encodeURIComponent(redirectTo),
       {
@@ -104,6 +112,16 @@ async function handleInvite(req) {
       !data.hashed_token
     )
       return reply(502, "Invalid invitation response");
+    const target = data.id || data.user?.id;
+    if (!/^[0-9a-f-]{36}$/i.test(target || ""))
+      return reply(502, "Invalid invitation user");
+    const recorded = await call("/rest/v1/rpc/record_consultant_invitation", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + secret },
+      body: JSON.stringify({ p_user: target, p_inviter: caller.id }),
+    });
+    if (!recorded.ok || (await recorded.json()) !== true)
+      return reply(409, "Invitation assignment not confirmed");
     // Solo el enlace de activación necesario; no devolver usuarios, OTP ni tokens de sesión.
     return reply(200, {
       invitation_url:

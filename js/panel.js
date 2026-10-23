@@ -197,6 +197,15 @@
     form.elements.first_name.value = profile?.first_name || "";
     form.elements.last_name.value = profile?.last_name || "";
     form.elements.phone.value = profile?.phone || "";
+    form.elements.consultant_since.value = profile?.consultant_since || "";
+    form.elements.consultant_since.required = !profile;
+    form.elements.consultant_since.readOnly = !!profile?.consultant_since;
+    form.elements.consultant_since.max = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Atlantic/Canary",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
     get("profile-email").value = account?.email || "";
     get("profile-role").value =
       account?.role === "admin" ? "Administrador" : "Consultor · RED";
@@ -275,7 +284,7 @@
 
   get("invite-consultant-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!active || account?.role !== "admin" || mutationPending) return;
+    if (!active || mutationPending) return;
     const snapshot = epoch;
     const button = get("invite-consultant-button");
     const email = event.currentTarget.elements.email.value.trim().toLowerCase();
@@ -326,7 +335,7 @@
   }
   get("invite-consultant-form").elements.email.addEventListener("input", clearInvitation);
   get("copy-invitation").addEventListener("click", async () => {
-    if (!active || account?.role !== "admin" || !get("invitation-url").value) return;
+    if (!active || !get("invitation-url").value) return;
     if (
       await window.PortfolioClipboard.copy(
         get("invitation-url").value,
@@ -474,7 +483,7 @@
             label.textContent = "Eliminar invitación";
             remove.append(icon, label);
             remove.addEventListener("click", async () => {
-              if (!active || account?.role !== "admin" || mutationPending) return;
+              if (!active || mutationPending) return;
               if (
                 !(await window.SiteConfirm.ask(
                   "¿Eliminar la invitación de " +
@@ -511,7 +520,7 @@
             row.append(remove);
           }
           get("consultant-list").append(
-            member.can_delete && member.user_id
+            account?.role === "admin" && member.can_delete && member.user_id
               ? selectableRow("consultant-list", member.user_id, member.email, row)
               : row,
           );
@@ -603,8 +612,7 @@
     )
       return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
-    if (["requests", "consultants"].includes(next) && account?.role !== "admin")
-      next = "home";
+    if (next === "requests" && account?.role !== "admin") next = "home";
     if (next !== "consultants") clearInvitation();
     view = next;
     document.querySelector(".panel-retention").hidden =
@@ -781,6 +789,7 @@
         first_name: form.elements.first_name.value.trim(),
         last_name: form.elements.last_name.value.trim(),
         phone: form.elements.phone.value.trim(),
+        consultant_since: form.elements.consultant_since.value,
       });
       if (!active || epoch !== snapshot) return;
       account = details;
