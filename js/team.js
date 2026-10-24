@@ -98,9 +98,9 @@
     get("team-member-photo").replaceChildren();
     ["my-team-multiplier", "my-team-manager"].forEach((id) => (get(id).value = ""));
     get("my-team-position").value = "";
-    get("my-office-form").reset();
+    get("my-office").value = "LPA1";
+    get("new-office-code").value = "";
     get("my-office").disabled = true;
-    get("save-my-office").disabled = true;
     get("new-office-fields").hidden = true;
     get("new-office-code").disabled = true;
     officeBusy = false;
@@ -450,7 +450,6 @@
       get("my-team-position").value = mine?.position_code || "";
       window.PanelSelects.sync();
       get("my-team-position").disabled = details.role !== "admin";
-      get("team-save-own-position").hidden = details.role !== "admin";
       get("my-team-multiplier").value = multiplier(mine?.multiplier);
       get("my-team-manager").value = mine?.is_root
         ? "Tú · Responsable principal"
@@ -486,7 +485,6 @@
     }
     select.value = selected || data?.office_code || "LPA1";
     select.disabled = !data;
-    get("save-my-office").disabled = !data;
     get("new-office-fields").hidden = true;
     get("new-office-code").disabled = true;
     window.PanelSelects.sync();
@@ -501,7 +499,6 @@
     get("new-office-fields").hidden = !adding;
     get("new-office-code").disabled = !adding;
     get("new-office-code").required = adding;
-    get("save-my-office").disabled = adding;
     notice("office-notice", "");
     if (adding) get("new-office-code").focus();
   });
@@ -519,10 +516,7 @@
       if (snapshot !== revision || !account) return;
       renderOffice(data, code);
       input.value = "";
-      notice(
-        "office-notice",
-        "Oficina añadida. Pulsa Guardar oficina si quieres asignártela.",
-      );
+      notice("office-notice", "Oficina añadida. Pulsa Guardar perfil para asignártela.");
     } catch {
       if (snapshot === revision)
         notice(
@@ -537,35 +531,6 @@
     }
   }
   get("create-office").addEventListener("click", createOffice);
-  get("my-office-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!account || officeBusy) return;
-    if (get("my-office").value === "__add__") {
-      createOffice();
-      return;
-    }
-    const snapshot = revision;
-    officeBusy = true;
-    get("save-my-office").disabled = true;
-    try {
-      const data = await backend.saveMyOffice(get("my-office").value);
-      if (snapshot !== revision || !account) return;
-      renderOffice(data);
-      notice("office-notice", "Oficina guardada.");
-      window.PanelPresence?.refresh();
-    } catch {
-      if (snapshot === revision)
-        notice(
-          "office-notice",
-          "No se ha podido guardar la oficina. Completa primero tus datos del perfil y vuelve a intentarlo.",
-        );
-    } finally {
-      if (snapshot === revision) {
-        officeBusy = false;
-        get("save-my-office").disabled = false;
-      }
-    }
-  });
   async function editPhoto(file) {
     if (saving || !account) return;
     const snapshot = revision;
@@ -646,28 +611,6 @@
     get("my-team-multiplier").value = multiplier(
       positionFactors[get("my-team-position").value],
     );
-  });
-  get("team-save-own-position").addEventListener("click", async () => {
-    if (saving || account?.role !== "admin" || !me?.user_id) return;
-    const snapshot = revision;
-    saving = true;
-    get("team-save-own-position").disabled = true;
-    try {
-      await backend.saveTeamAssignment(
-        me.user_id,
-        get("my-team-position").value,
-        me.is_root ? null : me.manager_id,
-      );
-      if (snapshot !== revision || !account) return;
-      await loadProfile(account);
-      notice("team-profile-notice", "Tu puesto y multiplicador están actualizados.");
-    } catch {
-      if (snapshot === revision)
-        notice("team-profile-notice", "No se ha podido guardar tu puesto.");
-    } finally {
-      saving = false;
-      get("team-save-own-position").disabled = false;
-    }
   });
   get("team-photo-remove").addEventListener("click", async () => {
     if (saving || !account) return;

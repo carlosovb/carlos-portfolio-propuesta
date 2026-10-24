@@ -266,6 +266,45 @@ const assert = require("node:assert/strict");
       ).rows[0].data,
       false,
     );
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/profile-save-all.sql", "utf8"));
+    await as(other);
+    const saved = (
+      await db.query(
+        "select public.save_profile_details('Perfil','Unificado','000000001','2021-01-01','LPA1',null) data",
+      )
+    ).rows[0].data;
+    assert.equal(saved.profile.first_name, "Perfil");
+    assert.equal(saved.profile.office_code, "LPA1");
+    await assert.rejects(() =>
+      db.query(
+        "select public.save_profile_details('No guardar','Unificado','000000001','2021-01-01','UNKNOWN',null)",
+      ),
+    );
+    assert.equal(
+      (await db.query("select public.panel_access() data")).rows[0].data.profile
+        .first_name,
+      "Perfil",
+    );
+    await assert.rejects(() =>
+      db.query(
+        "select public.save_profile_details('No guardar','Unificado','000000001','2021-01-01','LPA2','national_director')",
+      ),
+    );
+    await assert.rejects(() =>
+      db.query(
+        "select public.save_profile_details('No guardar','Unificado','000000001','2022-01-01','LPA2',null)",
+      ),
+    );
+    await as(owner);
+    await db.query(
+      "select public.save_profile_details('Admin','Prueba','000000001',null,'LPA2','team_manager')",
+    );
+    assert.equal(
+      (await db.query("select public.get_my_team_profile() data")).rows[0].data
+        .position_code,
+      "team_manager",
+    );
     await db.exec("reset role;set role anon");
     await assert.rejects(() => office());
     console.log(

@@ -104,13 +104,39 @@ async function mock(context, state) {
     if (url.pathname.endsWith("/rpc/panel_access"))
       return state.legacy ? json({}, 404) : json(state.unauthorized ? null : access());
     if (url.pathname.endsWith("/rpc/is_panel_owner")) return json(state.role === "admin");
-    if (url.pathname.endsWith("/rpc/save_my_profile")) {
-      assert.deepEqual(Object.keys(body).sort(), [
-        "p_consultant_since",
-        "p_first_name",
-        "p_last_name",
-        "p_phone",
-      ]);
+    if (url.pathname.endsWith("/rpc/save_profile_details")) {
+      state.office = body.p_office;
+      if (body.p_position !== null) {
+        assert.equal(state.role, "admin");
+        const member = state.team?.find(
+          (p) =>
+            p.user_id === (state.teamUserId || "22222222-2222-4222-8222-222222222222"),
+        );
+        if (member) {
+          state.assignmentSaved = {
+            p_user_id: member.user_id,
+            p_position_code: body.p_position,
+          };
+          member.position_code = body.p_position;
+          member.position =
+            body.p_position === "financial_trainee"
+              ? "Financial Trainee"
+              : member.position;
+          member.multiplier =
+            body.p_position === "financial_trainee" ? 2 : member.multiplier;
+        }
+      }
+    }
+    if (
+      url.pathname.endsWith("/rpc/save_my_profile") ||
+      url.pathname.endsWith("/rpc/save_profile_details")
+    ) {
+      assert.deepEqual(
+        Object.keys(body)
+          .filter((k) => !["p_office", "p_position"].includes(k))
+          .sort(),
+        ["p_consultant_since", "p_first_name", "p_last_name", "p_phone"],
+      );
       state.profile = {
         first_name: body.p_first_name,
         last_name: body.p_last_name,
@@ -354,12 +380,22 @@ async function login(page, base) {
       await page.waitForFunction(
         () => document.querySelector("#my-office").value === "LPA2",
       );
-      await page.locator("#save-my-office").click();
-      await page.waitForFunction(() =>
-        document.querySelector("#office-notice").textContent.includes("guardada"),
+      await page.locator('#profile-form [name="phone"]').fill("000000002");
+      await page.locator("#save-profile").click();
+      await page.waitForFunction(() => !document.querySelector("#save-profile").disabled);
+      assert.equal(data.profile.phone, "000000002");
+      assert.equal(
+        await page.locator("#save-my-office,#team-save-own-position").count(),
+        0,
       );
       assert.equal(data.office, "LPA2");
-      if(width>850){const version=await page.locator('.panel-version').boundingBox();assert(version.y>=0&&version.y+version.height<=900,'Version visible at sidebar bottom');}
+      if (width > 850) {
+        const version = await page.locator(".panel-version").boundingBox();
+        assert(
+          version.y >= 0 && version.y + version.height <= 900,
+          "Version visible at sidebar bottom",
+        );
+      }
 
       assert.equal(
         await page
@@ -827,9 +863,9 @@ async function login(page, base) {
     assert.equal(await treePage.locator("#my-team-position").isEnabled(), true);
     await treePage.locator("#my-team-position").selectOption("financial_trainee");
     assert.equal(await treePage.locator("#my-team-multiplier").inputValue(), "×2");
-    await treePage.locator("#team-save-own-position").click();
+    await treePage.locator("#save-profile").click();
     await treePage.waitForFunction(() =>
-      document.querySelector("#team-profile-notice").textContent.includes("Tu puesto"),
+      document.querySelector("#profile-notice").textContent.includes("guardado"),
     );
     assert.equal(
       treeData.assignmentSaved.p_user_id,

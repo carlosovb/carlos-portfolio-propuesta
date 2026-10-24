@@ -10,7 +10,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
-    <link rel="stylesheet" href="../css/panel.css?v=teamfacts2" />
+    <link rel="stylesheet" href="../css/panel.css?v=profilesave3" />
     <link rel="stylesheet" href="../css/presence.css?v=office-referrals1" />
     <link rel="stylesheet" href="../css/career.css?v=copperprogress1" />
     <link rel="stylesheet" href="../css/team.css?v=office1" />
@@ -1004,21 +1004,14 @@
                     <small>JPG, PNG o WebP · Máximo 5 MB</small>
                   </div>
                 </details>
-                <form id="my-office-form" class="my-office-form">
+                <div id="my-office-form" class="my-office-form">
                   <label>
                     Oficina
-                    <select id="my-office" name="office" disabled>
+                    <select id="my-office" name="office" form="profile-form" disabled>
                       <option value="LPA1">LPA1</option>
                     </select>
                   </label>
-                  <button
-                    type="submit"
-                    id="save-my-office"
-                    class="panel-secondary"
-                    disabled
-                  >
-                    Guardar oficina
-                  </button>
+
                   <div id="new-office-fields" hidden>
                     <label>
                       Código de la nueva oficina
@@ -1035,7 +1028,7 @@
                     </button>
                   </div>
                   <p id="office-notice" class="panel-muted" role="status" hidden></p>
-                </form>
+                </div>
               </div>
               <div class="profile-professional-summary">
                 <p class="eyebrow">Mi perfil · Tu lugar en el equipo</p>
@@ -1046,7 +1039,12 @@
                 <div class="team-position-fields">
                   <label>
                     Puesto
-                    <select id="my-team-position" disabled>
+                    <select
+                      id="my-team-position"
+                      name="position"
+                      form="profile-form"
+                      disabled
+                    >
                       <option value="">Pendiente de asignar</option>
                       <option value="financial_trainee">Financial Trainee</option>
                       <option value="financial_consultant">Financial Consultant</option>
@@ -1057,14 +1055,7 @@
                     Multiplicador
                     <input id="my-team-multiplier" readonly />
                   </label>
-                  <button
-                    type="button"
-                    class="panel-secondary"
-                    id="team-save-own-position"
-                    hidden
-                  >
-                    Guardar mi puesto
-                  </button>
+
                   <label>
                     Responsable
                     <input id="my-team-manager" readonly />
@@ -1129,7 +1120,7 @@
                 </p>
                 <p id="profile-notice" role="status" hidden></p>
                 <button type="submit" class="btn" id="save-profile">
-                  Guardar mi perfil
+                  Guardar perfil
                 </button>
               </form>
             </article>
@@ -1430,7 +1421,7 @@
     <script src="../js/companies.js?v=picker1" defer></script>
     <script src="../js/confirm.js?v=apex1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=office-referrals1" defer></script>
+    <script src="../js/backend.js?v=profilesave3" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/axa-portfolios-data.js?v=clientdesign1" defer></script>
@@ -1479,14 +1470,14 @@
     <script src="../js/career.js?v=copperprogress1" defer></script>
     <script src="../js/panel-selects.js?v=office1-progress1" defer></script>
     <script src="../js/presence.js?v=office-referrals1" defer></script>
-    <script src="../js/team.js?v=teamfacts2" defer></script>
+    <script src="../js/team.js?v=profilesave3" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=apex1" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
     <script src="../js/statistics.js?v=closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=office-referrals1" defer></script>
+    <script src="../js/panel.js?v=profilesave3" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

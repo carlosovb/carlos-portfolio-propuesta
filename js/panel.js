@@ -779,23 +779,33 @@
   get("logout-button").addEventListener("click", () => logout());
   get("profile-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!active || !account?.profile_enabled) return;
+    if (!active || !account?.profile_enabled || mutationPending) return;
+    if (get("my-office").disabled || get("my-office").value === "__add__") {
+      notice("profile-notice", "Selecciona una oficina antes de guardar el perfil.");
+      return;
+    }
+    mutationPending = true;
     const snapshot = epoch;
     const form = event.currentTarget;
     get("save-profile").disabled = true;
     notice("profile-notice", "Guardando…");
     try {
-      const details = await backend.saveProfile({
+      const details = await backend.saveProfileDetails({
         first_name: form.elements.first_name.value.trim(),
         last_name: form.elements.last_name.value.trim(),
         phone: form.elements.phone.value.trim(),
         consultant_since: form.elements.consultant_since.value,
+        office: get("my-office").value,
+        position: account.role === "admin" ? get("my-team-position").value : null,
       });
       if (!active || epoch !== snapshot) return;
       account = details;
       renderIdentity();
       renderProfile();
-      notice("profile-notice", "Tus datos se han guardado.");
+      await window.TeamPanel.loadProfile(details);
+      if (!active || epoch !== snapshot) return;
+      window.PanelPresence?.refresh();
+      notice("profile-notice", "Tu perfil se ha guardado.");
     } catch {
       if (active && epoch === snapshot)
         notice(
@@ -803,6 +813,7 @@
           "No se han podido guardar los datos. Revisa los campos y vuelve a intentarlo.",
         );
     } finally {
+      mutationPending = false;
       get("save-profile").disabled = !account?.profile_enabled;
     }
   });

@@ -673,6 +673,21 @@
       });
       return response.json();
     },
+    async saveProfileDetails(fields) {
+      const response = await authenticated("/rest/v1/rpc/save_profile_details", {
+        method: "POST",
+        body: JSON.stringify({
+          p_first_name: fields.first_name,
+          p_last_name: fields.last_name,
+          p_phone: fields.phone,
+          p_consultant_since: fields.consultant_since || null,
+          p_office: fields.office,
+          p_position: fields.position ?? null,
+        }),
+      });
+      accessDetails = await response.json();
+      return structuredClone(accessDetails);
+    },
     async saveProfile(fields) {
       const response = await authenticated("/rest/v1/rpc/save_my_profile", {
         method: "POST",
