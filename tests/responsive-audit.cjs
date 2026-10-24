@@ -1,4 +1,4 @@
-const { chromium } = require("playwright");
+const { chromium, webkit, devices } = require("playwright");
 const { server, mock, state, login } = require("./profile-flow.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -6,9 +6,11 @@ const path = require("node:path");
 (async () => {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}/`;
-  const browser = await chromium.launch({
+  const safari = process.env.MOBILE_BROWSER === "webkit";
+  const mobile = safari || process.env.MOBILE_BROWSER === "android";
+  const browser = await (safari ? webkit : chromium).launch({
     headless: true,
-    executablePath: process.env.CHROME_EXECUTABLE,
+    ...(!safari && { executablePath: process.env.CHROME_EXECUTABLE }),
   });
   const failures = [];
   try {
@@ -20,6 +22,7 @@ const path = require("node:path");
       [844, 390],
     ]) {
       const context = await browser.newContext({
+        ...(mobile ? devices[safari ? "iPhone 13" : "Pixel 7"] : {}),
         viewport: { width, height },
         hasTouch: true,
         isMobile: true,
@@ -103,13 +106,14 @@ const path = require("node:path");
               .evaluate((img) => img.complete && img.naturalWidth > 0),
           );
           if (await page.locator(".menu-toggle").isVisible()) {
-            await page.locator(".menu-toggle").click();
+            await page.locator(".menu-toggle").tap();
             await check("public-menu");
-            await page.locator(".menu-toggle").click();
+            await page.locator(".menu-toggle").tap();
           }
           await page.screenshot({
             path: path.join(process.env.TEMP, `responsive-public-${width}.png`),
             fullPage: true,
+            scale: "css",
           });
         }
       }
@@ -135,20 +139,28 @@ const path = require("node:path");
           await check(view + "-" + theme);
         }
         if (view === "clients") {
-          await page.locator(".clients-import-menu > summary").click();
+          await page.locator(".clients-import-menu > summary").tap();
           await check("import-open");
-          await page.locator(".clients-import-menu > summary").click();
-          await page.locator("#clients-demo-toggle").click();
+          await page.locator(".clients-import-menu > summary").tap();
+          await page.locator("#clients-demo-toggle").tap();
           for (const mode of ["cards", "compact", "list"]) {
             const toggle = page.locator(`[data-client-view="${mode}"]`);
-            if (await toggle.count()) await toggle.click();
+            await toggle.tap();
             await check("clients-" + mode);
           }
-          await page.locator("#clients-list .client-identity").first().click();
+          await page.locator("#clients-list .client-identity").first().tap();
           await check("client-file");
-          await page.locator('[data-client-tab="contact"]').click();
+          await page.locator('[data-client-tab="contact"]').tap();
           await check("client-contact");
-          await page.locator("#client-detail-close").click();
+          assert(
+            await page
+              .locator("#client-detail-dialog")
+              .evaluate((dialog) => dialog.scrollWidth <= dialog.clientWidth + 1),
+          );
+          await page.touchscreen.tap(2, 2);
+          assert.equal(await page.locator("#client-detail-dialog").isVisible(), false);
+          await page.locator("#clients-list .client-identity").first().tap();
+          await page.locator("#client-detail-close").tap();
         }
         if (view === "statistics") {
           assert.equal(
@@ -158,33 +170,75 @@ const path = require("node:path");
               .evaluate((el) => getComputedStyle(el).minWidth),
             "28px",
           );
-          await page.locator(".stats-bars > div").first().click();
+          await page.locator(".stats-bars > div").first().tap();
           assert.match(
             await page.locator(".stats-chart-selection").textContent(),
             /Propias.*Equipo/,
           );
-          await page.locator(".contract-date-trigger").first().click();
+          await page.locator(".contract-date-trigger").first().tap();
+          assert.equal(
+            await page.locator(".contract-calendar:not([hidden]) [data-month]").count(),
+            12,
+          );
           await check("month-picker");
           await page.keyboard.press("Escape");
         }
         if (view === "profile" || view === "statistics" || view === "home")
           await page.screenshot({
-            path: path.join(process.env.TEMP, `responsive-${view}-${width}.png`),
+            path: path.join(
+              process.env.TEMP,
+              `responsive-${process.env.MOBILE_BROWSER || "chromium"}-${view}-${width}.png`,
+            ),
             fullPage: true,
+            scale: "css",
           });
       }
+      await page.locator('#profile-form [name="phone"]').fill("000000002");
+      await page.evaluate(() => {
+        window.PanelNavigation.go("home");
+      });
+      await page.locator("#site-confirm-dialog").waitFor();
+      await check("unsaved-profile-confirmation");
+      await page.locator("[data-confirm-no]").tap();
+      assert.equal(await page.locator("#profile-view").isVisible(), true);
+      await page.evaluate(() => {
+        window.PanelNavigation.go("home");
+      });
+      await page.locator("#site-confirm-dialog").waitFor();
+      await page.locator("[data-confirm-yes]").tap();
+      await page.locator("#home-view").waitFor();
       assert.deepEqual(errors, [], "Sin errores de JavaScript durante la navegación");
       if (width <= 850) {
-        await page.locator(".panel-menu-toggle").click();
+        await page.locator(".panel-menu-toggle").tap();
         await check("menu-open");
         assert(await page.locator("#global-search").isVisible());
+        await page.locator("#global-search").fill("cliente");
+        assert.equal(
+          await page
+            .locator("#global-search")
+            .evaluate((input) => getComputedStyle(input).fontSize),
+          "16px",
+        );
       }
+      await context.close();
+    }
+    if (safari) {
+      // Sin perfil iPhone, WebKit degrada month a text: conservar los meses.
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await page.setContent('<label>Mes<input type="month" value="2024-02"></label>');
+      assert.equal(await page.locator("input").evaluate((input) => input.type), "text");
+      await page.addScriptTag({ path: path.join(__dirname, "../js/date-picker.js") });
+      await page.locator(".contract-date-trigger").click();
+      assert.equal(await page.locator("[data-month]").count(), 12);
+      await page.locator('[data-month="2024-01"]').click();
+      assert.equal(await page.locator("input").inputValue(), "2024-01");
       await context.close();
     }
     console.log(JSON.stringify(failures, null, 2));
     assert.equal(failures.length, 0, "Contenido fuera de la pantalla");
     console.log(
-      "Web pública, cuenta, formulario y nueve secciones del panel: cinco tamaños táctiles sin desbordamientos.",
+      `${safari ? "WebKit (motor de Safari)" : mobile ? "Chromium con perfil Android" : "Chromium"}: web pública, cuenta, formulario y nueve secciones del panel; cinco tamaños táctiles sin desbordamientos.`,
     );
   } finally {
     await browser.close();

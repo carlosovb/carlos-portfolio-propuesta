@@ -1,5 +1,5 @@
 // Recorrido público completo y recepción privada con datos ficticios.
-const { chromium } = require("playwright"),
+const { chromium, webkit, devices } = require("playwright"),
   assert = require("node:assert/strict"),
   fs = require("fs"),
   path = require("path"),
@@ -26,13 +26,17 @@ const root = path.resolve(__dirname, ".."),
 (async () => {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch({
-    executablePath: process.env.CHROME_EXECUTABLE || undefined,
+  const safari = process.env.MOBILE_BROWSER === "webkit";
+  const mobile = safari || process.env.MOBILE_BROWSER === "android";
+  const browser = await (safari ? webkit : chromium).launch({
+    ...(!safari && { executablePath: process.env.CHROME_EXECUTABLE || undefined }),
     headless: true,
   });
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 1000 },
-    permissions: ["clipboard-read", "clipboard-write"],
+    ...(mobile
+      ? devices[safari ? "iPhone 13" : "Pixel 7"]
+      : { viewport: { width: 1440, height: 1000 } }),
+    ...(!safari && { permissions: ["clipboard-read", "clipboard-write"] }),
   });
   const page = await context.newPage();
   let saved = null,
@@ -52,8 +56,17 @@ const root = path.resolve(__dirname, ".."),
         status: 200,
         contentType: "application/json",
         body: JSON.stringify(v),
-        headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
+        headers: {
+          "Access-Control-Allow-Origin": r.headers().origin || new URL(base).origin,
+          "Access-Control-Allow-Credentials": "true",
+          "Access-Control-Allow-Headers":
+            "authorization, apikey, content-type, x-client-info",
+          "Access-Control-Allow-Methods": "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",
+          "Access-Control-Expose-Headers": "Content-Range",
+          ...headers,
+        },
       });
+    if (r.method() === "OPTIONS") return json(null);
     if (url.pathname.endsWith("/rpc/get_panel_activity"))
       return json({ rows: [], total: 0 });
     if (url.pathname.endsWith("/rpc/get_panel_notifications"))

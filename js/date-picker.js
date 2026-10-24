@@ -60,7 +60,8 @@
   });
   function mount(input) {
     if (input.closest(".contract-date-wrap")) return;
-    const monthly = input.type === "month",
+    // Algunos motores degradan .type a "text" aunque el HTML solicite un mes.
+    const monthly = input.getAttribute("type") === "month",
       baseMode = monthly ? "months" : "days";
     const fieldLabel =
       input.getAttribute("aria-label") ||

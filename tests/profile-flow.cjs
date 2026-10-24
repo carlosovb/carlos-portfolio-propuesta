@@ -1,6 +1,6 @@
 // Pruebas de integración de interfaz y cliente con Auth/DB simulados.
 // No se envían correos ni se utilizan cuentas o contraseñas reales.
-const { chromium } = require("playwright");
+const { chromium, webkit } = require("playwright");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -40,9 +40,15 @@ async function mock(context, state) {
       route.fulfill({
         status,
         contentType: "application/json",
-        headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
+        headers: {
+          "Access-Control-Allow-Origin": request.headers().origin || new URL(request.frame().url()).origin,
+          "Access-Control-Allow-Credentials": "true",
+          "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+          "Access-Control-Allow-Methods": "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",
+          "Access-Control-Expose-Headers": "Content-Range", ...headers },
         body: JSON.stringify(result),
       });
+    if (request.method() === "OPTIONS") return json(null);
     const access = () => ({
       role: state.role,
       profile_enabled: true,
@@ -350,9 +356,10 @@ module.exports = { server, mock, state, login };
 if (require.main === module) (async () => {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}/`;
-  const browser = await chromium.launch({
+  const safari = process.env.MOBILE_BROWSER === "webkit";
+  const browser = await (safari ? webkit : chromium).launch({
     headless: true,
-    ...(process.env.CHROME_EXECUTABLE
+    ...(!safari && process.env.CHROME_EXECUTABLE
       ? { executablePath: process.env.CHROME_EXECUTABLE }
       : {}),
   });
