@@ -1,0 +1,238 @@
+/* Última capa compartida: teléfonos, tabletas, tacto y ventanas de poca altura.
+   El escritorio conserva sus medidas y el menú mantiene sus filas compactas. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+dialog {
+  overscroll-behavior: contain;
+}
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .panel-main,
+  .panel-heading > *,
+  .stats-heading > *,
+  .resource-personal > *,
+  .dashboard-hero > *,
+  .clients-heading-actions,
+  .premeeting-grid > *,
+  .premeeting-person,
+  fieldset {
+    min-width: 0;
+  }
+  .panel-main h1,
+  .panel-main h2,
+  .panel-main h3,
+  .panel-main p,
+  .panel-main dd,
+  .account-card,
+  .premeeting-summary {
+    overflow-wrap: anywhere;
+  }
+  .panel-controls,
+  .clients-heading-actions {
+    flex-wrap: wrap;
+  }
+  .panel-main input:not([type="checkbox"]):not([type="radio"]),
+  .panel-main select,
+  .panel-main textarea,
+  .panel-global-search-field input,
+  .account-card input,
+  .premeeting-page input,
+  .premeeting-page select,
+  .premeeting-page textarea {
+    font-size: 16px !important;
+  }
+  .stats-chart-scroll,
+  .team-viewport {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 850px) {
+  .panel-sidebar {
+    padding-left: max(5%, env(safe-area-inset-left));
+    padding-right: max(5%, env(safe-area-inset-right));
+  }
+  .panel-sidebar.menu-open nav {
+    max-height: 55dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    align-content: start;
+  }
+  .panel-main {
+    padding-bottom: max(30px, env(safe-area-inset-bottom));
+  }
+  .panel-global-search-field {
+    width: 100%;
+  }
+  .panel-heading {
+    align-items: flex-start;
+  }
+  .panel-controls {
+    gap: 10px;
+  }
+  .client-file-tabs {
+    row-gap: 4px;
+  }
+  .client-file-tabs button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 600px) {
+  .clients-heading-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .clients-import-menu {
+    margin-left: auto;
+  }
+  .clients-import-menu > .clients-import-card {
+    width: min(360px, 90vw);
+    max-height: 65dvh;
+    overflow-y: auto;
+    padding: 22px;
+  }
+  .clients-workbar .clients-search {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  .clients-metrics article {
+    padding-inline: 10px;
+  }
+  .clients-metrics strong {
+    font-size: 25px;
+  }
+  .client-file-tabs {
+    column-gap: 12px;
+  }
+  .insight-dialog,
+  .stats-commission-dialog,
+  #client-detail-dialog,
+  #request-dialog,
+  #photo-crop-dialog {
+    max-height: calc(
+      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+    scroll-padding-block: 16px;
+  }
+  .contract-calendar {
+    max-height: 65dvh;
+    overflow-y: auto;
+  }
+  .presence-list {
+    max-height: min(240px, 45dvh);
+    overflow-wrap: anywhere;
+  }
+  .site-confirm-actions {
+    align-items: stretch;
+  }
+  .site-confirm-actions button {
+    white-space: normal;
+  }
+  .premeeting-page .premeeting-top {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .premeeting-page .premeeting-nav {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (pointer: coarse), (max-width: 1100px) {
+  /* Entradas a 16px también en iPad: evita ampliar la página al escribir. */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  .panel-global-search-field input {
+    font-size: 16px !important;
+  }
+  .panel-menu-toggle,
+  .panel-bell,
+  .insight-close,
+  .stats-commission-close,
+  .panel-controls > button,
+  .panel-text-button,
+  .presence-summary summary,
+  .stats-tabs button,
+  .stats-range-presets button,
+  .stats-chart-controls button,
+  .contract-payment-choices button,
+  .contract-amount-options button,
+  .team-photo-options > summary {
+    min-height: 44px;
+  }
+  .panel-bell,
+  .insight-close,
+  .stats-commission-close {
+    min-width: 44px;
+  }
+  .contract-date-trigger {
+    width: 44px;
+    min-height: 44px;
+  }
+  .contract-calendar button {
+    min-height: 36px;
+  }
+  .contract-calendar-head button,
+  .contract-calendar-months button {
+    min-height: 44px;
+  }
+  .stats-bars[data-period="days"] > div {
+    min-width: 28px;
+  }
+  .stats-bars > div {
+    cursor: pointer;
+  }
+  .client-company-card:hover,
+  .resource-folder:hover,
+  .insight-search-result:hover {
+    transform: none;
+  }
+  button,
+  summary,
+  a {
+    touch-action: manipulation;
+  }
+}
+
+.stats-chart-selection {
+  color: var(--muted);
+  font-size: 13px;
+  min-height: 2em;
+}
+.stats-bars > div:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-height: 500px) and (max-width: 1100px) {
+  dialog {
+    max-height: calc(100dvh - 20px) !important;
+    overflow-y: auto;
+  }
+  .contract-calendar {
+    max-height: 65dvh;
+    overflow-y: auto;
+  }
+  .panel-sidebar.menu-open nav {
+    max-height: 45dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .panel-page *,
+  .premeeting-page * {
+    scroll-behavior: auto !important;
+  }
+}

@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/contact.css?v=20261021-confirmacion2" />
     <link rel="stylesheet" href="css/consultant-login.css?v=20261021-login2" />
     <link rel="stylesheet" href="css/theme-transition.css?v=20261021-theme2" />
+    <link rel="stylesheet" href="css/devices.css?v=devices1" />
   </head>
   <body>
     <header class="site-header">
@@ -102,7 +103,13 @@
           </div>
           <div class="portrait">
             <img
-              src="assets/carlos.png"
+              src="assets/carlos-800.webp"
+              srcset="assets/carlos-480.webp 480w, assets/carlos-800.webp 800w"
+              sizes="(max-width: 600px) 90vw, (max-width: 850px) 470px, 50vw"
+              width="1024"
+              height="1536"
+              fetchpriority="high"
+              decoding="async"
               alt="Carlos Caballero Dávila, consultor financiero"
             />
             <div class="portrait-label">

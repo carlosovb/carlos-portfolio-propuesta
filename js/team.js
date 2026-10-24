@@ -45,7 +45,7 @@
     // Retrato de portada facilitado por Carlos para su presentación en el árbol.
     const presentationPhoto =
       portrait && person.user_id === "ee1355b0-7a6c-4559-87a6-fa72a7d8f73b"
-        ? "../assets/carlos.png"
+        ? "../assets/carlos-480.webp"
         : null;
     const src = presentationPhoto || photos.get(person.user_id);
     if (src) {
@@ -54,6 +54,7 @@
       img.alt = "";
       img.width = 96;
       img.height = 96;
+      img.decoding = "async";
       target.replaceChildren(img);
     }
   }

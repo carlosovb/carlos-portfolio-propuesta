@@ -13,6 +13,7 @@ const types = {
   ".js": "text/javascript",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".webp": "image/webp",
 };
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
@@ -345,7 +346,8 @@ async function login(page, base) {
   await page.locator("#panel-screen").waitFor();
 }
 
-(async () => {
+module.exports = { server, mock, state, login };
+if (require.main === module) (async () => {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}/`;
   const browser = await chromium.launch({
@@ -1049,7 +1051,7 @@ async function login(page, base) {
     treeData.photoUploaded = true;
     await treePage.evaluate(() => window.PortfolioBackend.invalidateCache());
     await treePage.locator('#panel-navigation [data-view="profile"]').click();
-    await treePage.locator('#my-team-photo img[src="../assets/carlos.png"]').waitFor();
+    await treePage.locator('#my-team-photo img[src="../assets/carlos-480.webp"]').waitFor();
     assert.equal(
       await treePage.locator("#my-team-photo img").count(),
       1,

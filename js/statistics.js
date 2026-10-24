@@ -416,6 +416,13 @@
       );
       const scroll = n("div", undefined, "stats-chart-scroll"),
         bars = n("div", undefined, "stats-bars");
+      const selection = n(
+        "p",
+        "Toca una barra para consultar sus cifras.",
+        "stats-chart-selection",
+      );
+      selection.setAttribute("role", "status");
+      selection.setAttribute("aria-live", "polite");
       bars.dataset.period = multiple ? "months" : "days";
       bars.dataset.metric = chartMetric;
       bars.setAttribute(
@@ -434,6 +441,20 @@
           " · Equipo: " +
           format(value(row, "team")) +
           (row.pending ? " · Importe incompleto" : "");
+        bar.tabIndex = 0;
+        bar.setAttribute("role", "button");
+        bar.setAttribute("aria-label", bar.title);
+        const selectBar = () => {
+          selection.textContent = bar.title;
+        };
+        bar.addEventListener("click", selectBar);
+        bar.addEventListener("focus", selectBar);
+        bar.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            selectBar();
+          }
+        });
         for (const [key, name] of parts) {
           const fill = n("span");
           fill.dataset.series = key;
@@ -445,7 +466,7 @@
         bars.append(bar);
       });
       scroll.append(bars);
-      chart.append(scroll);
+      chart.append(scroll, selection);
       const detail = n("details"),
         summary = n("summary", multiple ? "Ver desglose mensual" : "Ver desglose diario");
       detail.append(summary);
