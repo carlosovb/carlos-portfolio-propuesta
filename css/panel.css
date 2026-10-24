@@ -84,6 +84,11 @@
 .panel-mark span {
   color: var(--accent);
 }
+.panel-sidebar .panel-mark {
+  align-self: flex-start;
+  width: fit-content;
+}
+
 .panel-login h1 {
   font-size: clamp(34px, 5vw, 51px);
   letter-spacing: -1.8px;
