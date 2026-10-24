@@ -276,6 +276,8 @@
         ?.setAttribute("open", "");
     get("client-detail-fields").hidden = tab !== "contact";
     get("client-products-section").hidden = tab !== "products";
+    get("client-history-section").hidden = tab !== "history";
+    if (tab === "history") window.PanelInsights?.showHistory();
     get("client-detail-fields").closest(".client-file-layout").dataset.tab = tab;
     document
       .querySelectorAll("[data-client-tab]")

@@ -56,6 +56,10 @@ const server = http.createServer((req, res) => {
         body: JSON.stringify(v),
         headers: { "Access-Control-Expose-Headers": "Content-Range", ...headers },
       });
+    if (url.pathname.endsWith("/rpc/get_panel_activity"))
+      return json({ rows: [], total: 0 });
+    if (url.pathname.endsWith("/rpc/get_panel_notifications"))
+      return json({ rows: [], unread: 0 });
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
     if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);

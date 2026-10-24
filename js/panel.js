@@ -216,7 +216,10 @@
     resetInactivity();
     renderIdentity();
     window.PanelPresence?.start();
-    setView(account?.profile_complete === false ? "profile" : "home");
+    const ticket = epoch;
+    setView(account?.profile_complete === false ? "profile" : "home").then(() => {
+      if (active && ticket === epoch) window.PanelInsights?.start(account);
+    });
   }
 
   function renderIdentity() {
@@ -297,6 +300,7 @@
     window.ResourcesPanel?.reset();
     window.StatisticsPanel?.reset();
     window.DashboardPanel?.reset();
+    window.PanelInsights?.reset();
     get("request-details").replaceChildren();
     get("request-title").textContent = "";
     get("request-initials").textContent = "";
@@ -583,7 +587,12 @@
         renderProfile();
         const saved = await window.TeamPanel.loadProfile(account);
         if (valid()) markProfileSaved(saved);
+      } else if (view === "activity") {
+        await window.PanelInsights.loadActivity(true);
+      } else if (view === "search") {
+        await window.PanelInsights.search();
       } else if (view === "home") {
+        window.PanelInsights?.loadActivity();
         await window.DashboardPanel.load(account);
         if (!valid()) return;
         if (account?.role !== "admin") {
@@ -658,6 +667,8 @@
         "premeeting",
         "resources",
         "statistics",
+        "search",
+        "activity",
       ].includes(next)
     )
       return;
@@ -678,6 +689,8 @@
     window.ResourcesPanel?.hide();
     window.StatisticsPanel?.reset();
     get("statistics-view").hidden = view !== "statistics";
+    get("search-view").hidden = view !== "search";
+    get("activity-view").hidden = view !== "activity";
     window.DashboardPanel?.reset();
     get("resources-view").hidden = view !== "resources";
     get("premeeting-view").hidden = view !== "premeeting";
@@ -688,23 +701,27 @@
     get("team-view").hidden = view !== "team";
     get("consultants-view").hidden = view !== "consultants";
     get("panel-title").textContent =
-      view === "statistics"
-        ? "Tus estadísticas."
-        : view === "resources"
-          ? "Herramientas y recursos."
-          : view === "premeeting"
-            ? "Antes de la reunión."
-            : view === "clients"
-              ? "Tus clientes."
-              : view === "team"
-                ? "Nuestro equipo."
-                : view === "consultants"
-                  ? "Tu equipo."
-                  : view === "profile"
-                    ? "Mi perfil."
-                    : view === "requests"
-                      ? "Tus solicitudes."
-                      : "Tu panel.";
+      view === "search"
+        ? "Tu búsqueda."
+        : view === "activity"
+          ? "Tu actividad."
+          : view === "statistics"
+            ? "Tus estadísticas."
+            : view === "resources"
+              ? "Herramientas y recursos."
+              : view === "premeeting"
+                ? "Antes de la reunión."
+                : view === "clients"
+                  ? "Tus clientes."
+                  : view === "team"
+                    ? "Nuestro equipo."
+                    : view === "consultants"
+                      ? "Tu equipo."
+                      : view === "profile"
+                        ? "Mi perfil."
+                        : view === "requests"
+                          ? "Tus solicitudes."
+                          : "Tu panel.";
     document.querySelectorAll("#panel-navigation button").forEach((button) => {
       if (button.dataset.view === view) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
@@ -722,7 +739,9 @@
         { duration: 180, easing: "ease-out" },
       );
     }
-    load();
+    await load();
+    if (active && view === next) document.dispatchEvent(new Event("panel-view-changed"));
+    return active && view === next;
   }
 
   function openRequest(item) {
@@ -831,6 +850,7 @@
     .forEach((button) =>
       button.addEventListener("click", () => setView(button.dataset.view)),
     );
+  window.PanelNavigation = { go: setView, current: () => view };
   get("logout-button").addEventListener("click", () => logout());
   get("profile-form").addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -860,6 +880,7 @@
       const saved = await window.TeamPanel.loadProfile(details);
       if (!active || epoch !== snapshot) return;
       markProfileSaved(saved);
+      window.PanelInsights?.start(details);
       window.PanelPresence?.refresh();
       notice("profile-notice", "Tu perfil se ha guardado.");
     } catch {

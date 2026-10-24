@@ -54,6 +54,12 @@
         "get_my_clients_without_products",
         "update_panel_presence",
         "get_panel_presence",
+        "get_panel_activity",
+        "get_panel_notifications",
+        "search_panel",
+        "get_my_client",
+        "get_panel_target",
+        "read_panel_notification",
         "panel_access",
         "is_panel_owner",
         "premeeting_consultant",
@@ -217,6 +223,26 @@
       return accessDetails ? structuredClone(accessDetails) : null;
     },
     getPanelAccess: readAccess,
+    async panelQuery(name, args = {}) {
+      if (
+        ![
+          "get_panel_activity",
+          "add_client_note",
+          "get_my_client",
+          "get_panel_notifications",
+          "read_panel_notification",
+          "search_panel",
+          "get_panel_target",
+        ].includes(name)
+      )
+        throw Error("Unknown panel operation");
+      return (
+        await authenticated("/rest/v1/rpc/" + name, {
+          method: "POST",
+          body: JSON.stringify(args),
+        })
+      ).json();
+    },
     async listResources() {
       const response = await authenticated(
         "/rest/v1/team_resources?select=id,company,product,title,kind,url,storage_path,archived,created_at&order=archived.asc,company.asc,product.asc,created_at.desc&limit=1000",

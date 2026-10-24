@@ -1,0 +1,423 @@
+/* v0.6 · líneas editoriales, cobre y señales discretas */
+.panel-global-search {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.panel-global-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.panel-global-search-field svg,
+.panel-bell svg,
+.insight-close svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.panel-global-search-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 9px !important;
+  font-size: 12px !important;
+}
+.panel-global-search-field kbd {
+  position: absolute;
+  right: 8px;
+  top: -23px;
+  font: 10px inherit;
+  color: var(--muted);
+}
+.panel-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  flex: none;
+}
+.panel-bell:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.panel-bell #notifications-count {
+  position: absolute;
+  top: -7px;
+  right: -6px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 20px;
+}
+.panel-bell #notifications-count[hidden] {
+  display: none;
+}
+.panel-activity-block {
+  margin-top: 34px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.insight-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.insight-section-heading h2 {
+  margin: 6px 0;
+  font-size: clamp(24px, 3vw, 34px);
+}
+.insight-timeline {
+  display: grid;
+  gap: 0;
+}
+.insight-event {
+  position: relative;
+  border-left: 1px solid var(--line);
+  padding: 4px 0 24px 24px;
+  margin-left: 6px;
+}
+.insight-event::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+.insight-event[data-kind="product"]::before {
+  background: #7fc7a7;
+}
+.insight-event[data-kind="note"]::before,
+.insight-event[data-kind="form"]::before {
+  background: #80b7ea;
+}
+.insight-event-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.insight-event-head strong {
+  font-size: 14px;
+}
+.insight-event time,
+.insight-notification time {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.insight-event-detail {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 8px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.insight-event-author {
+  font-size: 11px;
+  color: var(--muted);
+  display: block;
+}
+.insight-client-name {
+  font-size: 13px;
+  color: var(--accent);
+  display: block;
+  margin-top: 6px;
+}
+.insight-event-link {
+  font-size: 12px;
+  padding: 8px 0 0;
+}
+.insight-empty {
+  padding: 20px 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+#client-history-section {
+  min-width: 0;
+  width: 100%;
+}
+#client-note-form {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin: 24px 0 30px;
+  display: grid;
+  gap: 12px;
+  background: var(--panel);
+}
+#client-note-form label {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+#client-note {
+  width: 100%;
+  resize: vertical;
+  min-height: 88px;
+  box-sizing: border-box;
+}
+#client-note-save {
+  justify-self: start;
+}
+#client-note-notice:empty {
+  display: none;
+}
+.insight-dialog {
+  width: min(700px, calc(100vw - 36px));
+  max-width: calc(100vw - 36px);
+  max-height: 85dvh;
+  box-sizing: border-box;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: auto;
+}
+.insight-dialog::backdrop {
+  background: #06111dc9;
+  backdrop-filter: blur(5px);
+}
+.insight-dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 20px;
+}
+.insight-dialog-heading h2 {
+  font-size: clamp(23px, 3vw, 32px);
+  margin: 0 0 12px;
+}
+.insight-dialog-heading p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.insight-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0;
+  flex: none;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.insight-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.insight-notification-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.insight-notification-tools button {
+  font-size: 12px;
+}
+#notifications-unread[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.insight-notification {
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  position: relative;
+}
+.insight-notification[data-unread="true"] {
+  padding-left: 18px;
+}
+.insight-notification[data-unread="true"]::before {
+  position: absolute;
+  content: "";
+  left: 0;
+  top: 24px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.insight-notification-open {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  background: transparent;
+  color: var(--ink);
+  border: 0;
+  cursor: pointer;
+}
+.insight-notification-open strong {
+  font-size: 14px;
+}
+.insight-notification-open span {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.insight-notification-open:hover strong {
+  color: var(--accent);
+}
+.insight-read-one {
+  font-size: 11px;
+  margin-top: 8px;
+}
+#global-search-results {
+  display: grid;
+  gap: 28px;
+  margin-top: 30px;
+}
+.insight-search-group {
+  min-width: 0;
+}
+.insight-search-group h3 {
+  font-size: 16px;
+  color: var(--accent);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.insight-search-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 15px;
+  text-align: left;
+  width: 100%;
+  padding: 16px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.insight-search-result strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.insight-search-result span {
+  font-size: 12px;
+  color: var(--muted);
+  grid-column: 1;
+  overflow-wrap: anywhere;
+}
+.insight-search-result b {
+  grid-column: 2;
+  grid-row: 1/3;
+  align-self: center;
+  color: var(--accent);
+}
+.insight-search-result:hover {
+  background: var(--panel);
+  transform: translateX(3px);
+}
+.insight-resource-dialog {
+  width: min(1100px, calc(100vw - 36px));
+}
+#insight-resource-body iframe {
+  width: 100%;
+  height: 65dvh;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  margin-top: 16px;
+}
+.client-file-layout[data-tab="history"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (max-width: 850px) {
+  .panel-global-search {
+    display: none;
+    width: 100%;
+    margin-top: 0;
+  }
+  .menu-open .panel-global-search {
+    display: grid;
+  }
+  .panel-global-search-field input {
+    font-size: 14px !important;
+  }
+  .panel-global-search-field kbd {
+    display: none;
+  }
+  .insight-dialog {
+    padding: 22px 18px;
+  }
+  .insight-event-head {
+    display: grid;
+    gap: 5px;
+  }
+  .insight-section-heading {
+    gap: 10px;
+  }
+  .client-file-tabs {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .insight-search-result:hover {
+    transform: none;
+  }
+}
+
+.panel-activity-block .insight-event-detail {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#client-detail-dialog #client-note-form {
+  grid-template-columns: minmax(0, 1fr);
+}
+#client-detail-dialog #client-note-save {
+  align-self: start;
+  justify-self: start;
+  height: auto;
+  min-height: 44px;
+  padding: 12px 18px;
+}
+#client-detail-dialog #client-note-notice {
+  grid-column: 1/-1;
+}

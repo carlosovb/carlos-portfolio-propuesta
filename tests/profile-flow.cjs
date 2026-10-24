@@ -56,6 +56,54 @@ async function mock(context, state) {
       expires_in: 3600,
       user: { id: "test-user", email: "consultor@example.invalid" },
     };
+
+    if (url.pathname.endsWith("/rpc/get_panel_activity")) {
+      const events = state.insights?.events || [];
+      const rows = body.p_client
+        ? events.filter((r) => r.target_id === body.p_client)
+        : events;
+      return json({
+        rows: rows.slice(body.p_offset || 0, (body.p_offset || 0) + 25),
+        total: rows.length,
+      });
+    }
+    if (url.pathname.endsWith("/rpc/get_panel_notifications")) {
+      const rows = state.insights?.notices || [];
+      return json({ rows, unread: rows.filter((r) => !r.read_at).length });
+    }
+    if (url.pathname.endsWith("/rpc/read_panel_notification")) {
+      for (const n of state.insights.notices)
+        if (!body.p_id || n.id === body.p_id) n.read_at = new Date().toISOString();
+      return json(true);
+    }
+    if (url.pathname.endsWith("/rpc/search_panel")) {
+      state.insights.searches = (state.insights.searches || 0) + 1;
+      return json(state.insights.results);
+    }
+    if (url.pathname.endsWith("/rpc/get_my_client")) return json(state.insights.client);
+    if (url.pathname.endsWith("/rpc/get_panel_target"))
+      return json(state.insights.resource);
+    if (url.pathname.endsWith("/rpc/add_client_note")) {
+      if (!state.insights.noteRequests.includes(body.p_request)) {
+        state.insights.noteRequests.push(body.p_request);
+        state.insights.events.unshift({
+          id: body.p_request,
+          title: "Nota interna",
+          kind: "note.added",
+          detail: body.p_text,
+          target_type: "client",
+          target_id: body.p_client,
+          actor_name: "Consultor de prueba",
+          happened_at: new Date().toISOString(),
+        });
+      }
+      if (state.insights.failNoteResponseOnce) {
+        state.insights.failNoteResponseOnce = false;
+        return json({}, 503);
+      }
+      return json(true);
+    }
+    if (url.pathname.includes("/client_products")) return json([]);
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
     if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
@@ -373,7 +421,7 @@ async function login(page, base) {
           .evaluate((el) => el.readOnly),
         true,
       );
-      assert.equal(await page.locator(".panel-version").textContent(), "v0.5");
+      assert.equal(await page.locator(".panel-version").textContent(), "v0.6");
       await page.locator("#my-office").selectOption("__add__", { force: true });
       await page.locator("#new-office-code").fill("LPA2");
       await page.locator("#create-office").click();
@@ -389,10 +437,22 @@ async function login(page, base) {
         0,
       );
       assert.equal(data.office, "LPA2");
-      if(width===1440){
-        const sizes=await page.locator('#panel-navigation button').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).map(n=>n.getBoundingClientRect().height));
-        assert(sizes.every(h=>h<85),'Sidebar buttons retain compact heights');
-        assert.equal(await page.locator('#panel-navigation').evaluate(el=>getComputedStyle(el).alignContent),'start');
+      if (width === 1440) {
+        const sizes = await page
+          .locator("#panel-navigation button")
+          .evaluateAll((nodes) =>
+            nodes.filter((n) => !n.hidden).map((n) => n.getBoundingClientRect().height),
+          );
+        assert(
+          sizes.every((h) => h < 85),
+          "Sidebar buttons retain compact heights",
+        );
+        assert.equal(
+          await page
+            .locator("#panel-navigation")
+            .evaluate((el) => getComputedStyle(el).alignContent),
+          "start",
+        );
       }
 
       assert.equal(
@@ -1141,6 +1201,221 @@ async function login(page, base) {
       "Equipo: centrado propio, navegación, ficha, foto y edición exclusiva de administrador comprobados.",
     );
 
+    const insightsContext = await browser.newContext({
+      viewport: { width: 1440, height: 1000 },
+      reducedMotion: "reduce",
+    });
+    const insightsData = state("consultant");
+    const privateClient = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      resourceId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    insightsData.insights = {
+      noteRequests: [],
+      failNoteResponseOnce: true,
+      client: {
+        id: privateClient,
+        first_name: "Ana",
+        last_name: "Cliente",
+        phone: "123456789",
+        email: "ana@example.invalid",
+        locality: "Las Palmas",
+        client_type: "Cliente",
+        is_active: true,
+      },
+      resource: {
+        id: resourceId,
+        title: "Presentación PIAS",
+        company: "AXA",
+        product: "PIAS",
+        kind: "link",
+        url: "https://example.invalid/presentacion",
+      },
+      events: [
+        {
+          id: "event1",
+          kind: "client.created",
+          title: "Contacto incorporado a tu cartera",
+          detail: "Cliente",
+          client_name: "Ana Cliente",
+          target_type: "client",
+          target_id: privateClient,
+          happened_at: "2026-10-24T09:00:00Z",
+        },
+      ],
+      notices: [
+        {
+          id: "alert1",
+          read_at: null,
+          title: "Nuevo recurso disponible",
+          detail: "AXA · PIAS",
+          target_type: "resource",
+          target_id: resourceId,
+          happened_at: "2026-10-24T10:00:00Z",
+        },
+      ],
+      results: {
+        clients: [
+          { id: privateClient, label: "Ana Cliente", meta: "Cliente · Las Palmas" },
+        ],
+        consultants: [],
+        forms: [],
+        resources: [{ id: resourceId, label: "Presentación PIAS", meta: "AXA · PIAS" }],
+      },
+    };
+    await mock(insightsContext, insightsData);
+    const insightsPage = await insightsContext.newPage();
+    const insightErrors = [];
+    insightsPage.on("pageerror", (e) => insightErrors.push(e.message));
+    await login(insightsPage, base);
+    await insightsPage.locator("#notifications-dialog").waitFor();
+    await insightsPage.evaluate(() => (document.documentElement.dataset.theme = "dark"));
+    for (const width of [320, 1440]) {
+      await insightsPage.setViewportSize({ width, height: 1000 });
+      assert(
+        await insightsPage
+          .locator("#notifications-dialog")
+          .evaluate((el) => el.scrollWidth <= el.clientWidth),
+      );
+      await insightsPage.screenshot({
+        path: path.join(process.env.TEMP, "notifications-v06-" + width + ".png"),
+      });
+    }
+    assert.match(
+      await insightsPage.locator("#notifications-intro").textContent(),
+      /1 aviso/,
+    );
+    await insightsPage.locator('[data-insight-close="notifications-dialog"]').click();
+    assert.equal(await insightsPage.locator("#notifications-count").textContent(), "1");
+    await insightsPage.locator("#notifications-open").click();
+    await insightsPage.locator("#notifications-read-all").click();
+    await insightsPage.waitForFunction(
+      () => document.querySelector("#notifications-count").hidden,
+    );
+    await insightsPage.locator('[data-insight-close="notifications-dialog"]').click();
+    await insightsPage.locator("#recent-activity .insight-event").waitFor();
+    await insightsPage.keyboard.press("Control+k");
+    assert.equal(
+      await insightsPage
+        .locator("#global-search")
+        .evaluate((n) => n === document.activeElement),
+      true,
+    );
+    await insightsPage.locator("#global-search").fill("Ana");
+    await insightsPage
+      .locator("#global-search-results .insight-search-result")
+      .first()
+      .waitFor();
+    assert.equal(await insightsPage.locator(".panel-sidebar #global-search").count(), 1);
+    assert.equal(
+      await insightsPage.locator("#global-search-results .insight-search-group").count(),
+      4,
+    );
+    await insightsPage
+      .locator("#global-search-results .insight-search-result")
+      .filter({ hasText: "Ana Cliente" })
+      .click();
+    await insightsPage.locator("#client-detail-dialog").waitFor();
+    await insightsPage.locator('[data-client-tab="history"]').click();
+    await insightsPage.locator("#client-history-list .insight-event").waitFor();
+    await insightsPage
+      .locator("#client-note")
+      .fill("Nota privada <img src=x onerror=alert(1)>");
+    await insightsPage.locator("#client-note-save").click();
+    await insightsPage.waitForFunction(() =>
+      document
+        .querySelector("#client-note-notice")
+        .textContent.includes("No se ha confirmado"),
+    );
+    assert.match(await insightsPage.locator("#client-note").inputValue(), /Nota privada/);
+    await insightsPage.locator("#client-note-save").click();
+    await insightsPage.waitForFunction(() =>
+      document.querySelector("#client-note-notice").textContent.includes("Nota guardada"),
+    );
+    assert.equal(insightsData.insights.noteRequests.length, 1);
+    assert.equal(await insightsPage.locator("#client-history-list img").count(), 0);
+    assert.match(
+      await insightsPage.locator("#client-history-list").textContent(),
+      /Nota privada <img/,
+    );
+    for (const width of [320, 1440]) {
+      await insightsPage.setViewportSize({ width, height: 1000 });
+      assert(
+        await insightsPage
+          .locator("#client-detail-dialog")
+          .evaluate((el) => el.scrollWidth <= el.clientWidth),
+      );
+      await insightsPage.screenshot({
+        path: path.join(process.env.TEMP, "client-history-v06-" + width + ".png"),
+      });
+    }
+    await insightsPage.locator("#client-detail-close").click();
+    await insightsPage.locator("#global-search").fill("PIAS");
+    await insightsPage
+      .locator("#global-search-results .insight-search-result")
+      .filter({ hasText: "Presentación PIAS" })
+      .click();
+    await insightsPage.locator("#insight-resource-dialog").waitFor();
+    assert.equal(
+      await insightsPage.locator("#insight-resource-body a").getAttribute("href"),
+      "https://example.invalid/presentacion",
+    );
+    await insightsPage.locator('[data-insight-close="insight-resource-dialog"]').click();
+    for (const width of [320, 768, 1440]) {
+      await insightsPage.setViewportSize({ width, height: 1000 });
+      assert.equal(
+        await insightsPage.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+        false,
+      );
+      await insightsPage.screenshot({
+        path: path.join(process.env.TEMP, "panel-insights-" + width + ".png"),
+        fullPage: true,
+      });
+    }
+    await insightsPage.locator("#logout-button").click();
+    assert.equal(await insightsPage.locator("#global-search").inputValue(), "");
+    assert.equal(await insightsPage.locator("#notifications-list").textContent(), "");
+    assert.equal(await insightsPage.locator("#client-history-list").textContent(), "");
+    assert.deepEqual(insightErrors, []);
+    await insightsContext.close();
+    console.log(
+      "v0.6 interfaz: aviso al entrar, campana, lectura, buscador lateral, resultados por apartado, destinos, notas seguras, móvil y limpieza al salir verificados.",
+    );
+
+    const quietContext = await browser.newContext();
+    const quietData = state("consultant");
+    quietData.insights = structuredClone(insightsData.insights);
+    quietData.insights.notices = [];
+    await mock(quietContext, quietData);
+    const quietPage = await quietContext.newPage();
+    await login(quietPage, base);
+    await quietPage.locator("#recent-activity .insight-event").first().waitFor();
+    quietData.insights.notices = [
+      {
+        id: "later",
+        read_at: null,
+        title: "Nuevo recurso disponible",
+        detail: "Recurso nuevo",
+        target_type: "resource",
+        target_id: resourceId,
+        happened_at: "2026-10-24T11:00:00Z",
+      },
+    ];
+    await quietPage.evaluate(() => window.PanelInsights.refreshNotifications());
+    assert.equal(
+      await quietPage.locator("#notifications-dialog").isVisible(),
+      false,
+      "New notices do not interrupt the session",
+    );
+    assert.equal(await quietPage.locator("#notifications-count").textContent(), "1");
+    await quietPage.locator("#logout-button").click();
+    await login(quietPage, base);
+    await quietPage.locator("#notifications-dialog").waitFor();
+    assert.match(
+      await quietPage.locator("#notifications-intro").textContent(),
+      /1 aviso/,
+    );
+    await quietContext.close();
     const recoveryContext = await browser.newContext();
     const recoveryData = state();
     await mock(recoveryContext, recoveryData);

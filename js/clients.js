@@ -133,6 +133,7 @@
     };
     currentClient = row;
     lifecycleEpoch++;
+    window.PanelInsights?.openHistory(row, demo);
     renderActivity(row);
     get("client-detail-name").textContent = name(row);
     get("client-detail-demo").hidden = !demo;
@@ -604,6 +605,7 @@
     stopImportGuide();
     currentClient = null;
     lifecycleEpoch++;
+    window.PanelInsights?.closeHistory();
     window.ClientTrash?.reset();
     get("clients-bulk").hidden = true;
     window.ClientProducts.reset();
@@ -698,6 +700,7 @@
     stopImportGuide();
     currentClient = null;
     lifecycleEpoch++;
+    window.PanelInsights?.closeHistory();
     window.ClientProducts.reset();
     const saved = dialogScroll;
     dialogScroll = null;
@@ -887,5 +890,14 @@
     page = 0;
     load();
   });
-  window.ClientsPanel = { load, hide, reset };
+  async function openById(id) {
+    const ticket = revision;
+    const row = await backend.panelQuery("get_my_client", { p_id: id });
+    if (!visible || !account || ticket !== revision) return;
+    if (!row)
+      throw Error("El cliente ya no está disponible en tu cartera. Revisa Eliminados.");
+    demo = false;
+    return detail(row);
+  }
+  window.ClientsPanel = { load, hide, reset, openById };
 })();

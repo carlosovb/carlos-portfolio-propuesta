@@ -719,5 +719,13 @@
     applyScale();
     locate();
   });
-  window.TeamPanel = Object.freeze({ load, loadProfile, reset });
+  function openById(id) {
+    const member = members.find((p) => p.user_id === id);
+    const source =
+      [...document.querySelectorAll(".team-node")].find((n) => n.dataset.userId === id) ||
+      get("team-locate");
+    if (!account || !member) throw Error("Este consultor ya no está disponible.");
+    openMember(member, source);
+  }
+  window.TeamPanel = Object.freeze({ load, loadProfile, reset, openById });
 })();

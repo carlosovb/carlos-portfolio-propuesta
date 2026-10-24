@@ -103,6 +103,10 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           body: JSON.stringify(value),
           headers: { "Access-Control-Expose-Headers": "Content-Range" },
         });
+      if (url.pathname.endsWith("/rpc/get_panel_activity"))
+        return json({ rows: [], total: 0 });
+      if (url.pathname.endsWith("/rpc/get_panel_notifications"))
+        return json({ rows: [], unread: 0 });
       if (url.pathname.endsWith("/rpc/get_client_view_preference"))
         return json(preferredView);
       if (url.pathname.endsWith("/rpc/save_client_view_preference")) {

@@ -194,5 +194,17 @@
     get("premeeting-private-summary").replaceChildren();
     get("premeeting-detail-name").textContent = "";
   });
-  window.PremeetingPanel = { load, reset, hide };
+  async function openById(id) {
+    const ticket = epoch;
+    const row = await backend.panelQuery("get_panel_target", {
+      p_type: "form",
+      p_id: id,
+    });
+    if (!active || ticket !== epoch) return;
+    if (!row) throw Error("La respuesta ya no está disponible o ha caducado.");
+    get("premeeting-detail-name").textContent = row.full_name;
+    window.PremeetingSummary.render(row.payload, get("premeeting-private-summary"));
+    dialog.showModal();
+  }
+  window.PremeetingPanel = { load, reset, hide, openById };
 })();

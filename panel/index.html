@@ -10,6 +10,7 @@
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
     <link rel="stylesheet" href="../css/styles.css?v=panel1" />
+    <link rel="stylesheet" href="../css/panel-insights.css?v=insights1" />
     <link rel="stylesheet" href="../css/panel.css?v=sidebarlogocenter1" />
     <link rel="stylesheet" href="../css/presence.css?v=office-referrals1" />
     <link rel="stylesheet" href="../css/career.css?v=copperprogress1" />
@@ -86,6 +87,24 @@
         >
           Menú ☰
         </button>
+        <label class="panel-global-search">
+          <span>Buscar en el panel</span>
+          <span class="panel-global-search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="m16 16 5 5" />
+            </svg>
+            <input
+              id="global-search"
+              type="search"
+              maxlength="120"
+              placeholder="Clientes, recursos…"
+              autocomplete="off"
+              aria-controls="global-search-results"
+            />
+            <kbd>Ctrl K</kbd>
+          </span>
+        </label>
         <nav id="panel-navigation" aria-label="Secciones del panel">
           <button type="button" data-view="home" aria-current="page">
             Inicio
@@ -130,7 +149,7 @@
         <small class="session-note">
           La sesión se cierra tras 30 minutos sin actividad.
         </small>
-        <small class="panel-version" aria-label="Versión de la web">v0.5</small>
+        <small class="panel-version" aria-label="Versión de la web">v0.6</small>
       </aside>
       <main class="panel-main">
         <div class="panel-heading">
@@ -139,6 +158,18 @@
             <h1 id="panel-title">Bienvenido, Carlos.</h1>
           </div>
           <div class="panel-controls">
+            <button
+              type="button"
+              id="notifications-open"
+              class="panel-bell"
+              aria-label="Notificaciones"
+              title="Notificaciones"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
+              </svg>
+              <span id="notifications-count" hidden></span>
+            </button>
             <button class="theme" aria-label="Cambiar tema" title="Cambiar tema">
               ◐
             </button>
@@ -269,7 +300,45 @@
             <small>Solo las solicitudes mostradas</small>
           </div>
           <div id="recent-requests" class="panel-request-list" data-admin-only></div>
+          <section class="panel-activity-block" aria-label="Actividad reciente">
+            <div class="insight-section-heading">
+              <div>
+                <p class="eyebrow">Tu día, en movimiento</p>
+                <h2>Actividad reciente.</h2>
+              </div>
+              <button type="button" class="panel-text-button" data-view="activity">
+                Ver toda la actividad ↗
+              </button>
+            </div>
+            <div id="recent-activity" class="insight-timeline" aria-live="polite"></div>
+          </section>
           <div id="consultant-home" hidden></div>
+        </section>
+        <section id="search-view" aria-label="Resultados de búsqueda" hidden>
+          <p class="eyebrow">Todo a mano</p>
+          <h2>Encuentra lo que necesitas.</h2>
+          <p id="global-search-summary" role="status">
+            Escribe al menos dos caracteres en el buscador del menú.
+          </p>
+          <p class="panel-muted">
+            Resultados agrupados por apartado · Hasta 12 coincidencias por grupo.
+          </p>
+          <div id="global-search-results"></div>
+        </section>
+        <section id="activity-view" aria-label="Toda tu actividad" hidden>
+          <div class="insight-section-heading">
+            <div>
+              <p class="eyebrow">Tu recorrido</p>
+              <h2>Lo que ha pasado.</h2>
+            </div>
+            <button type="button" class="panel-text-button" data-view="home">
+              ← Volver al inicio
+            </button>
+          </div>
+          <div id="all-activity" class="insight-timeline" aria-live="polite"></div>
+          <button type="button" id="activity-more" class="panel-secondary" hidden>
+            Ver más movimientos
+          </button>
         </section>
         <section id="requests-view" aria-label="Listado de solicitudes" hidden>
           <div class="requests-overview">
@@ -1351,6 +1420,9 @@
         <button type="button" data-client-tab="contact" aria-pressed="false">
           Datos del cliente
         </button>
+        <button type="button" data-client-tab="history" aria-pressed="false">
+          Historial
+        </button>
       </div>
       <div class="client-file-layout" data-tab="products">
         <aside id="client-detail-fields" aria-label="Datos del cliente" hidden></aside>
@@ -1358,7 +1430,95 @@
           id="client-products-section"
           aria-label="Productos contratados"
         ></section>
+        <section id="client-history-section" aria-label="Historial del cliente" hidden>
+          <p class="eyebrow">Cada paso, en su sitio</p>
+          <h3>Su recorrido contigo.</h3>
+          <p class="panel-muted">
+            Notas privadas y movimientos registrados. Las fechas anteriores solo se
+            muestran cuando constan en los datos.
+          </p>
+          <form id="client-note-form">
+            <label>
+              Nota interna
+              <textarea
+                id="client-note"
+                rows="3"
+                maxlength="2000"
+                required
+                placeholder="Lo importante para la próxima conversación…"
+              ></textarea>
+            </label>
+            <button type="submit" id="client-note-save" class="panel-secondary">
+              Añadir nota
+            </button>
+            <p id="client-note-notice" role="status" class="panel-muted"></p>
+          </form>
+          <div id="client-history-list" class="insight-timeline" aria-live="polite"></div>
+          <button type="button" id="history-more" class="panel-secondary" hidden>
+            Ver más movimientos
+          </button>
+        </section>
       </div>
+    </dialog>
+    <dialog
+      id="notifications-dialog"
+      class="insight-dialog"
+      aria-labelledby="notifications-title"
+    >
+      <div class="insight-dialog-heading">
+        <div>
+          <p class="eyebrow">Tu panel, al día</p>
+          <h2 id="notifications-title">Notificaciones.</h2>
+          <p id="notifications-intro"></p>
+        </div>
+        <button
+          type="button"
+          data-insight-close="notifications-dialog"
+          class="insight-close"
+          aria-label="Cerrar notificaciones"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </div>
+      <div class="insight-notification-tools">
+        <button
+          type="button"
+          id="notifications-unread"
+          class="panel-secondary"
+          aria-pressed="false"
+        >
+          Solo pendientes
+        </button>
+        <button type="button" id="notifications-read-all" class="panel-text-button">
+          Marcar todas como leídas
+        </button>
+      </div>
+      <div id="notifications-list" aria-live="polite"></div>
+      <button type="button" id="notifications-more" class="panel-secondary" hidden>
+        Ver más avisos
+      </button>
+    </dialog>
+    <dialog
+      id="insight-resource-dialog"
+      class="insight-dialog insight-resource-dialog"
+      aria-labelledby="insight-resource-title"
+    >
+      <div class="insight-dialog-heading">
+        <h2 id="insight-resource-title"></h2>
+        <button
+          type="button"
+          class="insight-close"
+          data-insight-close="insight-resource-dialog"
+          aria-label="Cerrar recurso"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </div>
+      <div id="insight-resource-body"></div>
     </dialog>
     <dialog id="request-dialog" aria-labelledby="request-title">
       <div class="dialog-heading">
@@ -1421,7 +1581,7 @@
     <script src="../js/companies.js?v=picker1" defer></script>
     <script src="../js/confirm.js?v=profileguard1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=profilesave3" defer></script>
+    <script src="../js/backend.js?v=insights1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/axa-portfolios-data.js?v=clientdesign1" defer></script>
@@ -1430,7 +1590,7 @@
     <script src="../js/date-picker.js?v=profileguard1" defer></script>
     <script src="../js/product-picker.js?v=apex1" defer></script>
     <script src="../js/client-products.js?v=importguide1" defer></script>
-    <script src="../js/clients-workspace.js?v=clientdesign1" defer></script>
+    <script src="../js/clients-workspace.js?v=insights1" defer></script>
     <dialog id="clients-trash-dialog" aria-labelledby="clients-trash-title">
       <div class="trash-heading">
         <h2 id="clients-trash-title">Eliminados</h2>
@@ -1461,7 +1621,7 @@
         </button>
       </div>
     </dialog>
-    <script src="../js/clients.js?v=presence1" defer></script>
+    <script src="../js/clients.js?v=insights1" defer></script>
     <script src="../js/client-trash.js?v=apex1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
@@ -1470,14 +1630,15 @@
     <script src="../js/career.js?v=copperprogress1" defer></script>
     <script src="../js/panel-selects.js?v=office1-progress1" defer></script>
     <script src="../js/presence.js?v=office-referrals1" defer></script>
-    <script src="../js/team.js?v=profileguard1" defer></script>
+    <script src="../js/team.js?v=insights1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
-    <script src="../js/premeeting-panel.js?v=apex1" defer></script>
+    <script src="../js/premeeting-panel.js?v=insights1" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
     <script src="../js/statistics.js?v=closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel.js?v=profileguard1" defer></script>
+    <script src="../js/panel-insights.js?v=insights1" defer></script>
+    <script src="../js/panel.js?v=insights1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"
