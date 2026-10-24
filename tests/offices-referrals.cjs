@@ -142,6 +142,18 @@ const assert = require("node:assert/strict");
         .consultant_since,
       "2021-01-01",
     );
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/team-directory-office-since.sql", "utf8"));
+    await as(member);
+    const colleague = (
+      await db.query("select public.get_team_directory() data")
+    ).rows[0].data.find((p) => p.user_id === other);
+    assert.equal(colleague.office_code, "LPA2");
+    assert.equal(colleague.consultant_since, "2021-01-01");
+    await assert.rejects(() =>
+      db.query("select public.admin_set_consultant_since($1,'2022-01-01')", [other]),
+    );
+    await as(other);
     const online = (
       await db.query(
         "select public.update_panel_presence('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',true) data",

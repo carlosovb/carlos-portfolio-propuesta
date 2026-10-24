@@ -96,7 +96,7 @@ returns jsonb language plpgsql stable security definer set search_path='' as $fn
 begin
  if not public.team_view_allowed() then raise exception 'Not authorized'; end if;
  return coalesce((select jsonb_agg(jsonb_build_object('user_id',a.user_id,'is_root',exists(select 1 from private.panel_owners o where o.user_id=a.user_id),
-   'first_name',p.first_name,'last_name',p.last_name,'office_code',p.office_code,'consultant_since',case when public.is_panel_owner() or p.user_id=auth.uid() then p.consultant_since else null end,'position_code',a.position_code,
+   'first_name',p.first_name,'last_name',p.last_name,'office_code',p.office_code,'consultant_since',p.consultant_since,'position_code',a.position_code,
    'position',r.label,'multiplier',r.multiplier,'manager_id',a.manager_id,
    'avatar_path',case when exists(select 1 from storage.objects o where o.bucket_id='consultant-avatars' and o.name=a.user_id::text||'/portrait.webp') then a.user_id::text||'/portrait.webp' else null end)
    order by p.first_name,p.last_name)

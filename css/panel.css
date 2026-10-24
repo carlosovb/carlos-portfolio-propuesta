@@ -859,13 +859,15 @@
     align-items: stretch;
     height: 100dvh;
     min-height: 0;
-    overflow-y: auto;
+    overflow-y: hidden;
     position: sticky;
     top: 0;
   }
+  .panel-sidebar > :not(nav) {flex-shrink:0;}
+  .panel-sidebar nav {flex:1 1 auto; min-height:0; overflow-y:auto; margin:24px 0;}
   .panel-sidebar .panel-version {
-    margin-top: auto;
-    padding-top: 28px;
+    margin-top: 14px;
+    padding-top: 0;
     text-align: center;
     letter-spacing: 0.08em;
   }
@@ -880,4 +882,11 @@
   .panel-sidebar.menu-open .panel-version {
     display: block;
   }
+}
+
+.panel-sidebar .panel-version {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--accent);
 }

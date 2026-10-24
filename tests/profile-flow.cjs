@@ -359,6 +359,18 @@ async function login(page, base) {
         document.querySelector("#office-notice").textContent.includes("guardada"),
       );
       assert.equal(data.office, "LPA2");
+      if(width>850){const version=await page.locator('.panel-version').boundingBox();assert(version.y>=0&&version.y+version.height<=900,'Version visible at sidebar bottom');}
+
+      assert.equal(
+        await page
+          .locator(".panel-version")
+          .evaluate((el) => getComputedStyle(el).fontSize),
+        "16px",
+      );
+      await page.screenshot({
+        path: path.join(process.env.TEMP, "profile-office-" + width + ".png"),
+        fullPage: true,
+      });
       assert.equal(await page.locator("#profile-role").getAttribute("readonly"), "");
       await page.locator('[name="current_password"]').fill("incorrecta");
       await page.locator('[name="new_password"]').fill("contraseña nueva de prueba");
@@ -657,6 +669,8 @@ async function login(page, base) {
         manager_id: "22222222-2222-4222-8222-222222222222",
       },
     ];
+    treeData.team[1].office_code = "LPA1";
+    treeData.team[1].consultant_since = "2020-01-15";
     await mock(treeContext, treeData);
     const treePage = await treeContext.newPage();
     await login(treePage, base);
@@ -689,10 +703,19 @@ async function login(page, base) {
     if (process.env.TEAM_SCREENSHOT)
       await treePage.screenshot({ path: process.env.TEAM_SCREENSHOT });
     await treePage.locator(".team-node-self").click();
+    assert.equal(await treePage.locator("#team-member-office").textContent(), "LPA1");
+    assert.equal(
+      await treePage.locator("#team-member-since").textContent(),
+      "15 de enero de 2020",
+    );
     assert.equal(
       await treePage.locator("#team-progress-details").evaluate((el) => el.open),
       false,
     );
+    await treePage.screenshot({
+      path: path.join(process.env.TEMP, "team-office-since.png"),
+      fullPage: false,
+    });
     await treePage.locator("#team-progress-details > summary").click();
     await treePage.locator(".career-goal-tabs button").first().waitFor();
     assert.equal(await treePage.locator(".career-goal-tabs button").count(), 2);

@@ -112,6 +112,8 @@
       "team-member-position",
       "team-member-multiplier",
       "team-member-manager",
+      "team-member-office",
+      "team-member-since",
       "team-member-reports",
       "team-member-clients",
       "team-member-interested",
@@ -267,6 +269,15 @@
     get("team-locate").disabled = !places.has(me?.user_id);
     if (places.has(me?.user_id)) requestAnimationFrame(locate);
   }
+  function formatStartDate(value) {
+    if (!value) return "Pendiente de indicar";
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(value + "T12:00:00Z"));
+  }
   function openMember(member, source) {
     selected = member;
     anchor = source.getBoundingClientRect();
@@ -274,6 +285,8 @@
     get("team-member-position").textContent =
       member.position || "Puesto pendiente de asignar";
     get("team-member-multiplier").textContent = multiplier(member.multiplier);
+    get("team-member-office").textContent = member.office_code || "Pendiente de indicar";
+    get("team-member-since").textContent = formatStartDate(member.consultant_since);
     const manager = members.find((person) => person.user_id === member.manager_id);
     get("team-member-manager").textContent = member.is_root
       ? "Responsable principal · Raíz del equipo"
@@ -595,6 +608,7 @@
       if (!updated) throw Error("Not saved");
       if (snapshot !== revision || selected?.user_id !== target) return;
       selected.consultant_since = date;
+      get("team-member-since").textContent = formatStartDate(date);
       notice("team-member-notice", "Fecha de inicio actualizada.");
     } catch {
       if (snapshot === revision)
