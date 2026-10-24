@@ -389,6 +389,12 @@ async function login(page, base) {
         0,
       );
       assert.equal(data.office, "LPA2");
+      if(width===1440){
+        const sizes=await page.locator('#panel-navigation button').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).map(n=>n.getBoundingClientRect().height));
+        assert(sizes.every(h=>h<85),'Sidebar buttons retain compact heights');
+        assert.equal(await page.locator('#panel-navigation').evaluate(el=>getComputedStyle(el).alignContent),'start');
+      }
+
       assert.equal(
         await page
           .locator('#profile-form [name="consultant_since"]')
