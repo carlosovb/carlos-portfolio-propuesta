@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../css/panel.css?v=sidebarcompact1" />
     <link rel="stylesheet" href="../css/presence.css?v=office-referrals1" />
     <link rel="stylesheet" href="../css/career.css?v=copperprogress1" />
-    <link rel="stylesheet" href="../css/team.css?v=office1" />
+    <link rel="stylesheet" href="../css/team.css?v=officeright1" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/clients.css?v=presence1" />
     <link rel="stylesheet" href="../css/theme-transition.css?v=20261021-theme2" />
@@ -1004,31 +1004,6 @@
                     <small>JPG, PNG o WebP · Máximo 5 MB</small>
                   </div>
                 </details>
-                <div id="my-office-form" class="my-office-form">
-                  <label>
-                    Oficina
-                    <select id="my-office" name="office" form="profile-form" disabled>
-                      <option value="LPA1">LPA1</option>
-                    </select>
-                  </label>
-
-                  <div id="new-office-fields" hidden>
-                    <label>
-                      Código de la nueva oficina
-                      <input
-                        id="new-office-code"
-                        maxlength="12"
-                        pattern="[A-Za-z0-9][A-Za-z0-9-]{1,11}"
-                        placeholder="Ej. LPA2"
-                        disabled
-                      />
-                    </label>
-                    <button type="button" id="create-office" class="panel-secondary">
-                      Añadir oficina
-                    </button>
-                  </div>
-                  <p id="office-notice" class="panel-muted" role="status" hidden></p>
-                </div>
               </div>
               <div class="profile-professional-summary">
                 <p class="eyebrow">Mi perfil · Tu lugar en el equipo</p>
@@ -1060,6 +1035,31 @@
                     Responsable
                     <input id="my-team-manager" readonly />
                   </label>
+                </div>
+                <div id="my-office-form" class="my-office-form">
+                  <label>
+                    Oficina
+                    <select id="my-office" name="office" form="profile-form" disabled>
+                      <option value="LPA1">LPA1</option>
+                    </select>
+                  </label>
+
+                  <div id="new-office-fields" hidden>
+                    <label>
+                      Código de la nueva oficina
+                      <input
+                        id="new-office-code"
+                        maxlength="12"
+                        pattern="[A-Za-z0-9][A-Za-z0-9-]{1,11}"
+                        placeholder="Ej. LPA2"
+                        disabled
+                      />
+                    </label>
+                    <button type="button" id="create-office" class="panel-secondary">
+                      Añadir oficina
+                    </button>
+                  </div>
+                  <p id="office-notice" class="panel-muted" role="status" hidden></p>
                 </div>
               </div>
             </div>
