@@ -664,7 +664,7 @@
     if (account?.profile_complete === false && next !== "profile") next = "profile";
     if (next === "requests" && account?.role !== "admin") next = "home";
     if (view === "profile") {
-      if (next === "profile" || mutationPending) return;
+      if ((next === "profile" && profileBaseline !== null) || mutationPending) return;
       if (!(await canDiscardProfile())) return;
       profileBaseline = null;
     }
