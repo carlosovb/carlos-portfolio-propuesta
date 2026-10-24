@@ -88,6 +88,11 @@
   align-self: flex-start;
   width: fit-content;
 }
+@media (min-width: 851px) {
+  .panel-sidebar .panel-mark {
+    align-self: center;
+  }
+}
 
 .panel-login h1 {
   font-size: clamp(34px, 5vw, 51px);
