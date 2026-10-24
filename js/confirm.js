@@ -80,6 +80,7 @@
       const opener =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
       const parent = opener?.closest("dialog");
+      cancel.textContent = options.cancel || "Cancelar";
       const lower = String(text).toLowerCase();
       title.textContent =
         options.title ||

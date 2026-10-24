@@ -309,3 +309,11 @@
   opacity: 0.5;
   cursor: wait;
 }
+
+.contract-date-wrap.contract-date-readonly > .contract-date-trigger {
+  display: none;
+}
+.contract-date-wrap.contract-date-readonly > input {
+  padding-right: 16px;
+  cursor: default;
+}

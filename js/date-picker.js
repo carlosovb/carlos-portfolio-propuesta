@@ -80,11 +80,17 @@
       '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M12 15h2M7 18h2M12 18h2"/>';
     trigger.append(icon);
     trigger.type = "button";
-    trigger.disabled = input.disabled || input.readOnly;
-    new MutationObserver(() => {
+    const syncState = () => {
       trigger.disabled = input.disabled || input.readOnly;
+      trigger.hidden = input.readOnly;
+      wrap.classList.toggle("contract-date-readonly", input.readOnly);
       if (trigger.disabled && opened?.wrap === wrap) close();
-    }).observe(input, { attributes: true, attributeFilter: ["disabled", "readonly"] });
+    };
+    syncState();
+    new MutationObserver(syncState).observe(input, {
+      attributes: true,
+      attributeFilter: ["disabled", "readonly"],
+    });
     trigger.setAttribute("aria-label", "Abrir calendario: " + fieldLabel);
     trigger.setAttribute("aria-expanded", "false");
     const popup = el("span", null, "contract-calendar");

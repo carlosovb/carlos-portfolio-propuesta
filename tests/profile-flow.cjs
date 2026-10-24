@@ -389,6 +389,77 @@ async function login(page, base) {
         0,
       );
       assert.equal(data.office, "LPA2");
+      assert.equal(
+        await page
+          .locator('#profile-form [name="consultant_since"]')
+          .evaluate((el) => el.readOnly),
+        true,
+      );
+      assert.equal(
+        await page
+          .locator('#profile-form [name="consultant_since"]')
+          .locator("..")
+          .locator(".contract-date-trigger")
+          .isVisible(),
+        false,
+      );
+      if (width === 1440) {
+        const nav = async (name) => {
+          if (
+            !(await page
+              .locator('#panel-navigation [data-view="' + name + '"]')
+              .isVisible())
+          )
+            await page.locator(".panel-menu-toggle").click();
+          await page.locator('#panel-navigation [data-view="' + name + '"]').click();
+        };
+        for (const field of ["phone", "office", "position"]) {
+          const target =
+            field === "phone"
+              ? page.locator('#profile-form [name="phone"]')
+              : page.locator(field === "office" ? "#my-office" : "#my-team-position");
+          const previous = await target.inputValue();
+          if (field === "phone") await target.fill("999999999");
+          else
+            await target.selectOption(field === "office" ? "LPA1" : "financial_trainee", {
+              force: true,
+            });
+          await nav("home");
+          await page.locator("#site-confirm-dialog").waitFor();
+          assert.match(
+            await page.locator("#site-confirm-message").textContent(),
+            /sin guardar/,
+          );
+          await page.locator("[data-confirm-no]").click();
+          assert.equal(await page.locator("#profile-view").isVisible(), true);
+          if (field === "phone") await target.fill(previous);
+          else await target.selectOption(previous, { force: true });
+        }
+        await nav("home");
+        await page.locator("#home-view").waitFor();
+        assert.equal(await page.locator("#site-confirm-dialog").isVisible(), false);
+        await nav("profile");
+        await page.waitForFunction(
+          () => !document.querySelector("#refresh-button").disabled,
+        );
+        await page.locator('#profile-form [name="phone"]').fill("999999999");
+        await nav("home");
+        await page.locator("#site-confirm-dialog").waitFor();
+        await page.keyboard.press("Escape");
+        assert.equal(await page.locator("#profile-view").isVisible(), true);
+        await nav("home");
+        await page.locator("[data-confirm-yes]").click();
+        await page.locator("#home-view").waitFor();
+        await nav("profile");
+        await page.waitForFunction(
+          () => !document.querySelector("#refresh-button").disabled,
+        );
+        assert.equal(
+          await page.locator('#profile-form [name="phone"]').inputValue(),
+          "000000002",
+        );
+      }
+
       if (width > 850) {
         const version = await page.locator(".panel-version").boundingBox();
         assert(

@@ -25,6 +25,54 @@
   let account = null;
   let bulkRunning = false;
   let menuAnimation;
+  let profileBaseline = null;
+  let profileWarningOpen = false;
+  function profileDraft() {
+    return JSON.stringify([
+      ...["first_name", "last_name", "phone", "consultant_since"].map(
+        (name) => get("profile-form").elements[name].value,
+      ),
+      get("my-office").value,
+      get("my-team-position").value,
+    ]);
+  }
+  function markProfileSaved(saved) {
+    const p = account?.profile;
+    profileBaseline = JSON.stringify([
+      ...["first_name", "last_name", "phone", "consultant_since"].map(
+        (name) => p?.[name] || "",
+      ),
+      saved?.office ?? get("my-office").value,
+      saved?.position ?? get("my-team-position").value,
+    ]);
+  }
+  async function canDiscardProfile() {
+    if (
+      view !== "profile" ||
+      profileBaseline === null ||
+      profileBaseline === profileDraft()
+    )
+      return true;
+    if (profileWarningOpen || mutationPending) return false;
+    profileWarningOpen = true;
+    const ticket = epoch;
+    try {
+      return (
+        (await window.SiteConfirm.ask(
+          "Tienes cambios en tu perfil sin guardar. Si sales ahora, se perderán.",
+          {
+            title: "Cambios sin guardar",
+            accept: "Salir sin guardar",
+            cancel: "Seguir editando",
+          },
+        )) &&
+        active &&
+        ticket === epoch
+      );
+    } finally {
+      profileWarningOpen = false;
+    }
+  }
   const bulkLists = Object.fromEntries(
     ["recent-requests", "request-list", "consultant-list"].map((id) => [
       id,
@@ -234,6 +282,7 @@
     loggingOut = true;
     get("login-button").disabled = true;
     active = false;
+    profileBaseline = null;
     const presenceStopped = window.PanelPresence?.stop();
     epoch++;
     loadingVersion++;
@@ -532,7 +581,8 @@
         account = details;
         renderIdentity();
         renderProfile();
-        await window.TeamPanel.loadProfile(account);
+        const saved = await window.TeamPanel.loadProfile(account);
+        if (valid()) markProfileSaved(saved);
       } else if (view === "home") {
         await window.DashboardPanel.load(account);
         if (!valid()) return;
@@ -594,7 +644,7 @@
     }
   }
 
-  function setView(next) {
+  async function setView(next) {
     if (bulkRunning) return;
     if (
       !active ||
@@ -613,6 +663,11 @@
       return;
     if (account?.profile_complete === false && next !== "profile") next = "profile";
     if (next === "requests" && account?.role !== "admin") next = "home";
+    if (view === "profile") {
+      if (next === "profile" || mutationPending) return;
+      if (!(await canDiscardProfile())) return;
+      profileBaseline = null;
+    }
     if (next !== "consultants") clearInvitation();
     view = next;
     document.querySelector(".panel-retention").hidden =
@@ -802,8 +857,9 @@
       account = details;
       renderIdentity();
       renderProfile();
-      await window.TeamPanel.loadProfile(details);
+      const saved = await window.TeamPanel.loadProfile(details);
       if (!active || epoch !== snapshot) return;
+      markProfileSaved(saved);
       window.PanelPresence?.refresh();
       notice("profile-notice", "Tu perfil se ha guardado.");
     } catch {
@@ -846,7 +902,9 @@
       get("change-password").disabled = false;
     }
   });
-  get("refresh-button").addEventListener("click", () => {
+  get("refresh-button").addEventListener("click", async () => {
+    if (mutationPending || !(await canDiscardProfile())) return;
+    profileBaseline = null;
     backend.invalidateCache();
     load();
   });

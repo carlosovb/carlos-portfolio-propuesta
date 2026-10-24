@@ -460,6 +460,7 @@
       get("team-photo-remove").hidden = !mine?.avatar_path;
       get("team-photo-adjust").hidden = !mine?.avatar_path;
       notice("team-profile-notice", "");
+      return { office: office?.office_code, position: mine?.position_code || "" };
     } catch {
       if (snapshot === revision)
         notice(
