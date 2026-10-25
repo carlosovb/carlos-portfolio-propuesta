@@ -25,6 +25,39 @@
     lifecycleEpoch = 0;
   let importGuide = null;
   const compactClient = matchMedia("(max-width: 850px)");
+  const wideClient = matchMedia("(min-width: 1280px)");
+  const fileDialog = get("client-detail-dialog");
+  const fileOrigin = document.createComment("Ubicación de la ficha modal");
+  fileDialog.before(fileOrigin);
+  const utilities = el("div", "clients-directory-utilities");
+  utilities.setAttribute("aria-label", "Otras opciones de clientes");
+  utilities.append(get("clients-demo-toggle"), get("clients-setup-products"));
+  get("clients-view-status").after(utilities);
+  function markCurrentClient() {
+    for (const row of get("clients-list").children) {
+      const current = row.dataset.clientId === currentClient?.id;
+      row.dataset.current = String(current);
+      const button = row.querySelector(".client-action button");
+      button?.setAttribute("aria-expanded", String(current));
+      button?.setAttribute("aria-controls", "client-detail-dialog");
+    }
+  }
+  function presentClientFile() {
+    const docked = wideClient.matches && !importGuide;
+    const slot = get("client-detail-slot");
+    const modeChanged = fileDialog.classList.contains("client-detail-docked") !== docked;
+    if (fileDialog.open && modeChanged) fileDialog.close();
+    fileDialog.classList.toggle("client-detail-docked", docked);
+    if (docked && fileDialog.parentElement !== slot) slot.append(fileDialog);
+    else if (!docked && fileDialog.parentElement === slot) fileOrigin.after(fileDialog);
+    slot.classList.toggle("has-client", docked);
+    get("client-detail-placeholder").hidden = docked;
+    if (!fileDialog.open) docked ? fileDialog.show() : fileDialog.showModal();
+    markCurrentClient();
+  }
+  wideClient.addEventListener("change", () => {
+    if (currentClient && fileDialog.open && visible) presentClientFile();
+  });
   compactClient.addEventListener("change", (event) => {
     const additional = get("client-detail-fields").querySelector(".client-additional");
     if (additional)
@@ -124,8 +157,27 @@
     get("clients-select-all").indeterminate =
       selection.size > 0 && selection.size < rows.length;
   }
-  function detail(row, opener = document.activeElement) {
+  async function detail(row, opener = document.activeElement) {
     if (!visible || !account) return;
+    if (
+      !importGuide &&
+      currentClient?.id === row.id &&
+      fileDialog.open &&
+      fileDialog.querySelector(".contract-editor")
+    )
+      return true;
+    if (currentClient && currentClient.id !== row.id) {
+      if (window.ClientProducts.isBusy()) return false;
+      const editor = fileDialog.querySelector(".contract-editor");
+      if (editor?.querySelector("[name=amount]")?.value) {
+        const owner = account;
+        const proceed = await window.SiteConfirm.ask(
+          "Este producto todavía no se ha guardado. ¿Quieres abrir otra ficha sin guardarlo?",
+          { title: "Producto sin guardar", accept: "Cambiar de cliente" },
+        );
+        if (!proceed || !visible || account !== owner) return false;
+      }
+    }
     dialogScroll = {
       x: window.scrollX,
       y: window.scrollY,
@@ -136,6 +188,7 @@
     window.PanelInsights?.openHistory(row, demo);
     renderActivity(row);
     get("client-detail-name").textContent = name(row);
+    get("client-detail-contact").textContent = row.email || "Sin correo electrónico";
     get("client-detail-demo").hidden = !demo;
     const fields = get("client-detail-fields");
     fields.replaceChildren();
@@ -183,8 +236,9 @@
     });
     fields.append(additional);
     workspace.detailTab("products");
-    get("client-detail-dialog").showModal();
+    presentClientFile();
     get("client-detail-dialog").scrollTop = 0;
+    get("client-detail-slot").scrollTop = 0;
     const productsReady = window.ClientProducts.open(row, demo);
     get("client-detail-close").focus({ preventScroll: true });
     window.scrollTo({ left: dialogScroll.x, top: dialogScroll.y, behavior: "instant" });
@@ -359,6 +413,16 @@
     ]
       .filter(Boolean)
       .join(" · ");
+    const kind = el(
+      "span",
+      "client-file-kind",
+      category(row) === "client"
+        ? "Cliente"
+        : category(row) === "interested"
+          ? "Interesado"
+          : "Contacto",
+    );
+    get("client-detail-status").prepend(kind, document.createTextNode(" "));
     const button = get("client-activity-toggle");
     button.textContent = active ? "Dar de baja" : "Reactivar contacto";
     button.disabled = false;
@@ -409,11 +473,16 @@
     marks.hidden = !companies.length;
     companies.forEach((value) => {
       const company = window.PortfolioCompanies.find(value);
-      const label = el(
-        "span",
-        "client-company-mark",
-        company?.id === "intesa" ? "Intesa" : value,
-      );
+      const label = el("span", "client-company-mark");
+      if (company) {
+        const logo = el("img");
+        logo.src = "../assets/companies/" + company.logo;
+        logo.alt = "";
+        logo.width = company.id === "axa" ? 28 : 52;
+        logo.height = 28;
+        label.append(logo);
+      }
+      label.append(el("span", "", company?.id === "intesa" ? "Intesa Sanpaolo" : value));
       label.dataset.company = company?.id || "other";
       label.title = value;
       marks.append(label);
@@ -438,15 +507,28 @@
   });
   function render(result) {
     rows = result.rows;
+    document.body.classList.add("clients-workspace");
     workspace.update(result);
     selection.clear();
     syncDemo();
     get("clients-list").replaceChildren();
+    let previousGroup = "";
     for (const row of rows) {
       const tr = el("tr");
       tr.dataset.category = category(row);
       tr.dataset.activity = row.is_active === false ? "inactive" : "active";
       tr.dataset.clientId = row.id;
+      const group = row.is_active === false ? "inactive" : category(row);
+      if (group !== previousGroup) {
+        tr.dataset.groupStart = group;
+        tr.dataset.groupLabel = {
+          client: "Clientes",
+          interested: "Interesados",
+          other: "Otros contactos",
+          inactive: "De baja",
+        }[group];
+      }
+      previousGroup = group;
       const selectCell = el("td", "client-select-cell");
       const checkbox = el("input", "bulk-checkbox");
       checkbox.type = "checkbox";
@@ -483,7 +565,6 @@
                 : row.client_type || "Sin clasificar",
         ),
       );
-      title.append(companyMarks(row));
       identity.append(monogram, title);
       const contact = el("td", "client-contact");
       contact.dataset.label = "Contacto";
@@ -496,6 +577,7 @@
       locality.append(
         el("span", "", row.locality || "Sin indicar"),
         el("small", "", row.postal_code || ""),
+        companyMarks(row),
       );
       const portfolio = el("td", "client-portfolio");
       portfolio.dataset.label = "Cartera";
@@ -543,11 +625,13 @@
     get("clients-next").disabled = (page + 1) * 25 >= result.total;
     get("clients-page-label").textContent = "Página " + (page + 1);
     syncSelection();
+    markCurrentClient();
   }
   async function load(details) {
     if (details) account = details;
     if (!account) return;
     visible = true;
+    document.body.classList.add("clients-workspace");
     const snapshot = ++revision;
     try {
       await workspace.restore();
@@ -602,6 +686,7 @@
     }
   }
   function hide() {
+    document.body.classList.remove("clients-workspace");
     stopImportGuide();
     currentClient = null;
     lifecycleEpoch++;
@@ -621,6 +706,7 @@
     get("client-detail-dialog").close();
     get("client-detail-name").textContent = "";
     get("client-detail-status").textContent = "";
+    get("client-detail-contact").textContent = "";
     get("client-detail-fields").replaceChildren();
   }
   function reset() {
@@ -676,6 +762,9 @@
   get("client-detail-close").addEventListener("click", () =>
     get("client-detail-dialog").close(),
   );
+  get("client-open-history").addEventListener("click", () =>
+    workspace.detailTab("history"),
+  );
   // Cierra solo si el gesto empieza y termina en el fondo exterior.
   const clientDialog = get("client-detail-dialog");
   let backdropPressed = false;
@@ -697,8 +786,13 @@
     backdropPressed = false;
   });
   get("client-detail-dialog").addEventListener("close", () => {
+    // Cambiar entre ficha lateral y modal conserva la ficha y sus datos actuales.
+    if (fileDialog.open) return;
     stopImportGuide();
     currentClient = null;
+    markCurrentClient();
+    get("client-detail-slot").classList.remove("has-client");
+    get("client-detail-placeholder").hidden = false;
     lifecycleEpoch++;
     window.PanelInsights?.closeHistory();
     window.ClientProducts.reset();
@@ -707,10 +801,39 @@
     get("client-detail-fields").replaceChildren();
     get("client-detail-name").textContent = "";
     get("client-detail-status").textContent = "";
+    get("client-detail-contact").textContent = "";
     if (saved && visible) {
       if (saved.opener?.isConnected) saved.opener.focus({ preventScroll: true });
       window.scrollTo({ left: saved.x, top: saved.y, behavior: "instant" });
     }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      fileDialog.open &&
+      fileDialog.classList.contains("client-detail-docked") &&
+      !document.querySelector("dialog:modal")
+    ) {
+      if (
+        document.querySelector(
+          ".contract-calendar:not([hidden]), .contract-amount-options:not([hidden]), .panel-select-menu:not([hidden])",
+        )
+      )
+        return;
+      event.preventDefault();
+      fileDialog.close();
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!fileDialog.open || !fileDialog.classList.contains("client-detail-docked"))
+      return;
+    if (
+      event.target.closest(
+        "#client-detail-dialog, #clients-list, dialog, .contract-calendar, .panel-select-menu",
+      )
+    )
+      return;
+    if (!event.target.closest(".clients-directory")) fileDialog.close();
   });
   get("clients-cancel-import").addEventListener("click", () => {
     if (busy) return;
@@ -863,6 +986,7 @@
         demoRows = demoRows.filter((row) => !selection.has(row.id));
         removed = ids.length;
       } else removed = await backend.deleteClients(ids);
+      if (currentClient && ids.includes(currentClient.id)) fileDialog.close();
       if (snapshot !== revision || !visible) return;
       await load();
       if (!visible || account !== initiatingAccount) return;

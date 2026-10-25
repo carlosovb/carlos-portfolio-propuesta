@@ -287,7 +287,9 @@
       }
     }
   }
+  let recentRequest = 0;
   function closeHistory() {
+    recentRequest++;
     historyClient = null;
     historyTicket++;
     historyOffset = 0;
@@ -298,6 +300,7 @@
     get("client-history-list").replaceChildren();
     get("history-more").hidden = true;
     get("client-note-save").disabled = false;
+    get("client-recent-event").textContent = "";
   }
   function openHistory(client, demo) {
     closeHistory();
@@ -309,6 +312,28 @@
         get("client-history-list"),
         "El historial privado estará disponible con tus clientes reales.",
       );
+    const target = client.id,
+      ticket = revision,
+      request = ++recentRequest;
+    const recent = get("client-recent-event");
+    recent.textContent = demo
+      ? "El historial privado estará disponible con tus clientes reales."
+      : "Consultando su última actividad…";
+    if (!demo && active)
+      backend
+        .panelQuery("get_panel_activity", { p_client: target, p_offset: 0 })
+        .then((data) => {
+          if (!canUse(ticket) || historyClient !== target || recentRequest !== request)
+            return;
+          const event = data?.rows?.[0];
+          recent.textContent = event
+            ? event.title + " · " + date(event.happened_at)
+            : "Todavía no hay movimientos registrados.";
+        })
+        .catch(() => {
+          if (canUse(ticket) && historyClient === target && recentRequest === request)
+            recent.textContent = "Consulta el historial para ver su actividad.";
+        });
   }
   async function showHistory(append = false) {
     if (!active || !historyClient || historyDemo) return;
@@ -327,6 +352,9 @@
       if (!Array.isArray(data?.rows)) throw Error("Invalid history");
       historyOffset = (append ? historyOffset : 0) + data.rows.length;
       historyTotal = data.total;
+      if (!append && data.rows[0])
+        get("client-recent-event").textContent =
+          data.rows[0].title + " · " + date(data.rows[0].happened_at);
       if (!data.rows.length && !append)
         empty(
           host,

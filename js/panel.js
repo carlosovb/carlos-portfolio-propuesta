@@ -712,7 +712,7 @@
               : view === "premeeting"
                 ? "Antes de la reunión."
                 : view === "clients"
-                  ? "Tus clientes."
+                  ? "Clientes."
                   : view === "team"
                     ? "Nuestro equipo."
                     : view === "consultants"

@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="../css/confirm.css?v=apex1" />
     <link rel="stylesheet" href="../css/contract-controls.css?v=profileguard1" />
     <link rel="stylesheet" href="../css/devices.css?v=devices1" />
+    <link rel="stylesheet" href="../css/client-directory.css?v=people1" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -108,40 +109,94 @@
         </label>
         <nav id="panel-navigation" aria-label="Secciones del panel">
           <button type="button" data-view="home" aria-current="page">
-            Inicio
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/home.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Inicio</span>
           </button>
           <button type="button" data-view="resources">
-            Herramientas y recursos
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/folder.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Herramientas y recursos</span>
           </button>
           <button type="button" data-view="requests" data-admin-only>
-            Solicitudes
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/inbox.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Solicitudes</span>
           </button>
           <button type="button" data-view="premeeting">
-            Formularios
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/clipboard-text.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Formularios</span>
           </button>
           <button type="button" data-view="clients">
-            Clientes
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/users.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Clientes</span>
           </button>
           <button type="button" data-view="team">
-            Equipo
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/users.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Equipo</span>
           </button>
           <button type="button" data-view="consultants">
-            Consultores
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/user-plus.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Consultores</span>
           </button>
           <button type="button" data-view="statistics">
-            Estadísticas
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/chart-bar.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Estadísticas</span>
           </button>
           <button type="button" data-view="profile">
-            Mi perfil
-            <span>↗</span>
+            <img
+              class="panel-nav-icon"
+              src="../assets/icons/user-circle.svg"
+              alt=""
+              width="21"
+              height="21"
+            />
+            <span class="panel-nav-label">Mi perfil</span>
           </button>
         </nav>
         <button type="button" class="panel-logout" id="logout-button">
@@ -175,7 +230,14 @@
               ◐
             </button>
             <button type="button" id="refresh-button" class="panel-secondary">
-              Actualizar ↻
+              <img
+                src="../assets/icons/refresh.svg"
+                class="panel-refresh-icon"
+                width="21"
+                height="21"
+                alt=""
+              />
+              <span class="panel-refresh-label">Actualizar ↻</span>
             </button>
           </div>
         </div>
@@ -588,7 +650,7 @@
           <header class="clients-workspace-heading">
             <div>
               <p class="eyebrow">Cartera privada</p>
-              <h2>Personas. Proyectos. Futuro.</h2>
+              <h2>Personas detrás de cada proyecto.</h2>
               <p>Encuentra cada cliente y su lugar en tu cartera.</p>
             </div>
             <div class="clients-heading-actions">
@@ -668,229 +730,259 @@
               <strong id="clients-localities-count">—</strong>
             </article>
           </div>
-          <div class="clients-section-heading">
-            <div>
-              <p class="eyebrow">Cada cliente, a mano</p>
-              <h2>Tu cartera de clientes</h2>
-              <button type="button" id="clients-trash-open" class="panel-secondary">
-                Eliminados · 10 días ↗
-              </button>
-              <p id="clients-total" class="panel-muted" aria-live="polite"></p>
-            </div>
-          </div>
-          <div class="clients-workbar">
-            <label class="clients-search">
-              <span class="clients-sr-only">Buscar en mi cartera</span>
-              <span aria-hidden="true">⌕</span>
-              <input
-                type="search"
-                id="clients-search"
-                maxlength="120"
-                placeholder="Nombre, teléfono, compañía, producto…"
-                autocomplete="off"
-              />
-            </label>
-            <button
-              type="button"
-              id="clients-filter-toggle"
-              class="panel-secondary"
-              aria-expanded="false"
-              aria-controls="clients-filter-panel"
-            >
-              Filtros
-              <span id="clients-filter-count"></span>
-            </button>
-            <div class="clients-view-switch" role="group" aria-label="Vista de clientes">
-              <button
-                type="button"
-                data-client-view="list"
-                aria-pressed="true"
-                title="Vista de lista"
-              >
-                ☷
-                <span>Lista</span>
-              </button>
-              <button
-                type="button"
-                data-client-view="cards"
-                aria-pressed="false"
-                title="Vista de tarjetas"
-              >
-                ▦
-                <span>Tarjetas</span>
-              </button>
-              <button
-                type="button"
-                data-client-view="compact"
-                aria-pressed="false"
-                title="Lista compacta"
-              >
-                ≡
-                <span>Compacta</span>
-              </button>
-            </div>
-          </div>
-          <p id="clients-view-status" class="clients-view-status" role="status"></p>
-          <form id="clients-filter-panel" class="clients-filter-panel" hidden>
-            <label>
-              Compañía
-              <select name="company">
-                <option value="">Todas las compañías</option>
-              </select>
-            </label>
-            <label>
-              Producto
-              <select name="product">
-                <option value="">Todos los productos</option>
-              </select>
-            </label>
-            <label>
-              Tipo de contacto
-              <select name="category">
-                <option value="">Clientes e interesados</option>
-                <option value="client">Clientes</option>
-                <option value="interested">Interesados</option>
-                <option value="other">Otros</option>
-              </select>
-            </label>
-            <label>
-              Situación
-              <select name="activity">
-                <option value="">Todas las situaciones</option>
-                <option value="active">En activo</option>
-                <option value="inactive">De baja · Historial</option>
-              </select>
-            </label>
-            <label>
-              Productos
-              <select name="product_scope">
-                <option value="">Vigentes e históricos</option>
-                <option value="current">Solo vigentes</option>
-                <option value="history">Con historial</option>
-              </select>
-            </label>
-            <fieldset>
-              <legend>Unidades registradas</legend>
-              <div>
-                <label>
-                  <span class="clients-sr-only">Unidades mínimas</span>
-                  <input
-                    name="min_units"
-                    type="number"
-                    min="0"
-                    max="1000000000000"
-                    step="0.0001"
-                    placeholder="Desde"
-                  />
-                </label>
-                <span>–</span>
-                <label>
-                  <span class="clients-sr-only">Unidades máximas</span>
-                  <input
-                    name="max_units"
-                    type="number"
-                    min="0"
-                    max="1000000000000"
-                    step="0.0001"
-                    placeholder="Hasta"
-                  />
-                </label>
+          <div class="clients-people-workspace">
+            <div class="clients-directory">
+              <div class="clients-section-heading">
+                <div>
+                  <p class="eyebrow">Cada cliente, a mano</p>
+                  <h2>Tu cartera</h2>
+                  <button type="button" id="clients-trash-open" class="panel-secondary">
+                    Eliminados · 10 días ↗
+                  </button>
+                  <p id="clients-total" class="panel-muted" aria-live="polite"></p>
+                </div>
               </div>
-            </fieldset>
-            <fieldset>
-              <legend>Número de productos</legend>
-              <div>
-                <label>
-                  <span class="clients-sr-only">Mínimo de productos</span>
+              <div class="clients-workbar">
+                <label class="clients-search">
+                  <span class="clients-sr-only">Buscar en mi cartera</span>
+                  <span aria-hidden="true">⌕</span>
                   <input
-                    name="min_products"
-                    type="number"
-                    min="0"
-                    max="100000"
-                    step="1"
-                    placeholder="Desde"
+                    type="search"
+                    id="clients-search"
+                    maxlength="120"
+                    placeholder="Nombre, teléfono, compañía, producto…"
+                    autocomplete="off"
                   />
                 </label>
-                <span>–</span>
-                <label>
-                  <span class="clients-sr-only">Máximo de productos</span>
-                  <input
-                    name="max_products"
-                    type="number"
-                    min="0"
-                    max="100000"
-                    step="1"
-                    placeholder="Hasta"
-                  />
-                </label>
+                <button
+                  type="button"
+                  id="clients-filter-toggle"
+                  class="panel-secondary"
+                  aria-expanded="false"
+                  aria-controls="clients-filter-panel"
+                >
+                  Filtros
+                  <span id="clients-filter-count"></span>
+                </button>
+                <div
+                  class="clients-view-switch"
+                  role="group"
+                  aria-label="Vista de clientes"
+                >
+                  <button
+                    type="button"
+                    data-client-view="list"
+                    aria-pressed="true"
+                    title="Vista de lista"
+                  >
+                    ☷
+                    <span>Lista</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-client-view="cards"
+                    aria-pressed="false"
+                    title="Vista de tarjetas"
+                  >
+                    ▦
+                    <span>Tarjetas</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-client-view="compact"
+                    aria-pressed="false"
+                    title="Lista compacta"
+                  >
+                    ≡
+                    <span>Compacta</span>
+                  </button>
+                </div>
               </div>
-            </fieldset>
-            <label>
-              Ordenar por
-              <select name="sort">
-                <option value="name">Apellidos · Clientes primero</option>
-                <option value="units">Más unidades</option>
-                <option value="products">Más productos</option>
-                <option value="recent">Más recientes</option>
-              </select>
-            </label>
-            <div class="clients-filter-actions">
-              <button type="submit" class="btn">Aplicar filtros</button>
-              <button type="button" id="clients-filter-clear" class="panel-text-button">
-                Limpiar filtros
-              </button>
+              <p id="clients-view-status" class="clients-view-status" role="status"></p>
+              <form id="clients-filter-panel" class="clients-filter-panel" hidden>
+                <label>
+                  Compañía
+                  <select name="company">
+                    <option value="">Todas las compañías</option>
+                  </select>
+                </label>
+                <label>
+                  Producto
+                  <select name="product">
+                    <option value="">Todos los productos</option>
+                  </select>
+                </label>
+                <label>
+                  Tipo de contacto
+                  <select name="category">
+                    <option value="">Clientes e interesados</option>
+                    <option value="client">Clientes</option>
+                    <option value="interested">Interesados</option>
+                    <option value="other">Otros</option>
+                  </select>
+                </label>
+                <label>
+                  Situación
+                  <select name="activity">
+                    <option value="">Todas las situaciones</option>
+                    <option value="active">En activo</option>
+                    <option value="inactive">De baja · Historial</option>
+                  </select>
+                </label>
+                <label>
+                  Productos
+                  <select name="product_scope">
+                    <option value="">Vigentes e históricos</option>
+                    <option value="current">Solo vigentes</option>
+                    <option value="history">Con historial</option>
+                  </select>
+                </label>
+                <fieldset>
+                  <legend>Unidades registradas</legend>
+                  <div>
+                    <label>
+                      <span class="clients-sr-only">Unidades mínimas</span>
+                      <input
+                        name="min_units"
+                        type="number"
+                        min="0"
+                        max="1000000000000"
+                        step="0.0001"
+                        placeholder="Desde"
+                      />
+                    </label>
+                    <span>–</span>
+                    <label>
+                      <span class="clients-sr-only">Unidades máximas</span>
+                      <input
+                        name="max_units"
+                        type="number"
+                        min="0"
+                        max="1000000000000"
+                        step="0.0001"
+                        placeholder="Hasta"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <legend>Número de productos</legend>
+                  <div>
+                    <label>
+                      <span class="clients-sr-only">Mínimo de productos</span>
+                      <input
+                        name="min_products"
+                        type="number"
+                        min="0"
+                        max="100000"
+                        step="1"
+                        placeholder="Desde"
+                      />
+                    </label>
+                    <span>–</span>
+                    <label>
+                      <span class="clients-sr-only">Máximo de productos</span>
+                      <input
+                        name="max_products"
+                        type="number"
+                        min="0"
+                        max="100000"
+                        step="1"
+                        placeholder="Hasta"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+                <label>
+                  Ordenar por
+                  <select name="sort">
+                    <option value="name">Apellidos · Clientes primero</option>
+                    <option value="units">Más unidades</option>
+                    <option value="products">Más productos</option>
+                    <option value="recent">Más recientes</option>
+                  </select>
+                </label>
+                <div class="clients-filter-actions">
+                  <button type="submit" class="btn">Aplicar filtros</button>
+                  <button
+                    type="button"
+                    id="clients-filter-clear"
+                    class="panel-text-button"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              </form>
+              <div
+                id="clients-active-filters"
+                class="clients-active-filters"
+                hidden
+              ></div>
+              <div id="clients-bulk" class="bulk-toolbar" hidden>
+                <label class="bulk-all">
+                  <input id="clients-select-all" type="checkbox" />
+                  Seleccionar página
+                </label>
+                <span id="clients-selected-count" class="bulk-count" aria-live="polite">
+                  0 seleccionados
+                </span>
+                <button
+                  type="button"
+                  id="clients-delete-selected"
+                  class="invitation-delete"
+                  disabled
+                >
+                  Eliminar seleccionados
+                </button>
+              </div>
+              <p id="clients-empty" class="panel-empty" hidden>
+                Todavía no tienes clientes importados. Sube tu informe o abre el ejemplo
+                para ver cómo quedará.
+              </p>
+              <div class="clients-table-wrap" id="clients-table-wrap" hidden>
+                <table class="clients-table">
+                  <caption class="clients-sr-only">
+                    Clientes de mi cartera. Abre una ficha para ver todos los datos hasta
+                    Localidad.
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th><span class="clients-sr-only">Seleccionar</span></th>
+                      <th>Cliente</th>
+                      <th>Contacto</th>
+                      <th>Localidad</th>
+                      <th>Cartera</th>
+                      <th>Estado</th>
+                      <th><span class="clients-sr-only">Ficha</span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="clients-list"></tbody>
+                </table>
+              </div>
+              <div class="panel-pagination" id="clients-pagination" hidden>
+                <button id="clients-previous" type="button" class="panel-secondary">
+                  ← Anterior
+                </button>
+                <span id="clients-page-label"></span>
+                <button id="clients-next" type="button" class="panel-secondary">
+                  Siguiente →
+                </button>
+              </div>
             </div>
-          </form>
-          <div id="clients-active-filters" class="clients-active-filters" hidden></div>
-          <div id="clients-bulk" class="bulk-toolbar" hidden>
-            <label class="bulk-all">
-              <input id="clients-select-all" type="checkbox" />
-              Seleccionar página
-            </label>
-            <span id="clients-selected-count" class="bulk-count" aria-live="polite">
-              0 seleccionados
-            </span>
-            <button
-              type="button"
-              id="clients-delete-selected"
-              class="invitation-delete"
-              disabled
+            <aside
+              class="client-detail-slot"
+              id="client-detail-slot"
+              aria-label="Ficha del cliente seleccionado"
             >
-              Eliminar seleccionados
-            </button>
-          </div>
-          <p id="clients-empty" class="panel-empty" hidden>
-            Todavía no tienes clientes importados. Sube tu informe o abre el ejemplo para
-            ver cómo quedará.
-          </p>
-          <div class="clients-table-wrap" id="clients-table-wrap" hidden>
-            <table class="clients-table">
-              <caption class="clients-sr-only">
-                Clientes de mi cartera. Abre una ficha para ver todos los datos hasta
-                Localidad.
-              </caption>
-              <thead>
-                <tr>
-                  <th><span class="clients-sr-only">Seleccionar</span></th>
-                  <th>Cliente</th>
-                  <th>Contacto</th>
-                  <th>Localidad</th>
-                  <th>Cartera</th>
-                  <th>Estado</th>
-                  <th><span class="clients-sr-only">Ficha</span></th>
-                </tr>
-              </thead>
-              <tbody id="clients-list"></tbody>
-            </table>
-          </div>
-          <div class="panel-pagination" id="clients-pagination" hidden>
-            <button id="clients-previous" type="button" class="panel-secondary">
-              ← Anterior
-            </button>
-            <span id="clients-page-label"></span>
-            <button id="clients-next" type="button" class="panel-secondary">
-              Siguiente →
-            </button>
+              <div class="client-detail-placeholder" id="client-detail-placeholder">
+                <p class="eyebrow">Cada persona, su proyecto</p>
+                <h2>Tu cliente, en contexto.</h2>
+                <p>
+                  Selecciona una persona para consultar su cartera, sus datos y su
+                  historial sin perder de vista el listado.
+                </p>
+              </div>
+            </aside>
           </div>
         </section>
         <section id="consultants-view" aria-label="Consultores" hidden>
@@ -1404,6 +1496,7 @@
         </p>
         <h2 id="client-detail-name"></h2>
         <p id="client-detail-status" class="client-file-status"></p>
+        <p id="client-detail-contact" class="client-file-contact"></p>
         <div class="client-life-actions">
           <button type="button" class="panel-secondary" id="client-activity-toggle">
             Dar de baja
@@ -1416,10 +1509,10 @@
       </header>
       <div class="client-file-tabs" role="group" aria-label="Apartados de la ficha">
         <button type="button" data-client-tab="products" aria-pressed="true">
-          Cartera y productos
+          Cartera
         </button>
         <button type="button" data-client-tab="contact" aria-pressed="false">
-          Datos del cliente
+          Datos
         </button>
         <button type="button" data-client-tab="history" aria-pressed="false">
           Historial
@@ -1460,6 +1553,15 @@
           </button>
         </section>
       </div>
+      <section class="client-file-recent" aria-label="Última actividad del cliente">
+        <div>
+          <h3>Última actividad</h3>
+          <button type="button" id="client-open-history" class="panel-text-button">
+            Ver historial ↗
+          </button>
+        </div>
+        <p id="client-recent-event" class="panel-muted" role="status"></p>
+      </section>
     </dialog>
     <dialog
       id="notifications-dialog"
@@ -1590,7 +1692,7 @@
     <script src="../js/contract-controls.js?v=apex2" defer></script>
     <script src="../js/date-picker.js?v=safarimonth1" defer></script>
     <script src="../js/product-picker.js?v=apex1" defer></script>
-    <script src="../js/client-products.js?v=importguide1" defer></script>
+    <script src="../js/client-products.js?v=people1" defer></script>
     <script src="../js/clients-workspace.js?v=insights1" defer></script>
     <dialog id="clients-trash-dialog" aria-labelledby="clients-trash-title">
       <div class="trash-heading">
@@ -1622,7 +1724,7 @@
         </button>
       </div>
     </dialog>
-    <script src="../js/clients.js?v=insights1" defer></script>
+    <script src="../js/clients.js?v=people1" defer></script>
     <script src="../js/client-trash.js?v=apex1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
@@ -1634,12 +1736,12 @@
     <script src="../js/team.js?v=devices1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
-    <script src="../js/premeeting-panel.js?v=insights1" defer></script>
+    <script src="../js/premeeting-panel.js?v=people1" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
     <script src="../js/statistics.js?v=devices1-closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel-insights.js?v=insights1" defer></script>
-    <script src="../js/panel.js?v=insights1" defer></script>
+    <script src="../js/panel-insights.js?v=people1" defer></script>
+    <script src="../js/panel.js?v=people1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

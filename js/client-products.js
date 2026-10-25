@@ -103,7 +103,7 @@
     const heading = node("div", undefined, "client-products-heading");
     heading.append(
       node("div", "TU CARTERA", "eyebrow"),
-      node("h3", "Tus productos, de un vistazo."),
+      node("h3", "Productos en cartera"),
     );
     host.append(heading);
     const note = node("p");
@@ -123,12 +123,20 @@
         .filter((r) => !r.archived_at)
         .filter((r) => r.payment_type === "single")
         .reduce((s, r) => s + Number(r.amount), 0);
+    const signedUnits = rows.reduce((total, row) => total + Number(row.units || 0), 0);
     [
+      [
+        "Unidades firmadas",
+        new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 }).format(signedUnits) +
+          " U",
+      ],
       ["Productos vigentes", String(liveRows.length)],
       ["Aportación mensual", euro(monthly)],
       ["Aportaciones únicas", euro(single)],
     ].forEach(([label, value]) => {
       const box = node("article");
+      if (label === "Aportaciones únicas") box.className = "contract-metric-single";
+      if (label === "Aportaciones únicas" && single === 0) box.hidden = true;
       box.append(node("small", label), node("strong", value));
       metrics.append(box);
     });
