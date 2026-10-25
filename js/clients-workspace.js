@@ -5,7 +5,7 @@
   const form = get("clients-filter-panel"),
     wrap = get("clients-table-wrap");
   let filters = {},
-    view = "list",
+    view = "cards",
     options = {},
     loaded = false,
     restoring = null,
@@ -15,8 +15,14 @@
     reload = () => {};
   const number = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 });
   function setView(next) {
-    view = ["list", "cards", "compact"].includes(next) ? next : "list";
+    view = ["list", "cards", "compact"].includes(next) ? next : "cards";
     wrap.dataset.view = view;
+    get("clients-format-hint").hidden = view === "cards";
+    get("clients-format-current").textContent = {
+      list: "Lista",
+      compact: "Compacta",
+      cards: "Tarjetas",
+    }[view];
     document
       .querySelectorAll("[data-client-view]")
       .forEach((b) =>
@@ -175,6 +181,8 @@
           });
       }),
   );
+  get("clients-cards-shortcut").onclick = () =>
+    document.querySelector('[data-client-view="cards"]').click();
   async function restore() {
     if (loaded) return;
     if (restoring) return restoring;
@@ -205,7 +213,7 @@
     clear();
     populate(form.elements.company, [], "Todas las compañías", "");
     populate(form.elements.product, [], "Todos los productos", "");
-    setView("list");
+    setView("cards");
     form.hidden = true;
     get("clients-filter-toggle").setAttribute("aria-expanded", "false");
     get("clients-view-status").textContent = "";
@@ -296,7 +304,7 @@
       menu.querySelector("summary").focus({ preventScroll: true });
     }
   });
-  setView("list");
+  setView("cards");
   window.ClientWorkspace = {
     restore,
     reset,

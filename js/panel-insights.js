@@ -288,6 +288,22 @@
     }
   }
   let recentRequest = 0;
+  function renderRecentEvent(event) {
+    const host = get("client-recent-event");
+    if (!event) {
+      host.textContent = "Todavía no hay movimientos registrados.";
+      return;
+    }
+    const time = node(
+      "time",
+      new Intl.DateTimeFormat("es-ES", {
+        dateStyle: "medium",
+        timeZone: "Atlantic/Canary",
+      }).format(new Date(event.happened_at)),
+    );
+    time.dateTime = event.happened_at;
+    host.replaceChildren(time, node("strong", event.title));
+  }
   function closeHistory() {
     recentRequest++;
     historyClient = null;
@@ -326,9 +342,7 @@
           if (!canUse(ticket) || historyClient !== target || recentRequest !== request)
             return;
           const event = data?.rows?.[0];
-          recent.textContent = event
-            ? event.title + " · " + date(event.happened_at)
-            : "Todavía no hay movimientos registrados.";
+          renderRecentEvent(event);
         })
         .catch(() => {
           if (canUse(ticket) && historyClient === target && recentRequest === request)
@@ -352,9 +366,7 @@
       if (!Array.isArray(data?.rows)) throw Error("Invalid history");
       historyOffset = (append ? historyOffset : 0) + data.rows.length;
       historyTotal = data.total;
-      if (!append && data.rows[0])
-        get("client-recent-event").textContent =
-          data.rows[0].title + " · " + date(data.rows[0].happened_at);
+      if (!append && data.rows[0]) renderRecentEvent(data.rows[0]);
       if (!data.rows.length && !append)
         empty(
           host,

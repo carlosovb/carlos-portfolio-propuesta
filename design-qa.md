@@ -1,53 +1,57 @@
-# Clientes: propuesta 2 — revisión visual
+# Clientes — fidelidad a la propuesta 2
 
 final result: passed
 
-## Corrección tras la comparación del usuario — 25/10/2026
+## Alcance y referencia
 
-Se revisó de nuevo la referencia adjunta por el usuario, correspondiente a la propuesta 2. La primera entrega conservaba demasiada densidad de controles y espacios del diseño anterior. Se corrigieron las proporciones del menú, la cabecera y las tarjetas; se trasladaron las utilidades secundarias al final del listado; se dejaron los interesados en filas horizontales; se colocaron las cifras antes del título de productos; se compactaron los contratos y se cambió el cierre lateral a «Cerrar ficha →». Teléfono y correo comparten una línea independiente del estado. Los logos de compañía tienen fondo de marca y contraste blanco, y los cambios de vista usan iconos SVG Tabler.
+Referencia visual: `C:/Users/ccaba/.codex/generated_images/01a15a58-2596-7332-aa93-286a0314d77e/exec-d28a144d-7322-48c7-a4c6-a2bd2e8fcee2.png` (1487 × 1058).
+Página comprobada: https://carlosovb.github.io/carlos-portfolio-propuesta/panel/
 
-Se regeneraron e inspeccionaron las comparaciones completa, del listado y de la ficha con el mismo tamaño de referencia. Se comprobaron otra vez móvil y escritorio. Se mantienen las acciones adicionales que requiere la aplicación (baja, historial de productos, edición, selección y recuperación), aunque no aparezcan en el concepto. La selección múltiple continúa siendo independiente de la ficha abierta. No se inventan fechas, cantidades, actividad ni datos del perfil para imitar los datos ficticios de la referencia.
+La comparación corresponde a Tarjetas, tema oscuro, Ana García abierta en la ficha lateral, dos compañías y dos interesados. Los datos de la captura son ficticios. Las respuestas de autenticación/datos se simulan exclusivamente en el navegador de pruebas; HTML, CSS, JavaScript, fuentes e imágenes de la comprobación publicada proceden de GitHub Pages, sin sustituciones locales.
 
-La regresión comprueba también alturas de tarjeta e interesado y el orden visual de cifras/productos. Flujo de clientes aprobado; auditoría de cinco tamaños y ambos temas aprobada en Chromium y WebKit. No quedan incidencias funcionales o de adaptabilidad bloqueantes.
+## Hallazgos de la comprobación publicada inicial
 
-## Referencia y alcance
+1. P1: la preferencia guardada podía abrir Lista o Compacta. La auditoría anterior forzaba Tarjetas y ocultaba esa diferencia. Se verificó que existe una preferencia Compacta en producción. Se cambia únicamente el valor predeterminado para cuentas sin elección, y se ofrece «Ver tarjetas» cuando hay otra vista guardada. Se conservan las preferencias existentes: la revisión automática rechazó su sobrescritura global.
+2. P1: la ficha pasaba a modal por debajo de 1280 px, también en portátiles. Se ajustan el diseño y su comportamiento al mismo límite de 1100 px; por debajo se mantiene el modal móvil.
+3. P2: las tarjetas acumulaban reglas antiguas de tabla, columnas implícitas y alturas fijas excesivas. Se sustituye la hoja de ajustes por una capa coherente, reiniciando columnas/filas. La altura depende del contenido y los interesados tienen una única fila.
+4. P2: cada producto ocupaba varias líneas y los controles competían con sus cifras. Ahora producto, cartera/aportación y unidades forman una fila compacta; Editar queda en el desplegable. Las compañías se pueden plegar y muestran un control accesible con aria-expanded.
+5. P2: faltaban consistencia tipográfica, iconos y jerarquía de cifras. Se incorpora Inter autohospedada con licencia SIL, iconos Tabler originales, sufijos de cifras y logotipos reales sobre fondos de compañía. Se separan fecha y título de la actividad real.
+6. P2 detectado durante regresión: el texto invisible del botón accesible de tarjeta podía ampliar el ancho en móvil. Se limita su caja y el contorno de selección, manteniendo el clic de toda la tarjeta y el teclado.
 
-Referencia seleccionada: `C:/Users/ccaba/.codex/generated_images/01a15a58-2596-7332-aa93-286a0314d77e/exec-d28a144d-7322-48c7-a4c6-a2bd2e8fcee2.png`.
-Se aplica al panel existente, manteniendo permisos, datos, importación, filtros, tres vistas guardadas, productos, historial y eliminados. No se modifica el cálculo financiero ni el esquema de datos.
+## Evidencia visual
 
-## Evidencia comparada
+Directorio de capturas: `C:/Users/ccaba/AppData/Local/Temp/`.
 
-Capturas locales en `C:/Users/ccaba/AppData/Local/Temp/`:
+Antes, recursos publicados:
+- `client-published-before-saved-list.png`: preferencia Lista simulada, publicada antes de la corrección.
+- `client-published-before-file.png`: Tarjetas y ficha publicadas antes de la corrección.
 
-- `client-design-desktop.png`: implementación a 1487 × 1058, DPR 1.
-- `client-design-comparison.png`: referencia e implementación juntas, misma escala y tamaño, 2974 × 1058.
-- `client-design-focus.png`: comparación enfocada del listado, 1400 × 650.
-- `client-design-detail-focus.png`: comparación enfocada de la ficha, 1240 × 800.
-- `client-design-file-320.png` y `client-design-file-390.png`: ficha móvil.
-- `client-design-directory-dark-320.png` y equivalentes light/390/768/1024/1487: listado adaptable.
-- Prefijo `client-design-webkit-`: comprobación equivalente en WebKit con perfil iPhone.
+Después, código local y misma densidad:
+- `client-design-desktop.png`: 1487 × 1058, CSS 1487 × 1058, DPR 1.
+- `client-design-comparison.png`: referencia + implementación, 2974 × 1058, sin escalado.
+- `client-design-focus.png`: tarjetas, 1400 × 650; recortes a la misma escala.
+- `client-design-detail-focus.png`: ficha, 1240 × 800; recortes a la misma escala.
+- `client-design-laptop-1366.png`, `client-design-laptop-1200.png`, `client-design-laptop-1100.png`: ficha lateral en portátil.
+- `client-design-file-390.png`, `client-design-file-320.png`: ficha móvil.
+- `client-design-directory-{dark|light}-{width}.png`: directorio en cinco anchuras y ambos temas.
+- Prefijo `client-design-webkit-`: comprobación equivalente con WebKit y perfil iPhone.
 
-Se inspeccionaron la comparación completa y ambas comparaciones enfocadas. Se revisaron listado y ficha en móvil, tableta y escritorio, en ambos temas. WebKit y Android se comprobaron mediante navegador de pruebas y emulación; no son pruebas en dispositivos físicos.
+Comprobación posterior a publicación: el mismo test admite `CLIENT_DESIGN_URL=https://carlosovb.github.io/carlos-portfolio-propuesta/` y genera los equivalentes con prefijo `client-live-`, incluida la comparación completa y los dos recortes. Su resultado se registra al completar el despliegue.
+
+Se inspeccionaron juntas referencia e implementación y ambos recortes antes de aceptar la corrección. Las capturas móviles se revisaron para evitar cortes de importes, texto o controles. No se atribuyen estas comprobaciones a dispositivos físicos.
 
 ## Superficies de fidelidad
 
-- Tipografía: se conserva la familia existente del sitio, con títulos claros, jerarquía y tamaños legibles.
-- Espaciado: dos columnas de tarjetas y ficha lateral en escritorio; ficha modal y distribución adaptable por debajo de 1280 px.
-- Color: azul oscuro plano, cobre para selección y cifras, interesados diferenciados en violeta, compañías con referencias de color. Sin resplandor.
-- Imágenes e iconos: logotipos reales existentes y SVG oficiales Tabler con licencia MIT; sin imágenes generadas para representar marcas.
-- Contenido: se preservan las acciones reales y se corrige la etiqueta conceptual de 420 U a «Unidades firmadas», manteniendo los euros como importes monetarios.
+- Tipografía: Inter variable local, pesos, jerarquía y medidas estables entre equipos; sin depender de fuentes instaladas.
+- Distribución: dos columnas de tarjetas y ficha lateral, tarjetas de altura variable, interesados aparte y ficha compacta. Versión modal en móvil/tableta.
+- Colores: azul oscuro, cobre, verde para clientes y violeta para interesados. Se conserva la petición previa de evitar resplandores, sin copiar el brillo del concepto.
+- Recursos: logos originales de AXA/Intesa e iconos SVG Tabler; sin marcas inventadas ni texto rasterizado.
+- Contenido: datos reales cuando se use la cuenta real; en pruebas son explícitamente ficticios. «Unidades firmadas» corrige la etiqueta equivocada de la imagen («Aportaciones únicas» bajo 420 U). Los recuentos, la oficina y el puesto no se inventan para copiar la captura.
 
-## Historial de revisión y correcciones
+## Verificación funcional
 
-1. Primera comparación: se ajustaron densidad, proporciones de tarjetas, posición de compañías y ficha lateral.
-2. Se corrigió el desbordamiento del importador a 768 px y se compactó la entrada de productos.
-3. Se mantuvieron los datos accesibles en Lista y Compacta y se separó la selección múltiple del cliente abierto.
-4. Se añadió confirmación al cambiar de cliente con una edición en curso y limpieza del correo al cerrar la ficha.
-5. Se verificó el cambio entre ficha lateral y modal al redimensionar, incluido WebKit.
-6. Comparación final completa y enfocada: aprobada. Las acciones adicionales respecto al concepto (baja, edición, historial de productos, selección e importación guiada) se conservan por requisito funcional.
+Aprobadas las pruebas de diseño en Chromium y WebKit, el flujo de clientes y la prueba SQL de filtros/preferencias/permisos. Se comprueban importación, deduplicación, productos, APEX, baja/reactivación, historial, selección, vistas guardadas, cierre, cambio de ficha sin perder una edición y limpieza al salir. La auditoría adaptable del panel y las páginas públicas pasa en ambos motores. Se verifican la fuente cargada, ausencia de errores JavaScript y recursos gráficos sin errores HTTP.
 
-No quedan incidencias P0, P1 o P2 abiertas. Las diferencias de fuente, datos ficticios y densidad adicional son adaptaciones explícitas al producto existente.
+La migración de valor predeterminado no actualiza filas de preferencias ni cambia permisos o información de clientes. La prueba SQL confirma que una elección Compacta permanece intacta después de la migración y que cada cuenta mantiene su propia elección.
 
-## Validación funcional
-
-Suite funcional y de privacidad existente aprobada; tras corregir el desbordamiento se repitió la auditoría adaptable. `clients-flow.cjs`, `client-design.cjs` y `responsive-audit.cjs` aprobados. Diseño y adaptabilidad comprobados también en WebKit. Las pruebas utilizan clientes ficticios y verifican ausencia de desbordamiento, cambio de ficha, edición, cierre y limpieza de datos.
+No quedan P0/P1/P2 abiertos en la vista Tarjetas. Diferencias aceptadas: datos y recuentos ficticios, rol real del usuario en el menú, controles adicionales disponibles al desplegar y ausencia del resplandor previamente rechazado por el usuario. La preferencia personal solo se cambia con una selección expresa del titular.

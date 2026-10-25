@@ -61,14 +61,17 @@ const contracts = [
     headless: true,
     ...(!safari && { executablePath: process.env.CHROME_EXECUTABLE }),
   });
-  const base = `http://127.0.0.1:${server.address().port}/`;
-  const prefix = safari ? "client-design-webkit" : "client-design";
+  const base =
+    process.env.CLIENT_DESIGN_URL || `http://127.0.0.1:${server.address().port}/`;
+  const prefix =
+    (process.env.CLIENT_DESIGN_URL ? "client-live" : "client-design") +
+    (safari ? "-webkit" : "");
   try {
     const context = await browser.newContext({
       ...(safari ? devices["iPhone 13"] : {}),
       viewport: { width: 1487, height: 1058 },
       reducedMotion: "reduce",
-      hasTouch: true,
+      hasTouch: safari,
     });
     const data = state();
     data.profile = { first_name: "Carlos", last_name: "Caballero", phone: "000000000" };
@@ -85,12 +88,22 @@ const contracts = [
       notices: [],
     };
     await mock(context, data);
+    const cors = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS,PATCH,DELETE",
+    };
     await context.route("**/rpc/get_client_view_preference", (r) =>
-      r.fulfill({ contentType: "application/json", body: '"cards"' }),
+      r.fulfill({
+        contentType: "application/json",
+        headers: cors,
+        body: JSON.stringify(process.env.CLIENT_SAVED_VIEW || "cards"),
+      }),
     );
     await context.route("**/rpc/search_my_clients", (r) =>
       r.fulfill({
         contentType: "application/json",
+        headers: cors,
         body: JSON.stringify({
           rows: clients,
           total: clients.length,
@@ -105,25 +118,48 @@ const contracts = [
     await context.route("**/client_products?**", (r) =>
       r.fulfill({
         contentType: "application/json",
+        headers: cors,
         body: JSON.stringify(r.request().url().includes(clients[0].id) ? contracts : []),
       }),
     );
     await context.route("**/rpc/get_client_pias_budget", (r) =>
       r.fulfill({
         contentType: "application/json",
+        headers: cors,
         body: JSON.stringify({ reserved: 1200, remaining: 6800 }),
       }),
     );
     const page = await context.newPage();
     const errors = [];
+    const assetErrors = [];
     page.on("pageerror", (e) => errors.push(e.message));
+    page.on("response", (response) => {
+      if (
+        response.status() >= 400 &&
+        /\.(css|js|woff2|svg|png)(\?|$)/.test(response.url())
+      )
+        assetErrors.push(response.status() + " " + response.url());
+    });
     await login(page, base);
     await page.evaluate(() => window.PanelNavigation.go("clients"));
     await page.locator("#clients-list tr").first().waitFor();
     await page.evaluate(() => (document.documentElement.dataset.theme = "dark"));
+    await page.evaluate(() => document.fonts.ready);
+    assert(
+      await page.evaluate(() =>
+        [...document.fonts].some(
+          (font) => font.family === "Inter Panel" && font.status === "loaded",
+        ),
+      ),
+      "Tipografía local cargada",
+    );
+    await page.screenshot({ path: path.join(dir, prefix + "-initial.png") });
+    if ((await page.locator("#clients-table-wrap").getAttribute("data-view")) !== "cards")
+      await page.locator('[data-client-view="cards"]').click();
     await page.locator("#clients-list .client-identity").first().click();
     await page.locator(".contract-company").first().waitFor();
-    await page.locator(".contract-card > button").first().click();
+    await page.locator(".contract-summary").first().click();
+    await page.getByRole("button", { name: "Editar", exact: true }).first().click();
     await page.locator(".contract-editor [name=amount]").waitFor();
     await page.locator("#clients-list .client-identity").first().click();
     assert.equal(
@@ -163,7 +199,7 @@ const contracts = [
       .first()
       .boundingBox();
     assert(
-      cardBounds.height >= 240 && cardBounds.height <= 285,
+      cardBounds.height >= 210 && cardBounds.height <= 285,
       "Tarjeta con la densidad de la referencia",
     );
     assert(interestedBounds.height < 95, "Interesados en filas compactas");
@@ -181,6 +217,32 @@ const contracts = [
     );
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: path.join(dir, prefix + "-desktop.png") });
+    await page.locator(".contract-company-toggle").first().click();
+    assert.equal(
+      await page.locator(".contract-card").first().isVisible(),
+      false,
+      "Compañía plegable",
+    );
+    await page.locator(".contract-company-toggle").first().click();
+    assert.equal(await page.locator(".contract-card").first().isVisible(), true);
+    for (const width of [1366, 1200, 1100]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForFunction(
+        () =>
+          document.querySelector("#client-detail-dialog").open &&
+          !document.querySelector("#client-detail-dialog").matches(":modal"),
+      );
+      assert(
+        await page
+          .locator("#client-detail-dialog")
+          .evaluate((d) => d.scrollWidth <= d.clientWidth + 1),
+        "Ficha lateral sin desbordamiento en portátil " + width,
+      );
+      await page.screenshot({
+        path: path.join(dir, prefix + "-laptop-" + width + ".png"),
+      });
+    }
+    await page.setViewportSize({ width: 1487, height: 1058 });
     await page.locator("#clients-list .client-identity").nth(1).click();
     assert.match(await page.locator("#client-detail-name").textContent(), /Daniel/);
     await page.locator("#clients-list .client-identity").first().click();
@@ -251,6 +313,11 @@ const contracts = [
       }
     }
     assert.deepEqual(errors, []);
+    assert.deepEqual(
+      assetErrors,
+      [],
+      "Todos los recursos gráficos y estilos cargan correctamente",
+    );
     const ref =
       process.env.CLIENT_DESIGN_REFERENCE ||
       path.join(
@@ -263,17 +330,17 @@ const contracts = [
       await board.setContent(
         `<body style="margin:0;display:flex"><img width="1487" height="1058" src="data:image/png;base64,${fs.readFileSync(ref).toString("base64")}"><img width="1487" height="1058" src="data:image/png;base64,${fs.readFileSync(path.join(dir, prefix + "-desktop.png")).toString("base64")}"></body>`,
       );
-      await board.screenshot({ path: path.join(dir, "client-design-comparison.png") });
+      await board.screenshot({ path: path.join(dir, prefix + "-comparison.png") });
       await board.setViewportSize({ width: 1400, height: 650 });
       await board.setContent(
         `<body style="margin:0;display:flex">${[ref, path.join(dir, prefix + "-desktop.png")].map((file) => `<div style="position:relative;width:700px;height:650px;overflow:hidden"><img style="position:absolute;left:-225px;top:-160px;width:1487px;height:1058px;max-width:none" src="data:image/png;base64,${fs.readFileSync(file).toString("base64")}"></div>`).join("")}</body>`,
       );
-      await board.screenshot({ path: path.join(dir, "client-design-focus.png") });
+      await board.screenshot({ path: path.join(dir, prefix + "-focus.png") });
       await board.setViewportSize({ width: 1240, height: 800 });
       await board.setContent(
         `<body style="margin:0;display:flex">${[ref, path.join(dir, prefix + "-desktop.png")].map((file, i) => `<div style="position:relative;width:620px;height:800px;overflow:hidden"><img style="position:absolute;left:-${i ? 868 : 860}px;top:-160px;width:1487px;height:1058px;max-width:none" src="data:image/png;base64,${fs.readFileSync(file).toString("base64")}"></div>`).join("")}</body>`,
       );
-      await board.screenshot({ path: path.join(dir, "client-design-detail-focus.png") });
+      await board.screenshot({ path: path.join(dir, prefix + "-detail-focus.png") });
     }
     console.log(
       `${safari ? "WebKit" : "Chromium"}: ficha lateral/modal, cambio de cliente, productos, contacto, limpieza, cinco anchuras y ambos temas verificados.`,

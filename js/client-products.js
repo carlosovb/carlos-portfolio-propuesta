@@ -129,14 +129,26 @@
         new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 }).format(signedUnits) +
           " U",
       ],
-      ["Productos vigentes", String(liveRows.length)],
-      ["Aportación mensual", euro(monthly)],
+      ["en cartera", String(liveRows.length)],
+      [
+        "Aportación mensual",
+        new Intl.NumberFormat("es-ES", {
+          style: "currency",
+          currency: "EUR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        }).format(monthly),
+      ],
       ["Aportaciones únicas", euro(single)],
     ].forEach(([label, value]) => {
       const box = node("article");
       if (label === "Aportaciones únicas") box.className = "contract-metric-single";
       if (label === "Aportaciones únicas" && single === 0) box.hidden = true;
       box.append(node("small", label), node("strong", value));
+      if (label === "en cartera")
+        box.querySelector("strong").append(node("span", " productos", "metric-suffix"));
+      if (label === "Aportación mensual")
+        box.querySelector("strong").append(node("span", "/mes", "metric-month-suffix"));
       metrics.append(box);
     });
     host.append(metrics);
@@ -161,6 +173,7 @@
       tabs.append(tab);
     });
     const toolbar = node("div", undefined, "contract-toolbar");
+    tabs.hidden = scope === "current" && !baseRows.some((r) => r.archived_at);
     if (scope === "history")
       host.append(
         node(
@@ -238,6 +251,19 @@
       if (!companies.has(label)) {
         const section = node("section", undefined, "contract-company");
         const heading = node("header", undefined, "contract-company-heading");
+        const toggle = button(
+          "",
+          () => {
+            const expanded = toggle.getAttribute("aria-expanded") !== "true";
+            toggle.setAttribute("aria-expanded", String(expanded));
+            section
+              .querySelectorAll(":scope > .contract-card")
+              .forEach((card) => (card.hidden = !expanded));
+          },
+          "contract-company-toggle",
+        );
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-label", "Productos de " + label);
         const company = window.PortfolioCompanies.find(label);
         if (company) {
           const logo = node("img");
@@ -247,13 +273,18 @@
           const brand = node("span", undefined, "contract-brand-icon");
           brand.dataset.company = company.id;
           brand.append(logo);
-          heading.append(brand);
+          toggle.append(brand);
         }
-        heading.append(node("h4", label));
+        toggle.append(node("h4", label));
         const count = visibleRows.filter(
           (r) => window.PortfolioCompanies.label(r.company) === label,
         ).length;
-        heading.append(node("small", count + (count === 1 ? " producto" : " productos")));
+        toggle.append(node("small", count + (count === 1 ? " producto" : " productos")));
+        const arrow = node("img", undefined, "contract-company-chevron");
+        arrow.src = "../assets/icons/chevron-down.svg";
+        arrow.alt = "";
+        toggle.append(arrow);
+        heading.append(toggle);
         section.append(heading);
         list.append(section);
         companies.set(label, section);
@@ -274,7 +305,14 @@
         node("h5", row.product),
         node(
           "small",
-          row.portfolio || "Sin cartera asignada",
+          (row.portfolio ? row.portfolio + " · " : "") +
+            new Intl.NumberFormat("es-ES", {
+              style: "currency",
+              currency: "EUR",
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            }).format(row.amount) +
+            (row.payment_type === "monthly" ? "/mes" : " · aportación única"),
           "contract-portfolio-label",
         ),
       );
@@ -295,7 +333,10 @@
         ),
         node("small", row.archived_at ? "En historial" : "Unidades firmadas"),
       );
-      summary.append(identity, payment, units, node("span", "⌄", "contract-chevron"));
+      const chevron = node("img", undefined, "contract-chevron");
+      chevron.src = "../assets/icons/chevron-down.svg";
+      chevron.alt = "";
+      summary.append(identity, payment, units, chevron);
       const detail = node("div", undefined, "contract-expanded");
       const dl = node("dl");
       const date = (value) =>
@@ -461,7 +502,8 @@
         editor();
       });
       edit.disabled = client.is_active === false;
-      card.append(check, copy, edit);
+      tools.prepend(edit);
+      card.append(check, copy);
       companies.get(window.PortfolioCompanies.label(row.company)).append(card);
     });
     host.append(list);

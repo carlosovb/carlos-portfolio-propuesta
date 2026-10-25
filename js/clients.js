@@ -25,7 +25,7 @@
     lifecycleEpoch = 0;
   let importGuide = null;
   const compactClient = matchMedia("(max-width: 850px)");
-  const wideClient = matchMedia("(min-width: 1280px)");
+  const wideClient = matchMedia("(min-width: 1100px)");
   const fileDialog = get("client-detail-dialog");
   const fileOrigin = document.createComment("Ubicación de la ficha modal");
   fileDialog.before(fileOrigin);
@@ -193,6 +193,15 @@
       el("span", "client-file-phone", row.phone || "Sin teléfono"),
       el("span", "client-file-email", row.email || "Sin correo electrónico"),
     );
+    for (const [selector, icon] of [
+      [".client-file-phone", "phone"],
+      [".client-file-email", "mail"],
+    ]) {
+      const image = el("img");
+      image.src = "../assets/icons/" + icon + ".svg";
+      image.alt = "";
+      get("client-detail-contact").querySelector(selector).prepend(image);
+    }
     get("client-detail-demo").hidden = !demo;
     const fields = get("client-detail-fields");
     fields.replaceChildren();
@@ -532,6 +541,8 @@
           other: "Otros contactos",
           inactive: "De baja",
         }[group];
+        if (group === "interested")
+          tr.dataset.groupLabel += " · " + result.stats.interested;
       }
       previousGroup = group;
       const selectCell = el("td", "client-select-cell");
@@ -543,6 +554,10 @@
         syncSelection();
       });
       selectCell.append(checkbox);
+      const currentMark = el("img", "client-open-indicator");
+      currentMark.src = "../assets/icons/check.svg";
+      currentMark.alt = "";
+      selectCell.append(currentMark);
       const identity = el("td", "client-identity");
       const monogram = el(
         "span",
@@ -611,6 +626,7 @@
     }
     const stats = result.stats;
     get("clients-count").textContent = stats.clients;
+    get("clients-directory-count").textContent = stats.clients;
     get("clients-localities-count").textContent = stats.localities;
     get("clients-interested-count").textContent = stats.interested;
     get("clients-total").textContent =

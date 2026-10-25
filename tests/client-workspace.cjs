@@ -90,7 +90,28 @@ const fs = require("fs"),
       ).rows[0].data;
     assert.equal(
       (await db.query("select public.get_client_view_preference() v")).rows[0].v,
-      "list",
+      "cards",
+    );
+    await db.query("select public.save_client_view_preference('cards')");
+    await db.query("select public.save_client_view_preference('compact')");
+    assert.equal(
+      (await db.query("select public.get_client_view_preference() v")).rows[0].v,
+      "compact",
+      "La elección posterior del consultor se conserva",
+    );
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/client-directory-cards-default.sql", "utf8"));
+    await as(member);
+    assert.equal(
+      (await db.query("select public.get_client_view_preference() v")).rows[0].v,
+      "compact",
+      "El nuevo formato predeterminado no sobrescribe elecciones guardadas",
+    );
+    await db.query("select public.save_client_view_preference('compact')");
+    assert.equal(
+      (await db.query("select public.get_client_view_preference() v")).rows[0].v,
+      "compact",
+      "Se puede guardar otro formato tras la activación",
     );
     await db.query("select public.save_client_view_preference('cards')");
     assert.equal(
@@ -159,7 +180,7 @@ const fs = require("fs"),
       assert.deepEqual(r.options.products, []);
       assert.equal(
         (await db.query("select public.get_client_view_preference() v")).rows[0].v,
-        "list",
+        "cards",
         "Views isolated by account",
       );
     }

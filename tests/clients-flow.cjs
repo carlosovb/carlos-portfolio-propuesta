@@ -923,6 +923,8 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await page.waitForFunction(() => !document.querySelector(".contract-apex-entry"));
     assert.equal(products.length, 1);
 
+    if (!(await page.locator(".contract-detail").evaluate((d) => d.open)))
+      await page.locator(".contract-summary").click();
     await page
       .locator(".contract-card")
       .getByRole("button", { name: "Editar", exact: true })
@@ -953,6 +955,8 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     assert.equal(products[0].units, null);
     assert.equal(products[0].product, "Producto anterior personalizado");
     assert.equal(products[0].portfolio, "Cartera anterior personalizada");
+    if (!(await page.locator(".contract-detail").evaluate((d) => d.open)))
+      await page.locator(".contract-summary").click();
     await page
       .locator(".contract-card")
       .getByRole("button", { name: "Editar", exact: true })
@@ -1106,6 +1110,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     );
     await page.locator("[data-product-scope=current]").click();
     assert.equal(await page.locator(".contract-card").count(), 2);
+    await page.locator('[data-client-tab="contact"]').click();
     await require("./ui-confirm.cjs").next(page, true);
     await page.locator("#client-activity-toggle").click();
     await page.waitForFunction(
@@ -1113,6 +1118,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         document.querySelector("#client-detail-dialog").dataset.activity === "inactive" &&
         document.querySelectorAll(".contract-card").length === 2,
     );
+    await page.locator('[data-client-tab="products"]').click();
     assert.equal(
       await page
         .getByRole("button", { name: "+ Añadir producto", exact: true })
@@ -1120,9 +1126,11 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       true,
     );
     assert(products.every((p) => p.archived_at));
+    await page.locator('[data-client-tab="products"]').click();
     await page
       .locator("#client-detail-dialog")
       .screenshot({ path: path.join(process.env.TEMP, "client-history.png") });
+    await page.locator('[data-client-tab="contact"]').click();
     await page.locator("#client-activity-toggle").click();
     await page.waitForFunction(
       () => document.querySelector("#client-detail-dialog").dataset.activity === "active",
@@ -1131,6 +1139,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       products.every((p) => p.archived_at),
       "Client reactivation retains archived products",
     );
+    await page.locator('[data-client-tab="products"]').click();
     await page.locator("[data-product-scope=history]").click();
     for (let i = 0; i < 2; i++) {
       await page.locator(".contract-detail summary").first().click();
@@ -1262,7 +1271,22 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
           await page
             .locator("#clients-view")
             .evaluate((el) => el.scrollWidth <= el.clientWidth),
-          "Vistas de cartera responsive",
+          `Vistas de cartera responsive: ${view}, ${width}px. ${await page
+            .locator("#clients-view")
+            .evaluate((el) => ({
+              width: el.clientWidth,
+              scroll: el.scrollWidth,
+              overflow: [...el.querySelectorAll("*")]
+                .filter(
+                  (n) =>
+                    n.getBoundingClientRect().right >
+                      el.getBoundingClientRect().right + 0.1 &&
+                    n.getBoundingClientRect().width > 0,
+                )
+                .slice(0, 8)
+                .map((n) => n.tagName + "." + n.className),
+            }))
+            .then(JSON.stringify)}`,
         );
         if (view === "cards") {
           const card = page.locator("#clients-list tr").first(),

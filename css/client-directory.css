@@ -1,144 +1,184 @@
-/* Propuesta elegida: directorio de personas y ficha en contexto. */
-.client-close-label {
-  display: none;
+/* Clientes: propuesta 2. Esta capa sustituye los ajustes acumulados anteriores. */
+@font-face {
+  font-family: "Inter Panel";
+  src: url("../assets/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
 .panel-sidebar .panel-nav-icon {
-  width: 21px;
-  height: 21px;
-  opacity: 0.8;
+  width: 22px;
+  height: 22px;
   flex: none;
-}
-.panel-refresh-icon {
-  display: none;
+  opacity: 0.85;
 }
 html[data-theme="dark"] .panel-nav-icon {
-  filter: invert(89%) sepia(9%) saturate(300%) hue-rotate(172deg);
+  filter: invert(88%);
 }
 #panel-navigation button {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
-  gap: 12px;
   padding: 13px 12px;
-  min-height: 48px;
-  position: relative;
+  min-height: 52px;
 }
 #panel-navigation .panel-nav-label {
-  font-size: 14px;
-  line-height: 1.4;
+  font:
+    400 15px/1.4 "Inter Panel",
+    "Segoe UI",
+    sans-serif;
   text-align: left;
 }
 #panel-navigation button[aria-current] {
   border-color: var(--line);
-  border-left: 3px solid var(--accent);
-  background: color-mix(in srgb, var(--accent) 9%, var(--panel));
-  font-weight: 650;
+  border-left: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  color: var(--ink);
 }
-.panel-sidebar .panel-global-search {
-  margin-top: 25px;
-}
-.panel-sidebar nav {
-  gap: 5px;
+.panel-refresh-icon,
+.client-close-label {
+  display: none;
 }
 @media (min-width: 851px) {
   .panel-shell {
     grid-template-columns: 225px minmax(0, 1fr);
   }
   .panel-sidebar {
-    padding: 30px 18px 20px;
-  }
-  .panel-sidebar nav {
-    margin: 24px 0;
+    padding: 36px 18px 24px;
+    background: var(--bg);
   }
   .panel-sidebar .panel-mark {
+    margin-bottom: 0;
     font-size: 31px;
     padding: 13px 17px;
+  }
+  .panel-sidebar > p {
+    margin: 16px 0 0;
+    text-align: center;
+    font-weight: 400;
+  }
+  .panel-sidebar .panel-global-search {
+    margin-top: 26px;
+  }
+  .panel-sidebar .panel-global-search-field input {
+    padding: 8px !important;
+    height: 38px;
+  }
+  .panel-sidebar .panel-global-search-field kbd,
+  .panel-sidebar .session-note {
+    display: none;
+  }
+  .panel-sidebar nav {
+    gap: 8px;
+    margin: 34px 0 20px;
+  }
+  .panel-sidebar .panel-version {
+    font-size: 16px;
   }
 }
 .clients-workspace {
   background-image: none;
+  font-family: "Inter Panel", "Segoe UI", sans-serif;
+}
+html[data-theme="dark"] .clients-workspace {
+  --bg: #0e1b2a;
+  --panel: #172638;
+  --ink: #f3eee6;
+  --muted: #b4c0cf;
+  --line: #304154;
+  --accent: #e6b18a;
+}
+.clients-workspace
+  :is(h1, h2, h3, h4, h5, strong, button, input, select, textarea, dialog) {
+  font-family: inherit;
 }
 .clients-workspace .panel-main {
-  max-width: 1760px;
-  padding: 30px 28px;
   position: relative;
+  max-width: none;
+  padding: 30px 28px;
+  min-width: 0;
 }
 .clients-workspace .panel-heading {
-  margin-bottom: 8px;
+  margin: 0 0 6px;
+  border: 0;
 }
 .clients-workspace .panel-heading .eyebrow {
   display: none;
 }
 .clients-workspace .panel-heading h1 {
-  font-size: 44px;
+  font-size: 46px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -1.8px;
   margin: 0;
 }
 #clients-view {
   max-width: none;
+  margin: 0;
 }
 .clients-workspace-heading {
-  margin: 0 0 14px;
-  padding: 0;
-  gap: 18px;
   position: static;
-  backdrop-filter: none;
+  padding: 0 0 30px;
+  margin: 0 0 22px;
+  gap: 18px;
   background: none;
+  backdrop-filter: none;
+  border-bottom: 1px solid var(--line);
 }
 .clients-workspace-heading .eyebrow,
 .clients-workspace-heading p:not(.eyebrow) {
   display: none;
 }
 .clients-workspace-heading h2 {
-  font-size: 18px;
-  letter-spacing: 0;
-  font-weight: 450;
-  color: var(--accent);
   margin: 0;
-}
-.clients-heading-actions {
-  gap: 12px;
-}
-.clients-heading-actions button {
-  font-size: 12px;
-}
-.clients-import-menu > summary {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
-  font-weight: 650;
-  list-style: none;
-  min-height: 44px;
-}
-.clients-import-menu > summary::-webkit-details-marker {
-  display: none;
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 .clients-import-menu {
   margin-left: auto;
 }
+.clients-import-menu > summary {
+  min-height: 44px;
+  padding: 11px 18px;
+  list-style: none;
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.clients-import-menu > summary::-webkit-details-marker {
+  display: none;
+}
 .clients-metrics {
   display: flex;
   align-items: center;
-  gap: 26px;
-  border-top: 0;
-  margin: 0 0 24px;
-  padding: 12px 0 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
 }
 .clients-metrics article {
   display: flex;
+  align-items: baseline;
   flex-direction: row-reverse;
-  gap: 7px;
   justify-content: initial;
+  gap: 4px;
   padding: 0;
-  border: 0 !important;
+  border: 0;
   background: none;
 }
-.clients-metrics strong {
-  font-size: 19px;
-  color: var(--accent);
-}
+.clients-metrics strong,
 .clients-metrics span {
   font-size: 13px;
   color: var(--muted);
+  font-weight: 400;
 }
 .clients-people-workspace,
 .clients-directory {
@@ -149,157 +189,242 @@ html[data-theme="dark"] .panel-nav-icon {
   min-width: 0;
 }
 .clients-directory > .clients-section-heading {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
 }
 .clients-directory > .clients-section-heading > div {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 18px;
-  width: 100%;
+  align-items: baseline;
+  gap: 10px;
 }
 .clients-directory > .clients-section-heading h2 {
   margin: 0;
   font-size: 21px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
-#clients-total {
+#clients-total,
+.clients-view-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   margin: 0;
-  font-size: 12px;
 }
-#clients-trash-open {
-  order: 3;
-  margin-left: auto;
-  font-size: 11px;
-  padding: 6px 10px;
-  min-height: 34px;
+.clients-view-status:empty {
+  display: none;
 }
 .clients-workbar {
-  gap: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 18px;
 }
 .clients-workbar .clients-search {
-  flex-basis: 200px;
+  flex: 1 1 160px;
+  min-width: 0;
 }
 .clients-workbar .clients-search input {
+  height: 46px;
+  min-height: 46px;
   font-size: 13px;
+  font-weight: 400;
+  padding-left: 42px;
+  border-radius: 7px;
+}
+#clients-filter-toggle {
+  min-height: 46px;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 7px;
+  white-space: nowrap;
 }
 .clients-view-switch {
-  margin-left: 0;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  border-radius: 7px;
 }
 .clients-view-switch button {
-  min-height: 38px;
-  padding: 6px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px;
+  min-height: 44px;
+  min-width: 38px;
+  border-radius: 6px;
 }
-.clients-view-status {
-  margin: 4px 0 18px;
-  font-size: 10px;
+.clients-view-switch button img {
+  width: 20px;
+  height: 20px;
+}
+.clients-view-switch [data-client-view="cards"] {
+  order: -1;
+}
+.clients-view-switch button[aria-pressed="true"] {
+  outline: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+html[data-theme="dark"] .clients-view-switch button img {
+  filter: invert(85%);
+}
+.clients-directory-utilities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+.clients-directory-utilities button {
+  min-height: 34px;
+  font-size: 11px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+}
+#clients-trash-open {
+  margin-left: auto;
 }
 .clients-filter-panel {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.clients-table-wrap[data-view="cards"] tbody {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+/* Reiniciar la tabla es esencial: no se heredan columnas implícitas ni filas vacías. */
+#clients-table-wrap[data-view="cards"] {
+  border: 0;
+  background: none;
+  border-radius: 0;
+  overflow: visible;
+}
+#clients-table-wrap[data-view="cards"] .clients-table {
+  display: block;
+}
+#clients-table-wrap[data-view="cards"] thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+#clients-table-wrap[data-view="cards"] tbody {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 #clients-table-wrap[data-view="cards"] tr {
-  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 6px;
-  padding: 18px 18px 14px;
+  grid-template-rows: auto auto 1fr;
+  gap: 0;
+  position: relative;
+  min-width: 0;
+  padding: 18px 16px 14px;
   border: 1px solid var(--line);
-  border-radius: 15px;
+  border-radius: 13px;
   background: var(--panel);
+  box-shadow: none;
   transform: none;
   cursor: pointer;
-  box-shadow: none;
 }
 #clients-table-wrap[data-view="cards"] tr:hover {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+  border-color: var(--accent);
   transform: none;
 }
-#clients-table-wrap tr[data-current="true"] {
-  border-color: var(--accent);
-  outline: 1px solid var(--accent);
+#clients-table-wrap[data-view="cards"] tr[data-current="true"] {
+  outline: 2px solid var(--accent);
   outline-offset: -1px;
-  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+  background: color-mix(in srgb, var(--accent) 9%, var(--panel));
+}
+#clients-table-wrap[data-view="cards"] tr:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 #clients-table-wrap[data-view="cards"] td {
-  width: auto;
+  display: block;
+  grid-column: 1;
+  grid-row: auto;
   min-width: 0;
+  max-width: none;
+  width: auto;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
 }
 #clients-table-wrap[data-view="cards"] .client-identity {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 0 28px 0 0;
-  min-height: 54px;
-  grid-row: auto;
-  border: 0;
-}
-#clients-table-wrap[data-view="cards"] .client-monogram {
   display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  min-width: 46px;
-  border-radius: 50%;
-  float: none;
-  font-size: 16px;
-  margin: 0;
-  border: 1px solid var(--category-color, #76c5a3);
-  background: color-mix(in srgb, var(--category-color, #76c5a3) 8%, transparent);
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 4px 16px;
+  min-height: 56px;
+  padding-right: 10px;
 }
 #clients-table-wrap[data-view="cards"] .client-identity > span:last-child {
   display: contents;
 }
-#clients-table-wrap[data-view="cards"] .client-identity {
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  gap: 6px 12px;
-}
 #clients-table-wrap[data-view="cards"] .client-monogram {
+  display: grid;
+  place-items: center;
+  float: none;
+  grid-column: 1;
   grid-row: 1/3;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  margin: 0;
+  border: 1px solid var(--category-color, #83c7b0);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--category-color, #83c7b0) 8%, transparent);
+  color: var(--category-color, #83c7b0);
+  font-size: 20px;
+  font-weight: 400;
 }
 #clients-table-wrap[data-view="cards"] .client-identity strong {
   grid-column: 2;
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
   line-height: 1.4;
+  align-self: end;
   overflow-wrap: anywhere;
   padding-top: 2px;
 }
 #clients-table-wrap[data-view="cards"] .client-category {
   grid-column: 2;
   justify-self: start;
+  align-self: start;
   margin: 0;
   font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  line-height: 1.5;
 }
 #clients-table-wrap[data-view="cards"] .client-locality {
-  order: 1;
-  margin-top: -3px;
+  margin-top: 7px;
   color: var(--muted);
   font-size: 12px;
 }
-#clients-table-wrap[data-view="cards"] .client-locality small {
-  display: none;
+#clients-table-wrap[data-view="cards"] .client-locality > span:first-child {
+  display: block;
+  padding-left: 72px;
+  font-size: 12px;
+  line-height: 18px;
 }
-#clients-table-wrap[data-view="cards"] .client-locality::before {
-  display: none;
-}
-#clients-table-wrap[data-view="cards"] .client-contact {
-  display: none;
-}
+#clients-table-wrap[data-view="cards"] .client-locality small,
+#clients-table-wrap[data-view="cards"] .client-locality::before,
+#clients-table-wrap[data-view="cards"] .client-contact,
 #clients-table-wrap[data-view="cards"] .client-state {
   display: none;
 }
 #clients-table-wrap[data-view="cards"] .client-company-marks {
-  grid-column: 1/-1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-  margin-top: 8px;
+  align-items: flex-start;
   width: 100%;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
 }
 #clients-table-wrap[data-view="cards"] .client-company-marks[hidden] {
   display: none;
@@ -307,120 +432,184 @@ html[data-theme="dark"] .panel-nav-icon {
 .client-company-mark {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 .client-company-mark img {
   display: none;
-  object-fit: contain;
 }
 #clients-table-wrap[data-view="cards"] .client-company-mark {
   display: flex;
-  background: none;
+  gap: 10px;
   padding: 0;
-  color: var(--ink);
+  background: none;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.45;
+  color: var(--ink);
+  font-weight: 400;
 }
 #clients-table-wrap[data-view="cards"] .client-company-mark::before {
   display: none;
 }
-#clients-table-wrap[data-view="cards"] .client-company-mark img {
-  display: block;
-  width: 28px;
-  height: 24px;
-  padding: 3px;
-  border-radius: 3px;
-  background: #1552a0;
+#clients-table-wrap[data-view="cards"] .client-brand-icon,
+#client-detail-dialog .contract-brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 32px;
+  flex: none;
+  overflow: hidden;
+  background: #1652a1;
+  border-radius: 1px;
 }
-#clients-table-wrap[data-view="cards"] .client-company-mark[data-company="intesa"] img {
-  width: 28px;
+#clients-table-wrap[data-view="cards"] [data-company="intesa"] .client-brand-icon,
+#client-detail-dialog .contract-brand-icon[data-company="intesa"] {
+  background: #287454;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark img,
+#client-detail-dialog .contract-brand-icon img {
+  display: block;
+  width: 29px;
+  height: 28px;
+  padding: 0;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+#clients-table-wrap[data-view="cards"] [data-company="intesa"] img,
+#client-detail-dialog .contract-brand-icon img[data-company="intesa"] {
   object-fit: cover;
   object-position: left;
-  background: #266b4e;
-}
-html[data-theme="dark"] #clients-table-wrap[data-view="cards"] .client-company-mark img {
-  background: none;
-  filter: brightness(0) invert(1);
-  padding: 0;
-}
-#clients-table-wrap[data-view="cards"] .client-company-mark[data-company="axa"] > span {
-  color: #80b7ea;
-}
-#clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company="intesa"]
-  > span {
-  color: #7fc7a7;
-}
-html[data-theme="light"]
-  #clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company="axa"]
-  > span {
-  color: #275f9e;
-}
-html[data-theme="light"]
-  #clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company="intesa"]
-  > span {
-  color: #23734f;
 }
 #clients-table-wrap[data-view="cards"] .client-portfolio {
-  order: 2;
-  padding-top: 12px;
-  margin-top: 1px;
+  align-self: end;
+  border-top: 1px solid var(--line);
+  padding-top: 11px;
+  margin-top: 11px;
 }
 #clients-table-wrap[data-view="cards"] .client-portfolio-summary {
+  display: flex;
   flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: baseline;
   gap: 8px;
 }
 #clients-table-wrap[data-view="cards"] .client-portfolio-summary strong {
-  font-size: 17px;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+#clients-table-wrap[data-view="cards"] .client-portfolio-summary small {
+  font-size: 12px;
+  color: var(--muted);
 }
 #clients-table-wrap[data-view="cards"] .client-action {
-  order: 3;
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  width: auto;
+  grid-column: auto;
+  grid-row: auto;
 }
 #clients-table-wrap[data-view="cards"] .client-action button {
-  font-size: 11px;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   padding: 0;
-  min-height: 30px;
+  opacity: 0;
+  border: 0;
+  border-radius: 13px;
+  z-index: 1;
 }
 #clients-table-wrap[data-view="cards"] .client-select-cell {
-  inset: 13px 12px auto auto;
-  width: 28px;
-  height: 28px;
+  position: absolute;
+  top: 13px;
+  right: 12px;
+  bottom: auto;
+  left: auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  z-index: 2;
 }
 #clients-table-wrap[data-view="cards"] .client-select-cell input {
-  border-radius: 50%;
+  display: block;
   width: 20px;
   height: 20px;
-  opacity: 0.55;
+  margin: 0;
+  border-radius: 50%;
+  opacity: 0;
 }
 #clients-table-wrap[data-view="cards"] tr:hover .client-select-cell input,
 #clients-table-wrap[data-view="cards"] .client-select-cell input:focus-visible,
 #clients-table-wrap[data-view="cards"] .client-select-cell input:checked {
   opacity: 1;
 }
+.client-open-indicator {
+  display: none;
+}
+#clients-table-wrap[data-view="cards"] tr[data-current="true"] .client-open-indicator {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+#clients-table-wrap[data-view="cards"] tr:hover .client-open-indicator,
+#clients-table-wrap[data-view="cards"] tr:focus-within .client-open-indicator {
+  display: none;
+}
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
   grid-column: 1/-1;
+  display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  padding: 15px 18px;
+  gap: 12px;
+  padding: 10px 16px;
+  min-height: 68px;
 }
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-identity {
-  padding-right: 30px;
-  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 40px;
+  padding: 0;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-identity
+  > span:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-monogram {
   width: 40px;
   height: 40px;
   min-width: 40px;
-  color: #b4a0e1;
+  font-size: 16px;
+  color: #b4a0df;
   border-color: #8971b7;
   background: #8971b714;
 }
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-identity
+  strong {
+  font-size: 14px;
+  padding: 0;
+}
 #clients-table-wrap tr[data-category="interested"] .client-category {
-  color: #b4a0e1;
-  border-color: #8971b766;
+  color: #b4a0df;
   background: #8971b714;
+  border-color: #8971b760;
 }
 html[data-theme="light"]
   #clients-table-wrap
@@ -428,16 +617,26 @@ html[data-theme="light"]
   .client-category {
   color: #7251a0;
 }
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
-  display: none;
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-category {
+  font-size: 9px;
 }
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
+  grid-column: 2;
+  margin: 0 16px 0 0;
+  font-size: 11px;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-locality
+  > span:first-child {
+  padding: 0;
+  font-size: 11px;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-company-marks,
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-portfolio {
   display: none;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-action {
-  grid-column: 2;
-  grid-row: 1;
-  padding-right: 25px;
 }
 #clients-table-wrap[data-view="cards"]
   tr[data-group-start]:not([data-group-start="client"]) {
@@ -447,207 +646,379 @@ html[data-theme="light"]
   tr[data-group-start]:not([data-group-start="client"])::before {
   content: attr(data-group-label);
   position: absolute;
-  top: -36px;
   left: 0;
-  font-size: 18px;
-  font-weight: 650;
+  top: -36px;
+  padding-top: 4px;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--ink);
 }
-.client-file-contact {
-  font-size: 13px;
-  color: var(--muted);
-  overflow-wrap: anywhere;
-  margin: 4px 0 0;
-}
-.client-file-kind {
-  display: inline-block;
-  color: var(--contact-color);
-  border: 1px solid color-mix(in srgb, var(--contact-color) 45%, transparent);
-  background: color-mix(in srgb, var(--contact-color) 8%, transparent);
-  border-radius: 8px;
-  padding: 3px 8px;
-  font-size: 11px;
-  margin-right: 5px;
-}
-#client-detail-dialog[data-category="interested"] {
-  --contact-color: #b4a0e1;
-}
-html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
-  --contact-color: #7251a0;
-}
-.client-file-recent {
-  border-top: 1px solid var(--line);
-  margin-top: 22px;
-  padding-top: 14px;
-}
-.client-file-recent > div {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  justify-content: space-between;
-}
-.client-file-recent h3 {
-  font-size: 17px;
-  margin: 0;
-}
-.client-file-recent p,
-.client-file-recent button {
-  font-size: 12px;
-}
-#client-detail-dialog:has(.client-file-layout:not([data-tab="products"]))
-  .client-file-recent,
-#client-detail-dialog:has(#client-products-section[data-editing="true"])
-  .client-file-recent {
-  display: none;
+#client-detail-dialog {
+  font-family: "Inter Panel", "Segoe UI", sans-serif;
 }
 #client-detail-dialog .client-file-header {
-  border-left: 0;
-  padding-left: 0;
-  padding-right: 44px;
-  padding-bottom: 18px;
-  margin-bottom: 0;
+  padding: 0 44px 28px 0;
+  margin: 0;
+  border: 0;
 }
 #client-detail-dialog .client-file-header .eyebrow {
-  font-size: 10px;
-  letter-spacing: 1.5px;
+  display: none;
 }
 #client-detail-dialog #client-detail-name {
-  font-size: 32px;
+  font-size: 36px;
+  line-height: 1.2;
   letter-spacing: -1px;
-  margin: 12px 0;
+  font-weight: 650;
+  margin: 6px 0 10px;
 }
 #client-detail-dialog .client-file-status {
-  font-size: 12px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
 }
-#client-detail-dialog .client-life-actions {
-  margin-top: 12px;
-}
-#client-detail-dialog .client-life-actions button {
-  min-height: 32px;
+#client-detail-dialog .client-file-kind {
+  display: inline-block;
   font-size: 11px;
-  padding: 5px 12px;
+  line-height: 1.5;
+  border: 1px solid color-mix(in srgb, var(--contact-color) 50%, transparent);
+  background: color-mix(in srgb, var(--contact-color) 8%, transparent);
+  color: var(--contact-color);
+  border-radius: 7px;
+  padding: 4px 9px;
+  margin-right: 8px;
+}
+#client-detail-dialog[data-category="interested"] {
+  --contact-color: #b4a0df;
+}
+#client-detail-dialog .client-file-contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+#client-detail-dialog .client-file-contact > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#client-detail-dialog .client-file-contact img {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+html[data-theme="dark"] #client-detail-dialog .client-file-contact img {
+  filter: invert(85%);
+}
+#client-detail-dialog .client-file-email {
+  border-left: 1px solid var(--line);
+  padding-left: 18px;
 }
 #client-detail-dialog .client-file-tabs {
-  margin-top: 10px;
+  gap: 30px;
+  margin: 0;
+}
+#client-detail-dialog .client-file-tabs button {
+  padding: 15px 0;
+  font-size: 14px;
+  min-height: 52px;
 }
 #client-detail-dialog .client-file-layout {
-  padding-top: 22px;
+  padding-top: 30px;
+}
+#client-detail-dialog .client-life-actions {
+  display: none;
+  margin: 0;
+}
+#client-detail-dialog .client-file-layout[data-tab="contact"] .client-life-actions {
+  display: block;
+  grid-column: 1/-1;
+  margin-top: 20px;
+}
+#client-detail-dialog .contract-metrics {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.1fr;
+  gap: 0;
+  margin: 0;
+  padding: 0 0 38px;
+  border: 0;
+}
+#client-detail-dialog .contract-metrics article {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 5px;
+  min-width: 0;
+  padding: 0 20px;
+  border: 0;
+  border-left: 1px solid var(--line);
+}
+#client-detail-dialog .contract-metrics article:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+#client-detail-dialog .contract-metrics strong {
+  margin: 0;
+  color: var(--ink);
+  font-size: 29px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#client-detail-dialog .contract-metrics article:first-child strong,
+#client-detail-dialog .contract-metrics article:nth-child(2) strong {
+  color: var(--accent);
+}
+#client-detail-dialog .contract-metrics .metric-suffix {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+#client-detail-dialog .contract-metrics small {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+#client-detail-dialog .contract-metrics .contract-metric-single {
+  grid-column: 1/-1;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 0 0;
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  border-left: 0;
+}
+#client-detail-dialog .contract-metric-single strong {
+  font-size: 14px;
+}
+#client-detail-dialog .contract-metrics article[hidden] {
+  display: none;
+}
+#client-detail-dialog .contract-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 10px;
+}
+#client-detail-dialog .client-products-heading {
+  grid-column: 1;
+  min-width: 0;
+  margin: 0;
 }
 #client-detail-dialog .client-products-heading .eyebrow {
   display: none;
 }
 #client-detail-dialog .client-products-heading h3 {
-  font-size: 20px;
-  margin: 0 0 16px;
-}
-#client-detail-dialog .contract-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  padding: 0 0 18px;
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.5px;
   margin: 0;
-}
-#client-detail-dialog .contract-metrics article {
-  min-width: 0;
-  border: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 3px;
-}
-#client-detail-dialog .contract-metrics article small {
-  font-size: 10px;
-  line-height: 1.5;
-}
-#client-detail-dialog .contract-metrics strong {
-  font-size: 24px;
-  margin: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-#client-detail-dialog .contract-metrics article:first-child strong {
-  color: var(--accent);
-}
-#client-detail-dialog .contract-metrics .contract-metric-single {
-  grid-column: 1/-1;
-  flex-direction: row;
-  align-items: baseline;
-  gap: 8px;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-}
-#client-detail-dialog .contract-metric-single strong {
-  font-size: 13px;
-  color: var(--muted);
 }
 #client-detail-dialog .contract-controls {
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 16px 0;
-}
-#client-detail-dialog .contract-toolbar {
-  margin-top: 14px;
-}
-#client-detail-dialog .contract-toolbar .contract-controls {
+  grid-column: 2;
   margin: 0;
-}
-#client-detail-dialog .contract-company {
-  margin: 20px 0;
-}
-#client-detail-dialog .contract-summary {
-  grid-template-columns: minmax(0, 1fr) auto 14px;
   gap: 8px;
 }
+#client-detail-dialog .contract-controls button {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+#client-detail-dialog .contract-tabs {
+  grid-column: 1/-1;
+  display: flex;
+  justify-self: end;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  gap: 6px;
+  background: none;
+}
+#client-detail-dialog .contract-tabs[hidden] {
+  display: none;
+}
+#client-detail-dialog .contract-tab {
+  font-size: 11px;
+  min-height: 30px;
+  padding: 4px 9px;
+}
+#client-detail-dialog .contract-company {
+  margin: 10px 0 26px;
+}
+#client-detail-dialog .contract-company-heading {
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--panel);
+  backdrop-filter: none;
+}
+#client-detail-dialog .contract-company-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin: 0;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+}
+#client-detail-dialog .contract-company-toggle:hover {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+#client-detail-dialog .contract-company-toggle h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+#client-detail-dialog .contract-company-toggle > small {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+}
+#client-detail-dialog .contract-company-chevron {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  transition: transform 0.18s;
+}
+html[data-theme="dark"] #client-detail-dialog .contract-company-chevron {
+  filter: invert(85%);
+}
+#client-detail-dialog
+  .contract-company-toggle[aria-expanded="false"]
+  .contract-company-chevron {
+  transform: rotate(-90deg);
+}
+#client-detail-dialog .contract-card {
+  display: block;
+  position: relative;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--line);
+}
+#client-detail-dialog .contract-card[hidden] {
+  display: none;
+}
+#client-detail-dialog .contract-card > input {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  z-index: 1;
+  opacity: 0;
+}
+#client-detail-dialog .contract-card:hover > input,
+#client-detail-dialog .contract-card > input:focus-visible,
+#client-detail-dialog .contract-card > input:checked {
+  opacity: 1;
+}
+#client-detail-dialog .contract-copy {
+  display: block;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+#client-detail-dialog .contract-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 12px;
+  min-height: 45px;
+  list-style: none;
+}
 #client-detail-dialog .contract-identity {
-  grid-column: 1/3;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+#client-detail-dialog .contract-summary h5 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 3px;
+}
+#client-detail-dialog .contract-portfolio-label {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 #client-detail-dialog .contract-payment {
-  grid-row: 2;
-  text-align: left;
+  display: none;
 }
 #client-detail-dialog .contract-units {
-  grid-row: 2;
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--ink);
+  text-align: right;
+}
+#client-detail-dialog .contract-units strong {
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+#client-detail-dialog .contract-units > small {
+  display: none;
 }
 #client-detail-dialog .contract-chevron {
   grid-column: 3;
-  grid-row: 1/3;
+  grid-row: 1;
+  width: 16px;
+  height: 16px;
 }
-#client-detail-dialog .contract-summary h5 {
-  font-size: 16px;
+html[data-theme="dark"] #client-detail-dialog .contract-chevron {
+  filter: invert(85%);
 }
-#client-detail-dialog .contract-summary strong {
-  font-size: 16px;
+#client-detail-dialog .contract-detail[open] .contract-chevron {
+  transform: rotate(180deg);
 }
-#client-detail-dialog .contract-company-heading {
-  padding: 12px;
-}
-#client-detail-dialog .contract-company-heading h4 {
-  font-size: 14px;
-}
-#client-detail-dialog .contract-company-heading img {
-  width: 32px;
-  height: 28px;
-}
-#client-detail-dialog .contract-company-heading img[data-company="intesa"] {
-  object-fit: cover;
-  object-position: left;
-}
-#client-detail-dialog .contract-card {
-  gap: 10px;
-  padding: 10px 0;
-}
-#client-detail-dialog .contract-metrics article[hidden] {
-  display: none;
+#client-detail-dialog .contract-expanded {
+  margin-top: 16px;
+  padding-top: 16px;
 }
 #client-detail-dialog .contract-detail .contract-expanded dl {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-#client-detail-dialog .product-picker {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+#client-detail-dialog .contract-detail-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#client-detail-dialog .contract-detail-actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+#client-detail-dialog .contract-editor {
+  padding: 16px 0;
 }
 #client-detail-dialog .contract-signature,
 #client-detail-dialog .contract-fields {
   grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+#client-detail-dialog .product-picker,
+#client-detail-dialog .product-company-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 #client-detail-dialog .product-portfolio-options {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -656,8 +1027,8 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
 #client-detail-dialog .product-portfolio-options .axa-choice .product-choice-copy {
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
-  padding: 8px;
   gap: 3px;
+  padding: 8px;
 }
 #client-detail-dialog .axa-choice .product-choice-copy strong {
   font-size: 12px;
@@ -668,100 +1039,136 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
 #client-detail-dialog .axa-choice .axa-profile {
   min-height: 0;
 }
-#client-detail-dialog .product-company-options {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.client-file-recent {
+  margin-top: 16px;
+  padding-top: 0;
+  border: 0;
 }
-#client-detail-dialog .contract-signature {
+.client-file-recent > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 14px;
 }
-#client-detail-dialog .contract-editor {
-  padding: 16px 0;
+.client-file-recent h3 {
+  font-size: 21px;
+  font-weight: 600;
+  margin: 0;
 }
-@media (min-width: 1280px) {
-  .clients-people-workspace {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(460px, 1fr);
-    gap: 24px;
-    align-items: start;
+.client-file-recent button {
+  font-size: 12px;
+  min-height: 36px;
+}
+#client-recent-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  padding: 14px 0 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+#client-recent-event:empty {
+  display: none;
+}
+#client-recent-event time {
+  color: var(--muted);
+}
+#client-recent-event strong {
+  font-weight: 600;
+}
+#client-detail-dialog:has(.client-file-layout:not([data-tab="products"]))
+  .client-file-recent,
+#client-detail-dialog:has(#client-products-section[data-editing="true"])
+  .client-file-recent {
+  display: none;
+}
+@media (min-width: 1100px) {
+  .clients-workspace .panel-controls {
+    position: absolute;
+    right: 214px;
+    top: 46px;
+    gap: 12px;
+    margin: 0;
   }
-  .clients-workspace .panel-heading .panel-controls {
-    margin-right: 170px;
+  .clients-workspace .panel-controls #panel-refresh {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .clients-workspace .panel-refresh-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+  }
+  .clients-workspace .panel-refresh-icon {
+    display: block;
+    margin: auto;
+  }
+  html[data-theme="dark"] .clients-workspace .panel-refresh-icon {
+    filter: invert(85%);
   }
   .clients-import-menu {
     position: absolute;
     right: 28px;
-    top: 30px;
-  }
-  .clients-workspace-heading {
-    margin-bottom: 32px;
+    top: 46px;
   }
   .clients-metrics {
     position: absolute;
-    top: 91px;
-    right: 28px;
+    right: 390px;
+    top: 60px;
     margin: 0;
-    padding: 0;
-    border: 0;
   }
-  .clients-metrics strong {
-    font-size: 16px;
-  }
-  .clients-metrics span {
-    font-size: 11px;
+  .clients-people-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 22px;
   }
   .client-detail-slot {
     display: block;
-    border-left: 1px solid var(--line);
-    padding-left: 24px;
     min-height: 620px;
+    border-left: 1px solid var(--line);
+    padding-left: 30px;
   }
   .client-detail-slot.has-client {
     position: sticky;
-    top: 24px;
+    top: 16px;
     min-height: 0;
-    max-height: calc(100dvh - 176px);
+    max-height: calc(100dvh - 32px);
     overflow-y: auto;
+    scrollbar-width: thin;
     scrollbar-gutter: stable;
-    scroll-padding-top: 16px;
   }
   .client-detail-placeholder {
-    padding: 100px 28px;
+    padding: 80px 26px;
     color: var(--muted);
-  }
-  .client-detail-placeholder h2 {
-    font-size: 29px;
-    color: var(--ink);
-  }
-  .client-detail-placeholder p {
     font-size: 14px;
     line-height: 1.8;
   }
-  .clients-table-wrap[data-view="cards"] tbody {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+  .client-detail-placeholder h2 {
+    font-size: 27px;
+    color: var(--ink);
   }
   .clients-view-switch span {
     display: none;
   }
-  .clients-view-switch button {
-    width: 34px;
-  }
-  .clients-workbar .clients-search {
-    flex-basis: 140px;
-  }
-  #clients-filter-toggle {
-    font-size: 12px;
-    padding: 10px 12px;
+  .clients-workbar {
+    flex-wrap: nowrap;
   }
   #client-detail-dialog.client-detail-docked[open] {
     position: relative;
     inset: auto;
-    display: block;
-    margin: 0;
     width: 100%;
     max-width: none;
     max-height: none;
-    padding: 38px 0 0;
+    display: block;
+    margin: 0;
+    padding: 36px 0 0;
     overflow: visible;
     border: 0;
     border-radius: 0;
@@ -769,13 +1176,29 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
     background: transparent;
   }
   #client-detail-dialog.client-detail-docked #client-detail-close {
+    position: absolute;
     inset: 0 0 auto auto;
+    width: auto;
+    height: 24px;
+    min-height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    color: var(--accent);
+    background: none;
+    font-size: 12px;
+  }
+  #client-detail-dialog.client-detail-docked #client-detail-close svg {
+    display: none;
+  }
+  #client-detail-dialog.client-detail-docked .client-close-label {
+    display: inline;
   }
   #client-detail-dialog.client-detail-docked .client-file-header {
     padding-right: 0;
   }
-  #client-detail-dialog.client-detail-docked .client-file-header .eyebrow {
-    display: none;
+  #client-detail-dialog.client-detail-docked #client-detail-name {
+    font-size: 40px;
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .clients-table,
   .clients-directory .clients-table-wrap:not([data-view="cards"]) tbody {
@@ -790,15 +1213,17 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) tr {
     display: grid;
-    grid-template-columns: 26px minmax(0, 1fr) auto;
-    gap: 8px 10px;
-    padding: 16px 12px;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    padding: 14px 12px;
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) td {
     display: block;
-    border: 0;
     width: auto;
+    border: 0;
     padding: 0;
+    line-height: 1.4;
+    font-size: 12px;
     overflow-wrap: anywhere;
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .client-identity {
@@ -808,12 +1233,10 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .client-contact {
     grid-column: 2;
     grid-row: 2;
-    font-size: 12px;
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .client-locality {
     grid-column: 2;
     grid-row: 3;
-    font-size: 12px;
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .client-portfolio {
     grid-column: 3;
@@ -822,42 +1245,129 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .client-state {
     grid-column: 3;
     grid-row: 3;
-    font-size: 11px;
   }
   .clients-directory .clients-table-wrap:not([data-view="cards"]) .client-action {
     grid-column: 2/4;
     grid-row: 4;
   }
 }
-.clients-directory-utilities {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin: 0 0 16px;
-  padding: 0;
-  border: 0;
-}
-.clients-directory-utilities button {
-  font-size: 11px;
-  padding: 5px 0;
-  min-height: 30px;
-  border: 0;
-  background: none;
-}
-.clients-view-status {
-  margin: 4px 0;
-  min-height: 0;
-}
-.clients-view-status:empty {
-  display: none;
-}
-@media (max-width: 1279px) {
-  .clients-table-wrap[data-view="cards"] tbody {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (min-width: 1100px) and (max-width: 1350px) {
+  .clients-workspace .panel-shell {
+    grid-template-columns: 185px minmax(0, 1fr);
+  }
+  .clients-workspace .panel-sidebar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .clients-workspace #panel-navigation .panel-nav-label {
+    font-size: 13px;
   }
   .clients-workspace .panel-main {
-    padding: 28px 24px;
+    padding: 26px 20px;
+  }
+  .clients-workspace .panel-controls {
+    right: 200px;
+    top: 36px;
+    gap: 8px;
+  }
+  .clients-import-menu {
+    right: 20px;
+    top: 36px;
+  }
+  .clients-metrics {
+    position: static;
+    margin: 0 0 18px;
+  }
+  .clients-workspace-heading {
+    margin-bottom: 14px;
+    padding-bottom: 20px;
+  }
+  .clients-people-workspace {
+    gap: 16px;
+  }
+  .client-detail-slot {
+    padding-left: 20px;
+  }
+  .clients-workbar {
+    gap: 7px;
+  }
+  #clients-filter-toggle {
+    padding: 8px;
+    font-size: 11px;
+  }
+  .clients-view-switch button {
+    min-width: 31px;
+    padding: 6px;
+  }
+  .clients-view-switch button img {
+    width: 17px;
+    height: 17px;
+  }
+  #clients-table-wrap[data-view="cards"] tr {
+    padding: 16px 12px 12px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-identity {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 4px 10px;
+    min-height: 46px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-monogram {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    font-size: 17px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-identity strong {
+    font-size: 14px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-category {
+    font-size: 9px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-locality > span:first-child {
+    padding-left: 52px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-company-mark {
+    font-size: 11px;
+    gap: 7px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-brand-icon {
+    width: 28px;
+    height: 28px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-company-mark img {
+    width: 24px;
+    height: 24px;
+  }
+  #client-detail-dialog.client-detail-docked #client-detail-name {
+    font-size: 33px;
+  }
+  #client-detail-dialog .contract-metrics strong {
+    font-size: 23px;
+  }
+  #client-detail-dialog .contract-metrics article {
+    padding-left: 12px;
+    padding-right: 10px;
+  }
+  #client-detail-dialog .contract-metrics article:first-child {
+    padding-left: 0;
+  }
+  #client-detail-dialog .contract-metrics .metric-suffix {
+    font-size: 12px;
+  }
+  #client-detail-dialog .client-products-heading h3 {
+    font-size: 18px;
+  }
+  #client-detail-dialog .contract-company-toggle {
+    padding: 10px;
+    gap: 8px;
+  }
+  #client-detail-dialog .contract-company-toggle h4 {
+    font-size: 13px;
+  }
+}
+@media (max-width: 1099px) {
+  .clients-workspace .panel-main {
+    padding: 26px 24px;
   }
   .clients-workspace .panel-heading h1 {
     font-size: 38px;
@@ -865,100 +1375,112 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   .clients-workspace-heading {
     align-items: flex-start;
   }
+  #client-detail-dialog {
+    padding: 48px 24px 26px;
+    max-height: calc(100dvh - 24px);
+  }
 }
 @media (max-width: 850px) {
   .panel-sidebar .panel-global-search {
     margin-top: 0;
   }
   .clients-workspace .panel-main {
-    padding: 26px 5%;
+    padding: 24px 5%;
+  }
+  .clients-workspace .panel-heading {
+    align-items: center;
   }
   .clients-workspace-heading {
-    gap: 15px;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
   }
   .clients-workspace-heading h2 {
-    font-size: 17px;
+    font-size: 16px;
   }
   .clients-heading-actions {
     justify-content: flex-start;
   }
   .clients-metrics {
-    gap: 18px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
-  .clients-table-wrap[data-view="cards"] tbody {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 20px;
   }
   #client-detail-dialog {
-    padding: 48px 22px 24px;
-    max-height: calc(100dvh - 24px);
+    padding-left: 22px;
+    padding-right: 22px;
   }
 }
 @media (max-width: 550px) {
   .clients-workspace .panel-heading {
     display: flex;
-    align-items: center;
     gap: 10px;
   }
   .clients-workspace .panel-heading h1 {
     font-size: 30px;
+    letter-spacing: -1px;
   }
   .clients-workspace .panel-controls {
-    margin-top: 0;
     gap: 6px;
+    margin: 0;
   }
   .clients-workspace .panel-controls > button {
     width: 44px;
-    min-width: 44px;
     height: 44px;
+    min-width: 44px;
     padding: 0;
   }
   .clients-workspace .panel-refresh-label {
     position: absolute;
     width: 1px;
     height: 1px;
-    clip-path: inset(50%);
     overflow: hidden;
+    clip-path: inset(50%);
   }
   .clients-workspace .panel-refresh-icon {
     display: block;
     margin: auto;
   }
   html[data-theme="dark"] .clients-workspace .panel-refresh-icon {
-    filter: invert(90%);
+    filter: invert(85%);
+  }
+  .clients-workspace-heading {
+    flex-wrap: wrap;
+    gap: 12px;
   }
   .clients-heading-actions {
-    gap: 10px 14px;
+    width: 100%;
   }
-  .clients-metrics strong {
-    font-size: 17px;
-  }
-  .clients-metrics span {
-    font-size: 12px;
-  }
-  .clients-metrics {
-    gap: 18px;
-  }
-  .clients-view-switch {
-    margin-left: auto;
+  .clients-workbar {
+    flex-wrap: wrap;
+    gap: 10px;
   }
   .clients-workbar .clients-search {
     flex-basis: 100%;
     width: 100%;
   }
+  .clients-view-switch {
+    margin-left: auto;
+  }
+  .clients-view-switch button {
+    font-size: 10px;
+    padding: 7px;
+  }
+  .clients-view-switch button img {
+    width: 15px;
+    height: 15px;
+  }
   .clients-filter-panel {
     grid-template-columns: minmax(0, 1fr);
   }
-  .clients-table-wrap[data-view="cards"] tbody {
+  #clients-table-wrap[data-view="cards"] tbody {
     grid-template-columns: minmax(0, 1fr);
+  }
+  #clients-table-wrap[data-view="cards"] .client-company-mark {
+    font-size: 13px;
   }
   #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
     grid-template-columns: minmax(0, 1fr);
   }
-  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-action {
-    grid-column: 1;
-    grid-row: auto;
+  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
+    display: none;
   }
   #clients-trash-open {
     margin-left: 0;
@@ -966,885 +1488,223 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   #client-detail-dialog #client-detail-name {
     font-size: 28px;
   }
-  #client-detail-dialog .contract-metrics {
+  #client-detail-dialog .client-file-header {
+    padding-right: 24px;
+    padding-bottom: 20px;
+  }
+  #client-detail-dialog .client-file-contact {
     gap: 10px;
+    margin-top: 14px;
+  }
+  #client-detail-dialog .client-file-email {
+    border: 0;
+    padding: 0;
+  }
+  #client-detail-dialog .contract-metrics {
+    grid-template-columns: 1fr 0.9fr 1.1fr;
+    padding-bottom: 26px;
+  }
+  #client-detail-dialog .contract-metrics article {
+    padding: 0 8px;
+  }
+  #client-detail-dialog .contract-metrics article:first-child {
+    padding-left: 0;
   }
   #client-detail-dialog .contract-metrics strong {
     font-size: 20px;
   }
+  #client-detail-dialog .contract-metrics .metric-suffix {
+    display: block;
+    font-size: 11px;
+  }
+  #client-detail-dialog .contract-metrics small {
+    font-size: 10px;
+  }
+  #client-detail-dialog .contract-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  #client-detail-dialog .contract-controls {
+    grid-column: 1;
+  }
+  #client-detail-dialog .contract-tabs {
+    justify-self: start;
+  }
+  #client-detail-dialog .client-products-heading h3 {
+    font-size: 20px;
+  }
+  #client-detail-dialog .contract-company-toggle {
+    padding: 10px;
+    gap: 8px;
+  }
+  #client-detail-dialog .contract-company-toggle h4 {
+    font-size: 12px;
+  }
+  #client-detail-dialog .contract-company-toggle > small {
+    font-size: 10px;
+  }
+  #client-detail-dialog .contract-summary {
+    gap: 8px;
+  }
+  #client-detail-dialog .contract-summary h5 {
+    font-size: 14px;
+  }
+  #client-detail-dialog .contract-portfolio-label {
+    font-size: 12px;
+  }
+  #client-detail-dialog .contract-units strong {
+    font-size: 15px;
+  }
   #client-detail-dialog .contract-detail .contract-expanded dl {
     grid-template-columns: minmax(0, 1fr);
   }
+  #client-detail-dialog .product-picker,
   #client-detail-dialog .product-company-options {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  #client-detail-dialog .product-picker {
     grid-template-columns: minmax(0, 1fr);
   }
   #client-detail-dialog .product-portfolio-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  #clients-table-wrap tr {
-    transition: none;
+  .client-file-recent h3 {
+    font-size: 19px;
   }
-}
-/* Fidelidad a la propuesta 2: jerarquía, densidad y lectura en contexto. */
-.clients-workspace,
-.clients-workspace button,
-.clients-workspace input,
-.clients-workspace select,
-.clients-workspace dialog {
-  font-family: "Segoe UI", Arial, sans-serif;
-}
-.clients-workspace .panel-sidebar {
-  background: var(--bg);
-}
-.clients-workspace .panel-sidebar > p {
-  font-weight: 400;
-}
-.clients-workspace .panel-heading {
-  border: 0;
-}
-.clients-workspace-heading h2 {
-  text-decoration: none;
-}
-#clients-table-wrap[data-view="cards"] tr {
-  border-radius: 13px;
-  gap: 0;
-  padding: 18px 16px 12px;
-}
-#clients-table-wrap[data-view="cards"] .client-identity {
-  min-height: 59px;
-}
-#clients-table-wrap[data-view="cards"] .client-identity strong {
-  font-size: 17px;
-}
-#clients-table-wrap[data-view="cards"] .client-locality > span {
-  display: block;
-  padding-left: 58px;
-  font-size: 11px;
-}
-#clients-table-wrap[data-view="cards"] .client-company-marks {
-  margin-top: 12px;
-  padding-top: 10px;
-  gap: 5px;
-  min-height: 54px;
-}
-#clients-table-wrap[data-view="cards"] .client-company-mark {
-  font-size: 11px;
-  font-weight: 400;
-}
-#clients-table-wrap[data-view="cards"] .client-company-mark img {
-  width: 30px;
-  height: 28px;
-  padding: 2px;
-}
-html[data-theme="dark"] #clients-table-wrap[data-view="cards"] .client-company-mark img {
-  background: #124b98;
-  padding: 3px;
-  filter: none;
-}
-html[data-theme="dark"]
-  #clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company="intesa"]
-  img {
-  background: #23734f;
-  filter: brightness(1.35);
-}
-#clients-table-wrap[data-view="cards"] .client-company-mark > span {
-  color: var(--ink);
-}
-#clients-table-wrap[data-view="cards"] .client-portfolio {
-  padding-top: 10px;
-  margin-top: 8px;
-}
-#clients-table-wrap[data-view="cards"] .client-action {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-}
-#clients-table-wrap[data-view="cards"] .client-action button {
-  opacity: 0;
-  position: absolute;
-  bottom: 8px;
-  left: 12px;
-}
-#clients-table-wrap[data-view="cards"] .client-action button:focus-visible {
-  opacity: 1;
-  background: var(--panel);
-  padding: 5px;
-  outline: 2px solid var(--accent);
-}
-#clients-table-wrap[data-view="cards"] .client-select-cell input {
-  opacity: 0;
-}
-#clients-table-wrap[data-view="cards"] tr[data-current="true"] .client-select-cell input {
-  opacity: 0.65;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
-  min-height: 64px;
-  padding: 10px 16px;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 40px;
-}
-#clients-table-wrap[data-view="cards"]
-  tr[data-category="interested"]
-  .client-identity
-  > span:last-child {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-#clients-table-wrap[data-view="cards"]
-  tr[data-category="interested"]
-  .client-identity
-  strong {
-  font-size: 14px;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-category {
-  font-size: 9px;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
-  display: block;
-  font-size: 10px;
-  margin: 0;
-}
-#clients-table-wrap[data-view="cards"]
-  tr[data-category="interested"]
-  .client-locality
-  > span {
-  padding: 0;
-  font-size: 10px;
-}
-#clients-table-wrap[data-view="cards"]
-  tr[data-category="interested"]
-  .client-company-marks {
-  display: none;
-}
-.clients-directory-utilities {
-  margin-top: 18px;
-}
-#client-detail-dialog .client-file-header {
-  position: relative;
-  padding-bottom: 24px;
-  border: 0;
-}
-#client-detail-dialog .client-life-actions {
-  position: absolute;
-  right: 0;
-  top: 35px;
-  margin: 0;
-}
-#client-detail-dialog .client-file-status {
-  padding-right: 90px;
-}
-#client-detail-dialog .client-file-tabs {
-  margin: 0;
-}
-#client-detail-dialog .client-file-layout {
-  padding-top: 28px;
-}
-#client-detail-dialog .contract-metrics {
-  border: 0;
-  padding-bottom: 30px;
-  gap: 20px;
-}
-#client-detail-dialog
-  .contract-metrics
-  article:not(:first-child):not(.contract-metric-single) {
-  border-left: 1px solid var(--line);
-  padding-left: 20px;
-}
-#client-detail-dialog .contract-metrics strong {
-  font-size: 27px;
-  line-height: 1.3;
-  font-weight: 600;
-}
-#client-detail-dialog .contract-metrics small {
-  font-size: 11px;
-}
-#client-detail-dialog .client-products-heading {
-  margin: 12px 0 0;
-}
-#client-detail-dialog .client-products-heading h3 {
-  font-size: 21px;
-  margin: 0;
-}
-#client-detail-dialog .contract-toolbar {
-  margin-top: -32px;
-  min-height: 40px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-#client-detail-dialog .contract-tabs {
-  border: 0;
-  padding: 0;
-  background: none;
-  border-radius: 0;
-  position: absolute;
-  margin-top: 79px;
-  right: 0;
-  gap: 8px;
-}
-#client-detail-dialog .contract-tab {
-  font-size: 10px;
-  padding: 3px 6px;
-  min-height: 24px;
-}
-#client-detail-dialog .contract-controls button {
-  font-size: 12px;
-  padding: 7px 12px;
-  min-height: 40px;
-}
-#client-detail-dialog .contract-company {
-  margin: 18px 0 25px;
-}
-#client-detail-dialog .contract-company-heading {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 10px 12px;
-  gap: 12px;
-}
-#client-detail-dialog .contract-company-heading img {
-  width: 32px;
-  height: 32px;
-}
-#client-detail-dialog .contract-company-heading h4 {
-  font-size: 14px;
-}
-#client-detail-dialog .contract-card {
-  position: relative;
-  display: block;
-  padding: 15px 12px;
-}
-#client-detail-dialog .contract-card > input {
-  position: absolute;
-  left: 0;
-  top: 12px;
-  opacity: 0;
-  z-index: 1;
-}
-#client-detail-dialog .contract-card:hover > input,
-#client-detail-dialog .contract-card > input:focus-visible,
-#client-detail-dialog .contract-card > input:checked {
-  opacity: 1;
-}
-#client-detail-dialog .contract-card > button {
-  position: absolute;
-  right: 38px;
-  top: 0;
-  opacity: 0;
-  min-height: 30px;
-  font-size: 10px;
-}
-#client-detail-dialog .contract-card:hover > button,
-#client-detail-dialog .contract-card > button:focus-visible {
-  opacity: 1;
-  background: var(--panel);
-}
-#client-detail-dialog .contract-summary {
-  grid-template-columns: minmax(0, 1fr) auto 14px;
-  gap: 2px 14px;
-  min-height: 44px;
-}
-#client-detail-dialog .contract-identity {
-  grid-column: 1;
-  grid-row: 1/3;
-  padding-right: 10px;
-}
-#client-detail-dialog .contract-summary h5 {
-  font-size: 15px;
-  margin: 0 0 3px;
-}
-#client-detail-dialog .contract-summary strong {
-  font-size: 16px;
-}
-#client-detail-dialog .contract-payment {
-  grid-column: 1;
-  grid-row: 3;
-  display: flex;
-  gap: 5px;
-  align-items: baseline;
-}
-#client-detail-dialog .contract-payment strong,
-#client-detail-dialog .contract-payment small {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 400;
-}
-#client-detail-dialog .contract-units {
-  grid-column: 2;
-  grid-row: 1/4;
-  color: var(--ink);
-}
-#client-detail-dialog .contract-units small {
-  display: none;
-}
-#client-detail-dialog .contract-chevron {
-  grid-row: 1/4;
-}
-#client-detail-dialog .client-file-recent {
-  margin-top: 22px;
-  padding-top: 22px;
-}
-#client-detail-dialog .client-file-recent h3 {
-  font-size: 20px;
-}
-#client-detail-dialog #client-recent-event {
-  padding: 14px 0;
-  line-height: 1.7;
-}
-@media (min-width: 851px) {
-  .panel-sidebar {
-    padding-top: 36px;
-  }
-  .panel-sidebar > p {
-    margin: 18px 0 12px;
-    text-align: center;
-  }
-  .panel-sidebar .panel-global-search {
-    margin-top: 20px;
-  }
-  .panel-sidebar .panel-global-search-field input {
-    padding: 9px !important;
-    height: 38px;
-  }
-  .panel-sidebar .panel-global-search-field kbd {
-    display: none;
-  }
-  .panel-sidebar nav {
-    margin: 38px 0 20px;
-    gap: 8px;
-  }
-  #panel-navigation button {
-    min-height: 52px;
-    padding: 12px;
-  }
-  .panel-sidebar .session-note {
-    font-size: 10px;
-    margin: 10px 0;
-  }
-}
-@media (min-width: 1280px) {
-  .clients-workspace .panel-main {
-    padding: 30px 28px;
-  }
-  .clients-workspace-heading {
-    padding-bottom: 30px;
-    margin: 0 -28px 22px;
-    padding-left: 28px;
-    border-bottom: 1px solid var(--line);
-  }
-  .clients-workspace .panel-heading h1 {
-    font-size: 46px;
-  }
-  .clients-metrics {
-    top: 68px;
-    right: 360px;
-    gap: 12px;
-  }
-  .clients-metrics article {
+  #client-recent-event {
+    grid-template-columns: minmax(0, 1fr);
     gap: 4px;
-  }
-  .clients-workspace .panel-heading .panel-controls {
-    margin-right: 185px;
-  }
-  .clients-workspace .panel-refresh-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-  .clients-workspace #panel-refresh {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-  }
-  .clients-workspace .panel-refresh-icon {
-    display: block;
-    margin: auto;
-  }
-  html[data-theme="dark"] .clients-workspace .panel-refresh-icon {
-    filter: invert(90%);
-  }
-  .clients-directory > .clients-section-heading {
-    margin: 0 0 12px;
-  }
-  .clients-directory > .clients-section-heading h2 {
-    font-size: 21px;
-  }
-  .clients-workbar {
-    flex-wrap: nowrap;
-  }
-  .clients-workbar input {
-    height: 46px;
-  }
-  .clients-view-status:not(:empty) {
-    font-size: 9px;
-    line-height: 1.4;
-  }
-  .client-detail-slot {
-    padding-left: 30px;
-  }
-  .client-detail-slot.has-client {
-    top: 16px;
-    max-height: calc(100dvh - 40px);
-  }
-  #client-detail-dialog.client-detail-docked[open] {
-    padding-top: 26px;
-  }
-  #client-detail-dialog.client-detail-docked #client-detail-close {
-    width: auto;
-    min-width: 0;
-    height: 30px;
-    padding: 0;
-    background: none;
-    border: 0;
-    color: var(--accent);
-    border-radius: 0;
-    font-size: 12px;
-  }
-  #client-detail-dialog.client-detail-docked #client-detail-close svg {
-    display: none;
-  }
-  #client-detail-dialog.client-detail-docked .client-close-label {
-    display: inline;
-  }
-  #client-detail-dialog.client-detail-docked #client-detail-name {
-    font-size: 36px;
-    margin: 12px 0 10px;
-  }
-  #client-detail-dialog.client-detail-docked .client-life-actions {
-    top: 54px;
-  }
-  #clients-table-wrap[data-view="cards"] tbody {
-    gap: 16px;
-  }
-}
-@media (max-width: 1279px) {
-  #client-detail-dialog .contract-toolbar {
-    margin-top: 12px;
-  }
-  #client-detail-dialog .contract-tabs {
-    position: static;
-    margin: 0 auto 0 0;
-  }
-}
-@media (max-width: 550px) {
-  #client-detail-dialog .contract-metrics {
-    gap: 8px;
-  }
-  #client-detail-dialog
-    .contract-metrics
-    article:not(:first-child):not(.contract-metric-single) {
-    padding-left: 8px;
-  }
-  #client-detail-dialog .contract-metrics strong {
-    font-size: 20px;
-  }
-  #client-detail-dialog .contract-metrics small {
-    font-size: 9px;
-  }
-  #client-detail-dialog .contract-toolbar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  #client-detail-dialog .contract-company-heading h4 {
-    font-size: 12px;
-  }
-  #client-detail-dialog .contract-card > input,
-  #client-detail-dialog .contract-card > button {
-    position: static;
-    opacity: 1;
-  }
-  #client-detail-dialog .contract-card {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  #client-detail-dialog .contract-card > button {
-    margin-left: auto;
-  }
-  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
-    display: none;
   }
 }
 @media (pointer: coarse) {
-  #client-detail-dialog .contract-card > button {
-    opacity: 1;
+  #clients-table-wrap[data-view="cards"] .client-select-cell input {
+    opacity: 0.45;
+  }
+  #client-detail-dialog .contract-card > input {
+    opacity: 0.5;
   }
   .clients-directory-utilities button {
     min-height: 44px;
   }
 }
-.clients-workspace h1,
-.clients-workspace h2,
-.clients-workspace h3,
-.clients-workspace h4,
-.clients-workspace h5,
-.clients-workspace strong,
-.clients-workspace .client-monogram,
-.clients-workspace #consultant-display-name {
-  font-family: "Segoe UI", Arial, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  #clients-table-wrap tr,
+  #client-detail-dialog .contract-company-chevron,
+  #client-detail-dialog .contract-chevron {
+    transition: none;
+  }
 }
-#clients-table-wrap[data-view="cards"] .client-locality > span {
-  padding-left: 0;
+/* La fila entera abre la ficha; el botón conserva el acceso por teclado. */
+#clients-table-wrap[data-view="cards"] .client-action {
+  inset: auto 10px 10px auto;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
 }
-#clients-table-wrap[data-view="cards"] .client-locality > span:first-child {
-  padding-left: 58px;
+#clients-table-wrap[data-view="cards"] .client-action button {
+  width: 26px;
+  height: 26px;
+  pointer-events: auto;
 }
-#clients-table-wrap[data-view="cards"] .client-company-mark[data-company] > span {
-  color: var(--ink);
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
+  grid-template-rows: auto;
 }
-#client-detail-dialog .client-life-actions button {
+#clients-table-wrap[data-view="cards"] .client-company-mark {
+  font-size: 13px;
+}
+#clients-table-wrap[data-view="cards"] .client-portfolio-summary small {
+  font-size: 13px;
+}
+#client-detail-dialog .metric-month-suffix {
+  font-size: 0.65em;
   white-space: nowrap;
-  width: auto;
+  letter-spacing: 0;
 }
-#client-detail-dialog .contract-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  margin-top: 8px;
-  position: relative;
+#client-detail-dialog .contract-metrics article:nth-child(3) strong {
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
-#client-detail-dialog .client-products-heading {
-  grid-column: 1;
-  grid-row: 1;
-  margin: 0;
-}
-#client-detail-dialog .contract-toolbar .contract-controls {
-  grid-column: 2;
-  grid-row: 1;
-}
-#client-detail-dialog .contract-tabs {
-  position: static;
-  grid-column: 1/-1;
-  grid-row: 2;
-  margin: 0;
-  justify-self: end;
-}
-#client-detail-dialog .contract-company {
-  margin-top: 10px;
-}
-#client-detail-dialog .contract-card > button {
-  right: 36px;
-  top: -4px;
-}
-#client-detail-dialog .contract-card:hover .contract-units {
-  padding-top: 20px;
-}
-@media (min-width: 1280px) {
-  .clients-workspace-heading {
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-  }
-  .clients-workspace #panel-refresh {
-    min-width: 44px;
-  }
-  .client-detail-docked .client-life-actions {
-    top: 57px !important;
-  }
-  #clients-table-wrap[data-view="cards"] tbody {
-    margin-top: 16px;
-  }
-  #clients-table-wrap[data-view="cards"] tr:not([data-category="interested"]) {
-    min-height: 240px;
+@media (min-width: 1100px) {
+  #client-detail-dialog.client-detail-docked[open] {
+    padding-top: 30px;
   }
 }
 @media (max-width: 550px) {
-  #client-detail-dialog .contract-toolbar {
-    grid-template-columns: minmax(0, 1fr);
+  #client-detail-dialog .metric-month-suffix {
+    display: block;
+    font-size: 11px;
   }
-  #client-detail-dialog .contract-toolbar .contract-controls {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  #client-detail-dialog .contract-tabs {
-    grid-column: 1;
-    grid-row: 3;
-    justify-self: start;
-  }
-}
-#clients-table-wrap[data-view="cards"] .client-action {
-  inset: auto 0 0 0;
-  width: auto;
-  height: 1px;
-  padding: 0;
-  grid-column: auto;
-  grid-row: auto;
-}
-#clients-table-wrap[data-view="cards"] .client-action button {
-  width: auto;
-  min-width: 0;
-  max-width: calc(100% - 24px);
 }
 @media (min-width: 851px) {
   .panel-sidebar .panel-mark {
-    margin-bottom: 0;
-  }
-  .panel-sidebar > p {
-    margin-top: 16px;
-    margin-bottom: 4px;
-  }
-  .panel-sidebar nav {
-    margin-top: 28px;
-  }
-  .panel-sidebar .session-note {
-    display: none;
-  }
-}
-@media (min-width: 1280px) {
-  #clients-table-wrap[data-view="cards"] tr:not([data-category="interested"]) {
-    min-height: 260px;
-  }
-}
-html[data-theme="dark"] .clients-workspace {
-  --panel: #172638;
-}
-#clients-table-wrap[data-view="cards"] .client-company-mark .client-brand-icon,
-#client-detail-dialog .contract-brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 32px;
-  flex: none;
-  background: #124b98;
-  border-radius: 2px;
-  overflow: hidden;
-}
-#clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company="intesa"]
-  .client-brand-icon,
-#client-detail-dialog .contract-brand-icon[data-company="intesa"] {
-  background: #23734f;
-}
-#clients-table-wrap[data-view="cards"] .client-company-mark .client-brand-icon img,
-#client-detail-dialog .contract-brand-icon img {
-  background: none;
-  width: 28px;
-  height: 27px;
-  padding: 0;
-  filter: brightness(0) invert(1);
-}
-#clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company="intesa"]
-  .client-brand-icon
-  img {
-  background: none;
-  filter: brightness(0) invert(1);
-}
-#client-detail-dialog .contract-brand-icon img[data-company="intesa"] {
-  object-fit: cover;
-  object-position: left;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
-  grid-column: 2;
-  grid-row: 1;
-  margin-right: 20px;
-}
-#clients-table-wrap[data-view="cards"]
-  tr[data-category="interested"]
-  .client-locality
-  > span:first-child {
-  padding: 0;
-}
-#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-identity {
-  padding: 0;
-}
-#client-detail-dialog .contract-card {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-#client-detail-dialog .contract-summary {
-  min-height: 40px;
-}
-#client-detail-dialog .client-file-recent {
-  border-top: 0;
-  margin-top: 18px;
-  padding-top: 10px;
-}
-#client-detail-dialog .client-file-recent > div {
-  margin-bottom: 8px;
-}
-#client-detail-dialog #client-recent-event {
-  border-left: 2px solid var(--accent);
-  padding: 8px 0 8px 14px;
-  margin: 14px 0;
-}
-@media (min-width: 1280px) {
-  .clients-workspace .clients-metrics {
-    top: 52px;
-    right: 390px;
-  }
-  .clients-workspace .clients-metrics strong {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 400;
-  }
-  #clients-table-wrap[data-view="cards"] .client-identity strong {
-    font-size: 18px;
-  }
-  #clients-table-wrap[data-view="cards"] .client-company-mark {
-    font-size: 12px;
-  }
-  #clients-table-wrap[data-view="cards"] .client-company-marks {
-    gap: 6px;
-    min-height: 64px;
-  }
-  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
-    min-height: 68px;
-  }
-}
-@media (max-width: 550px) {
-  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  #client-detail-dialog .client-file-status {
-    padding-right: 0;
-  }
-  #client-detail-dialog .client-life-actions {
-    position: static;
-    margin-top: 10px;
-  }
-}
-html[data-theme="dark"]
-  #clients-table-wrap[data-view="cards"]
-  .client-company-mark[data-company]
-  .client-brand-icon
-  img {
-  background: none;
-  padding: 0;
-  filter: brightness(0) invert(1);
-}
-#clients-table-wrap[data-view="cards"] .client-portfolio-summary small {
-  font-size: 12px;
-}
-#clients-table-wrap[data-view="cards"] .client-company-marks {
-  align-items: flex-start;
-}
-#client-detail-dialog .client-file-contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  margin-top: 14px;
-}
-#client-detail-dialog .client-file-email {
-  border-left: 1px solid var(--line);
-  padding-left: 16px;
-}
-#client-detail-dialog .client-file-header {
-  padding-bottom: 28px;
-}
-#client-detail-dialog .contract-summary .contract-units strong {
-  font-weight: 600;
-}
-@media (min-width: 1280px) {
-  #clients-table-wrap[data-view="cards"] .client-identity {
-    grid-template-columns: 56px minmax(0, 1fr);
-    gap: 6px 16px;
-    min-height: 65px;
-  }
-  #clients-table-wrap[data-view="cards"] .client-monogram {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    font-size: 20px;
-  }
-  #clients-table-wrap[data-view="cards"] .client-locality > span:first-child {
-    padding-left: 72px;
-  }
-  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-monogram {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    font-size: 16px;
-  }
-  #clients-table-wrap[data-view="cards"]
-    tr[data-category="interested"]
-    .client-locality
-    > span:first-child {
-    padding: 0;
-  }
-  #clients-table-wrap[data-view="cards"]
-    tr[data-category="interested"]
-    .client-identity
-    strong {
-    font-size: 16px;
-  }
-  #clients-table-wrap[data-view="cards"] tr[data-current="true"] {
-    outline: 2px solid var(--accent);
-    background: color-mix(in srgb, var(--accent) 8%, var(--panel));
-  }
-  #client-detail-dialog .contract-card {
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-}
-@media (max-width: 550px) {
-  #client-detail-dialog .client-file-email {
-    border: 0;
-    padding: 0;
-  }
-}
-.clients-view-switch button img {
-  width: 19px;
-  height: 19px;
-  display: block;
-}
-.clients-view-switch [data-client-view="cards"] {
-  order: -1;
-}
-.clients-view-switch button[aria-pressed="true"] {
-  outline: 1px solid var(--accent);
-  color: var(--accent);
-}
-html[data-theme="dark"] .clients-view-switch button img {
-  filter: invert(85%);
-}
-@media (max-width: 1279px) {
-  .clients-view-switch button {
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    width: 80px;
+    height: 76px;
+    padding: 0;
+  }
+  .panel-sidebar .panel-global-search {
+    margin-top: 12px;
+  }
+  .panel-sidebar nav {
+    margin-top: 26px;
   }
 }
-@media (pointer: coarse) {
-  #clients-table-wrap[data-view="cards"] .client-select-cell input {
-    opacity: 0.5;
+@media (min-width: 1351px) {
+  .clients-people-workspace {
+    grid-template-columns: minmax(0, 0.98fr) minmax(0, 1fr);
+  }
+  .panel-sidebar nav {
+    margin-left: -18px;
+    margin-right: -12px;
+  }
+  #panel-navigation button {
+    padding-left: 28px;
+    border-left: 4px solid transparent;
+    border-radius: 0 10px 10px 0;
+  }
+  #panel-navigation button[aria-current] {
+    border-left-color: var(--accent);
   }
 }
-/* Tamaños de lectura de la referencia, conservando el contenido real. */
-@media(min-width:1280px) {
- #panel-navigation .panel-nav-label { font-size:16px; }
- #clients-table-wrap[data-view="cards"] .client-company-mark { font-size:13px; }
- #clients-table-wrap[data-view="cards"] .client-portfolio-summary small { font-size:13px; }
- #clients-table-wrap[data-view="cards"] .client-locality > span:first-child { font-size:12px; }
- #client-detail-dialog.client-detail-docked #client-detail-name { font-size:40px; }
- #client-detail-dialog .contract-metrics strong { font-size:30px; }
- #client-detail-dialog .contract-metrics small { font-size:12px; }
- #client-detail-dialog .client-products-heading h3 { font-size:23px; }
- #client-detail-dialog .contract-company-heading h4 { font-size:16px; }
- #client-detail-dialog .contract-summary h5 { font-size:16px; }
- #client-detail-dialog .contract-summary small { font-size:13px; }
- #client-detail-dialog .contract-payment strong, #client-detail-dialog .contract-payment small { font-size:13px; }
- #client-detail-dialog .client-file-contact { font-size:14px; }
- #client-detail-dialog .client-file-tabs button { font-size:14px; }
- #client-detail-dialog .contract-summary .contract-units strong { font-size:18px; }
+#clients-table-wrap[data-view="cards"] tr:not([data-category="interested"]) {
+  min-height: 228px;
+}
+#clients-table-wrap[data-view="cards"] .client-identity strong {
+  font-size: 18px;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-group-start]:not([data-group-start="client"]) {
+  margin-top: 52px;
+}
+#client-detail-dialog .client-file-header {
+  padding-bottom: 20px;
+}
+@media (min-width: 1100px) and (max-width: 1350px) {
+  #clients-table-wrap[data-view="cards"] .client-identity strong {
+    font-size: 14px;
+  }
+}
+#clients-view {
+  min-width: 0;
+}
+#clients-table-wrap[data-view="cards"] .client-action button {
+  border-radius: 0;
+}
+#clients-table-wrap[data-view="cards"] tr[data-current="true"],
+#clients-table-wrap[data-view="cards"] tr:focus-within {
+  outline-offset: -2px;
+}
+#clients-table-wrap[data-view="cards"] .client-action button {
+  font-size: 0;
+  overflow: hidden;
+}
+.clients-format-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.clients-format-hint button {
+  font-size: 11px;
+  min-height: 30px;
+  padding: 0 5px;
+  color: var(--accent);
 }
