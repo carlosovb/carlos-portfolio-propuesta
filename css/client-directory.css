@@ -1,4 +1,7 @@
 /* Propuesta elegida: directorio de personas y ficha en contexto. */
+.client-close-label {
+  display: none;
+}
 .panel-sidebar .panel-nav-icon {
   width: 21px;
   height: 21px;
@@ -626,8 +629,8 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   height: 28px;
 }
 #client-detail-dialog .contract-company-heading img[data-company="intesa"] {
-  object-fit:cover;
-  object-position:left;
+  object-fit: cover;
+  object-position: left;
 }
 #client-detail-dialog .contract-card {
   gap: 10px;
@@ -831,19 +834,24 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  margin:0 0 16px;
-  padding:0;
-  border:0;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
 }
 .clients-directory-utilities button {
   font-size: 11px;
   padding: 5px 0;
-  min-height:30px;
-  border:0;
-  background:none;
+  min-height: 30px;
+  border: 0;
+  background: none;
 }
-.clients-view-status { margin:4px 0; min-height:0; }
-.clients-view-status:empty { display:none; }
+.clients-view-status {
+  margin: 4px 0;
+  min-height: 0;
+}
+.clients-view-status:empty {
+  display: none;
+}
 @media (max-width: 1279px) {
   .clients-table-wrap[data-view="cards"] tbody {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -981,4 +989,862 @@ html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
   #clients-table-wrap tr {
     transition: none;
   }
+}
+/* Fidelidad a la propuesta 2: jerarquía, densidad y lectura en contexto. */
+.clients-workspace,
+.clients-workspace button,
+.clients-workspace input,
+.clients-workspace select,
+.clients-workspace dialog {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+.clients-workspace .panel-sidebar {
+  background: var(--bg);
+}
+.clients-workspace .panel-sidebar > p {
+  font-weight: 400;
+}
+.clients-workspace .panel-heading {
+  border: 0;
+}
+.clients-workspace-heading h2 {
+  text-decoration: none;
+}
+#clients-table-wrap[data-view="cards"] tr {
+  border-radius: 13px;
+  gap: 0;
+  padding: 18px 16px 12px;
+}
+#clients-table-wrap[data-view="cards"] .client-identity {
+  min-height: 59px;
+}
+#clients-table-wrap[data-view="cards"] .client-identity strong {
+  font-size: 17px;
+}
+#clients-table-wrap[data-view="cards"] .client-locality > span {
+  display: block;
+  padding-left: 58px;
+  font-size: 11px;
+}
+#clients-table-wrap[data-view="cards"] .client-company-marks {
+  margin-top: 12px;
+  padding-top: 10px;
+  gap: 5px;
+  min-height: 54px;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark {
+  font-size: 11px;
+  font-weight: 400;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark img {
+  width: 30px;
+  height: 28px;
+  padding: 2px;
+}
+html[data-theme="dark"] #clients-table-wrap[data-view="cards"] .client-company-mark img {
+  background: #124b98;
+  padding: 3px;
+  filter: none;
+}
+html[data-theme="dark"]
+  #clients-table-wrap[data-view="cards"]
+  .client-company-mark[data-company="intesa"]
+  img {
+  background: #23734f;
+  filter: brightness(1.35);
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark > span {
+  color: var(--ink);
+}
+#clients-table-wrap[data-view="cards"] .client-portfolio {
+  padding-top: 10px;
+  margin-top: 8px;
+}
+#clients-table-wrap[data-view="cards"] .client-action {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+#clients-table-wrap[data-view="cards"] .client-action button {
+  opacity: 0;
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+}
+#clients-table-wrap[data-view="cards"] .client-action button:focus-visible {
+  opacity: 1;
+  background: var(--panel);
+  padding: 5px;
+  outline: 2px solid var(--accent);
+}
+#clients-table-wrap[data-view="cards"] .client-select-cell input {
+  opacity: 0;
+}
+#clients-table-wrap[data-view="cards"] tr[data-current="true"] .client-select-cell input {
+  opacity: 0.65;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
+  min-height: 64px;
+  padding: 10px 16px;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-identity
+  > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-identity
+  strong {
+  font-size: 14px;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-category {
+  font-size: 9px;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
+  display: block;
+  font-size: 10px;
+  margin: 0;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-locality
+  > span {
+  padding: 0;
+  font-size: 10px;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-company-marks {
+  display: none;
+}
+.clients-directory-utilities {
+  margin-top: 18px;
+}
+#client-detail-dialog .client-file-header {
+  position: relative;
+  padding-bottom: 24px;
+  border: 0;
+}
+#client-detail-dialog .client-life-actions {
+  position: absolute;
+  right: 0;
+  top: 35px;
+  margin: 0;
+}
+#client-detail-dialog .client-file-status {
+  padding-right: 90px;
+}
+#client-detail-dialog .client-file-tabs {
+  margin: 0;
+}
+#client-detail-dialog .client-file-layout {
+  padding-top: 28px;
+}
+#client-detail-dialog .contract-metrics {
+  border: 0;
+  padding-bottom: 30px;
+  gap: 20px;
+}
+#client-detail-dialog
+  .contract-metrics
+  article:not(:first-child):not(.contract-metric-single) {
+  border-left: 1px solid var(--line);
+  padding-left: 20px;
+}
+#client-detail-dialog .contract-metrics strong {
+  font-size: 27px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+#client-detail-dialog .contract-metrics small {
+  font-size: 11px;
+}
+#client-detail-dialog .client-products-heading {
+  margin: 12px 0 0;
+}
+#client-detail-dialog .client-products-heading h3 {
+  font-size: 21px;
+  margin: 0;
+}
+#client-detail-dialog .contract-toolbar {
+  margin-top: -32px;
+  min-height: 40px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+#client-detail-dialog .contract-tabs {
+  border: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  position: absolute;
+  margin-top: 79px;
+  right: 0;
+  gap: 8px;
+}
+#client-detail-dialog .contract-tab {
+  font-size: 10px;
+  padding: 3px 6px;
+  min-height: 24px;
+}
+#client-detail-dialog .contract-controls button {
+  font-size: 12px;
+  padding: 7px 12px;
+  min-height: 40px;
+}
+#client-detail-dialog .contract-company {
+  margin: 18px 0 25px;
+}
+#client-detail-dialog .contract-company-heading {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  gap: 12px;
+}
+#client-detail-dialog .contract-company-heading img {
+  width: 32px;
+  height: 32px;
+}
+#client-detail-dialog .contract-company-heading h4 {
+  font-size: 14px;
+}
+#client-detail-dialog .contract-card {
+  position: relative;
+  display: block;
+  padding: 15px 12px;
+}
+#client-detail-dialog .contract-card > input {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  opacity: 0;
+  z-index: 1;
+}
+#client-detail-dialog .contract-card:hover > input,
+#client-detail-dialog .contract-card > input:focus-visible,
+#client-detail-dialog .contract-card > input:checked {
+  opacity: 1;
+}
+#client-detail-dialog .contract-card > button {
+  position: absolute;
+  right: 38px;
+  top: 0;
+  opacity: 0;
+  min-height: 30px;
+  font-size: 10px;
+}
+#client-detail-dialog .contract-card:hover > button,
+#client-detail-dialog .contract-card > button:focus-visible {
+  opacity: 1;
+  background: var(--panel);
+}
+#client-detail-dialog .contract-summary {
+  grid-template-columns: minmax(0, 1fr) auto 14px;
+  gap: 2px 14px;
+  min-height: 44px;
+}
+#client-detail-dialog .contract-identity {
+  grid-column: 1;
+  grid-row: 1/3;
+  padding-right: 10px;
+}
+#client-detail-dialog .contract-summary h5 {
+  font-size: 15px;
+  margin: 0 0 3px;
+}
+#client-detail-dialog .contract-summary strong {
+  font-size: 16px;
+}
+#client-detail-dialog .contract-payment {
+  grid-column: 1;
+  grid-row: 3;
+  display: flex;
+  gap: 5px;
+  align-items: baseline;
+}
+#client-detail-dialog .contract-payment strong,
+#client-detail-dialog .contract-payment small {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+#client-detail-dialog .contract-units {
+  grid-column: 2;
+  grid-row: 1/4;
+  color: var(--ink);
+}
+#client-detail-dialog .contract-units small {
+  display: none;
+}
+#client-detail-dialog .contract-chevron {
+  grid-row: 1/4;
+}
+#client-detail-dialog .client-file-recent {
+  margin-top: 22px;
+  padding-top: 22px;
+}
+#client-detail-dialog .client-file-recent h3 {
+  font-size: 20px;
+}
+#client-detail-dialog #client-recent-event {
+  padding: 14px 0;
+  line-height: 1.7;
+}
+@media (min-width: 851px) {
+  .panel-sidebar {
+    padding-top: 36px;
+  }
+  .panel-sidebar > p {
+    margin: 18px 0 12px;
+    text-align: center;
+  }
+  .panel-sidebar .panel-global-search {
+    margin-top: 20px;
+  }
+  .panel-sidebar .panel-global-search-field input {
+    padding: 9px !important;
+    height: 38px;
+  }
+  .panel-sidebar .panel-global-search-field kbd {
+    display: none;
+  }
+  .panel-sidebar nav {
+    margin: 38px 0 20px;
+    gap: 8px;
+  }
+  #panel-navigation button {
+    min-height: 52px;
+    padding: 12px;
+  }
+  .panel-sidebar .session-note {
+    font-size: 10px;
+    margin: 10px 0;
+  }
+}
+@media (min-width: 1280px) {
+  .clients-workspace .panel-main {
+    padding: 30px 28px;
+  }
+  .clients-workspace-heading {
+    padding-bottom: 30px;
+    margin: 0 -28px 22px;
+    padding-left: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .clients-workspace .panel-heading h1 {
+    font-size: 46px;
+  }
+  .clients-metrics {
+    top: 68px;
+    right: 360px;
+    gap: 12px;
+  }
+  .clients-metrics article {
+    gap: 4px;
+  }
+  .clients-workspace .panel-heading .panel-controls {
+    margin-right: 185px;
+  }
+  .clients-workspace .panel-refresh-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .clients-workspace #panel-refresh {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .clients-workspace .panel-refresh-icon {
+    display: block;
+    margin: auto;
+  }
+  html[data-theme="dark"] .clients-workspace .panel-refresh-icon {
+    filter: invert(90%);
+  }
+  .clients-directory > .clients-section-heading {
+    margin: 0 0 12px;
+  }
+  .clients-directory > .clients-section-heading h2 {
+    font-size: 21px;
+  }
+  .clients-workbar {
+    flex-wrap: nowrap;
+  }
+  .clients-workbar input {
+    height: 46px;
+  }
+  .clients-view-status:not(:empty) {
+    font-size: 9px;
+    line-height: 1.4;
+  }
+  .client-detail-slot {
+    padding-left: 30px;
+  }
+  .client-detail-slot.has-client {
+    top: 16px;
+    max-height: calc(100dvh - 40px);
+  }
+  #client-detail-dialog.client-detail-docked[open] {
+    padding-top: 26px;
+  }
+  #client-detail-dialog.client-detail-docked #client-detail-close {
+    width: auto;
+    min-width: 0;
+    height: 30px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--accent);
+    border-radius: 0;
+    font-size: 12px;
+  }
+  #client-detail-dialog.client-detail-docked #client-detail-close svg {
+    display: none;
+  }
+  #client-detail-dialog.client-detail-docked .client-close-label {
+    display: inline;
+  }
+  #client-detail-dialog.client-detail-docked #client-detail-name {
+    font-size: 36px;
+    margin: 12px 0 10px;
+  }
+  #client-detail-dialog.client-detail-docked .client-life-actions {
+    top: 54px;
+  }
+  #clients-table-wrap[data-view="cards"] tbody {
+    gap: 16px;
+  }
+}
+@media (max-width: 1279px) {
+  #client-detail-dialog .contract-toolbar {
+    margin-top: 12px;
+  }
+  #client-detail-dialog .contract-tabs {
+    position: static;
+    margin: 0 auto 0 0;
+  }
+}
+@media (max-width: 550px) {
+  #client-detail-dialog .contract-metrics {
+    gap: 8px;
+  }
+  #client-detail-dialog
+    .contract-metrics
+    article:not(:first-child):not(.contract-metric-single) {
+    padding-left: 8px;
+  }
+  #client-detail-dialog .contract-metrics strong {
+    font-size: 20px;
+  }
+  #client-detail-dialog .contract-metrics small {
+    font-size: 9px;
+  }
+  #client-detail-dialog .contract-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #client-detail-dialog .contract-company-heading h4 {
+    font-size: 12px;
+  }
+  #client-detail-dialog .contract-card > input,
+  #client-detail-dialog .contract-card > button {
+    position: static;
+    opacity: 1;
+  }
+  #client-detail-dialog .contract-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #client-detail-dialog .contract-card > button {
+    margin-left: auto;
+  }
+  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
+    display: none;
+  }
+}
+@media (pointer: coarse) {
+  #client-detail-dialog .contract-card > button {
+    opacity: 1;
+  }
+  .clients-directory-utilities button {
+    min-height: 44px;
+  }
+}
+.clients-workspace h1,
+.clients-workspace h2,
+.clients-workspace h3,
+.clients-workspace h4,
+.clients-workspace h5,
+.clients-workspace strong,
+.clients-workspace .client-monogram,
+.clients-workspace #consultant-display-name {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+#clients-table-wrap[data-view="cards"] .client-locality > span {
+  padding-left: 0;
+}
+#clients-table-wrap[data-view="cards"] .client-locality > span:first-child {
+  padding-left: 58px;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark[data-company] > span {
+  color: var(--ink);
+}
+#client-detail-dialog .client-life-actions button {
+  white-space: nowrap;
+  width: auto;
+}
+#client-detail-dialog .contract-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 8px;
+  position: relative;
+}
+#client-detail-dialog .client-products-heading {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+}
+#client-detail-dialog .contract-toolbar .contract-controls {
+  grid-column: 2;
+  grid-row: 1;
+}
+#client-detail-dialog .contract-tabs {
+  position: static;
+  grid-column: 1/-1;
+  grid-row: 2;
+  margin: 0;
+  justify-self: end;
+}
+#client-detail-dialog .contract-company {
+  margin-top: 10px;
+}
+#client-detail-dialog .contract-card > button {
+  right: 36px;
+  top: -4px;
+}
+#client-detail-dialog .contract-card:hover .contract-units {
+  padding-top: 20px;
+}
+@media (min-width: 1280px) {
+  .clients-workspace-heading {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+  }
+  .clients-workspace #panel-refresh {
+    min-width: 44px;
+  }
+  .client-detail-docked .client-life-actions {
+    top: 57px !important;
+  }
+  #clients-table-wrap[data-view="cards"] tbody {
+    margin-top: 16px;
+  }
+  #clients-table-wrap[data-view="cards"] tr:not([data-category="interested"]) {
+    min-height: 240px;
+  }
+}
+@media (max-width: 550px) {
+  #client-detail-dialog .contract-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #client-detail-dialog .contract-toolbar .contract-controls {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  #client-detail-dialog .contract-tabs {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: start;
+  }
+}
+#clients-table-wrap[data-view="cards"] .client-action {
+  inset: auto 0 0 0;
+  width: auto;
+  height: 1px;
+  padding: 0;
+  grid-column: auto;
+  grid-row: auto;
+}
+#clients-table-wrap[data-view="cards"] .client-action button {
+  width: auto;
+  min-width: 0;
+  max-width: calc(100% - 24px);
+}
+@media (min-width: 851px) {
+  .panel-sidebar .panel-mark {
+    margin-bottom: 0;
+  }
+  .panel-sidebar > p {
+    margin-top: 16px;
+    margin-bottom: 4px;
+  }
+  .panel-sidebar nav {
+    margin-top: 28px;
+  }
+  .panel-sidebar .session-note {
+    display: none;
+  }
+}
+@media (min-width: 1280px) {
+  #clients-table-wrap[data-view="cards"] tr:not([data-category="interested"]) {
+    min-height: 260px;
+  }
+}
+html[data-theme="dark"] .clients-workspace {
+  --panel: #172638;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark .client-brand-icon,
+#client-detail-dialog .contract-brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 32px;
+  flex: none;
+  background: #124b98;
+  border-radius: 2px;
+  overflow: hidden;
+}
+#clients-table-wrap[data-view="cards"]
+  .client-company-mark[data-company="intesa"]
+  .client-brand-icon,
+#client-detail-dialog .contract-brand-icon[data-company="intesa"] {
+  background: #23734f;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark .client-brand-icon img,
+#client-detail-dialog .contract-brand-icon img {
+  background: none;
+  width: 28px;
+  height: 27px;
+  padding: 0;
+  filter: brightness(0) invert(1);
+}
+#clients-table-wrap[data-view="cards"]
+  .client-company-mark[data-company="intesa"]
+  .client-brand-icon
+  img {
+  background: none;
+  filter: brightness(0) invert(1);
+}
+#client-detail-dialog .contract-brand-icon img[data-company="intesa"] {
+  object-fit: cover;
+  object-position: left;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
+  grid-column: 2;
+  grid-row: 1;
+  margin-right: 20px;
+}
+#clients-table-wrap[data-view="cards"]
+  tr[data-category="interested"]
+  .client-locality
+  > span:first-child {
+  padding: 0;
+}
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-identity {
+  padding: 0;
+}
+#client-detail-dialog .contract-card {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+#client-detail-dialog .contract-summary {
+  min-height: 40px;
+}
+#client-detail-dialog .client-file-recent {
+  border-top: 0;
+  margin-top: 18px;
+  padding-top: 10px;
+}
+#client-detail-dialog .client-file-recent > div {
+  margin-bottom: 8px;
+}
+#client-detail-dialog #client-recent-event {
+  border-left: 2px solid var(--accent);
+  padding: 8px 0 8px 14px;
+  margin: 14px 0;
+}
+@media (min-width: 1280px) {
+  .clients-workspace .clients-metrics {
+    top: 52px;
+    right: 390px;
+  }
+  .clients-workspace .clients-metrics strong {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  #clients-table-wrap[data-view="cards"] .client-identity strong {
+    font-size: 18px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-company-mark {
+    font-size: 12px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-company-marks {
+    gap: 6px;
+    min-height: 64px;
+  }
+  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
+    min-height: 68px;
+  }
+}
+@media (max-width: 550px) {
+  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #client-detail-dialog .client-file-status {
+    padding-right: 0;
+  }
+  #client-detail-dialog .client-life-actions {
+    position: static;
+    margin-top: 10px;
+  }
+}
+html[data-theme="dark"]
+  #clients-table-wrap[data-view="cards"]
+  .client-company-mark[data-company]
+  .client-brand-icon
+  img {
+  background: none;
+  padding: 0;
+  filter: brightness(0) invert(1);
+}
+#clients-table-wrap[data-view="cards"] .client-portfolio-summary small {
+  font-size: 12px;
+}
+#clients-table-wrap[data-view="cards"] .client-company-marks {
+  align-items: flex-start;
+}
+#client-detail-dialog .client-file-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 14px;
+}
+#client-detail-dialog .client-file-email {
+  border-left: 1px solid var(--line);
+  padding-left: 16px;
+}
+#client-detail-dialog .client-file-header {
+  padding-bottom: 28px;
+}
+#client-detail-dialog .contract-summary .contract-units strong {
+  font-weight: 600;
+}
+@media (min-width: 1280px) {
+  #clients-table-wrap[data-view="cards"] .client-identity {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 6px 16px;
+    min-height: 65px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-monogram {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    font-size: 20px;
+  }
+  #clients-table-wrap[data-view="cards"] .client-locality > span:first-child {
+    padding-left: 72px;
+  }
+  #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-monogram {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 16px;
+  }
+  #clients-table-wrap[data-view="cards"]
+    tr[data-category="interested"]
+    .client-locality
+    > span:first-child {
+    padding: 0;
+  }
+  #clients-table-wrap[data-view="cards"]
+    tr[data-category="interested"]
+    .client-identity
+    strong {
+    font-size: 16px;
+  }
+  #clients-table-wrap[data-view="cards"] tr[data-current="true"] {
+    outline: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  }
+  #client-detail-dialog .contract-card {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+@media (max-width: 550px) {
+  #client-detail-dialog .client-file-email {
+    border: 0;
+    padding: 0;
+  }
+}
+.clients-view-switch button img {
+  width: 19px;
+  height: 19px;
+  display: block;
+}
+.clients-view-switch [data-client-view="cards"] {
+  order: -1;
+}
+.clients-view-switch button[aria-pressed="true"] {
+  outline: 1px solid var(--accent);
+  color: var(--accent);
+}
+html[data-theme="dark"] .clients-view-switch button img {
+  filter: invert(85%);
+}
+@media (max-width: 1279px) {
+  .clients-view-switch button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+@media (pointer: coarse) {
+  #clients-table-wrap[data-view="cards"] .client-select-cell input {
+    opacity: 0.5;
+  }
+}
+/* Tamaños de lectura de la referencia, conservando el contenido real. */
+@media(min-width:1280px) {
+ #panel-navigation .panel-nav-label { font-size:16px; }
+ #clients-table-wrap[data-view="cards"] .client-company-mark { font-size:13px; }
+ #clients-table-wrap[data-view="cards"] .client-portfolio-summary small { font-size:13px; }
+ #clients-table-wrap[data-view="cards"] .client-locality > span:first-child { font-size:12px; }
+ #client-detail-dialog.client-detail-docked #client-detail-name { font-size:40px; }
+ #client-detail-dialog .contract-metrics strong { font-size:30px; }
+ #client-detail-dialog .contract-metrics small { font-size:12px; }
+ #client-detail-dialog .client-products-heading h3 { font-size:23px; }
+ #client-detail-dialog .contract-company-heading h4 { font-size:16px; }
+ #client-detail-dialog .contract-summary h5 { font-size:16px; }
+ #client-detail-dialog .contract-summary small { font-size:13px; }
+ #client-detail-dialog .contract-payment strong, #client-detail-dialog .contract-payment small { font-size:13px; }
+ #client-detail-dialog .client-file-contact { font-size:14px; }
+ #client-detail-dialog .client-file-tabs button { font-size:14px; }
+ #client-detail-dialog .contract-summary .contract-units strong { font-size:18px; }
 }

@@ -32,7 +32,8 @@
   const utilities = el("div", "clients-directory-utilities");
   utilities.setAttribute("aria-label", "Otras opciones de clientes");
   utilities.append(get("clients-demo-toggle"), get("clients-setup-products"));
-  get("clients-view-status").after(utilities);
+  utilities.append(get("clients-trash-open"));
+  get("clients-pagination").after(utilities);
   function markCurrentClient() {
     for (const row of get("clients-list").children) {
       const current = row.dataset.clientId === currentClient?.id;
@@ -188,7 +189,10 @@
     window.PanelInsights?.openHistory(row, demo);
     renderActivity(row);
     get("client-detail-name").textContent = name(row);
-    get("client-detail-contact").textContent = row.email || "Sin correo electrónico";
+    get("client-detail-contact").replaceChildren(
+      el("span", "client-file-phone", row.phone || "Sin teléfono"),
+      el("span", "client-file-email", row.email || "Sin correo electrónico"),
+    );
     get("client-detail-demo").hidden = !demo;
     const fields = get("client-detail-fields");
     fields.replaceChildren();
@@ -408,7 +412,6 @@
     dialog.dataset.activity = active ? "active" : "inactive";
     get("client-detail-status").textContent = [
       active ? "En activo" : "De baja · Historial conservado",
-      row.phone,
       row.locality,
     ]
       .filter(Boolean)
@@ -480,9 +483,11 @@
         logo.alt = "";
         logo.width = company.id === "axa" ? 28 : 52;
         logo.height = 28;
-        label.append(logo);
+        const brand = el("span", "client-brand-icon");
+        brand.append(logo);
+        label.append(brand);
       }
-      label.append(el("span", "", company?.id === "intesa" ? "Intesa Sanpaolo" : value));
+      label.append(el("span", "", value));
       label.dataset.company = company?.id || "other";
       label.title = value;
       marks.append(label);

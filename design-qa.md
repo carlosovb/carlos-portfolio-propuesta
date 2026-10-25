@@ -2,6 +2,14 @@
 
 final result: passed
 
+## Corrección tras la comparación del usuario — 25/10/2026
+
+Se revisó de nuevo la referencia adjunta por el usuario, correspondiente a la propuesta 2. La primera entrega conservaba demasiada densidad de controles y espacios del diseño anterior. Se corrigieron las proporciones del menú, la cabecera y las tarjetas; se trasladaron las utilidades secundarias al final del listado; se dejaron los interesados en filas horizontales; se colocaron las cifras antes del título de productos; se compactaron los contratos y se cambió el cierre lateral a «Cerrar ficha →». Teléfono y correo comparten una línea independiente del estado. Los logos de compañía tienen fondo de marca y contraste blanco, y los cambios de vista usan iconos SVG Tabler.
+
+Se regeneraron e inspeccionaron las comparaciones completa, del listado y de la ficha con el mismo tamaño de referencia. Se comprobaron otra vez móvil y escritorio. Se mantienen las acciones adicionales que requiere la aplicación (baja, historial de productos, edición, selección y recuperación), aunque no aparezcan en el concepto. La selección múltiple continúa siendo independiente de la ficha abierta. No se inventan fechas, cantidades, actividad ni datos del perfil para imitar los datos ficticios de la referencia.
+
+La regresión comprueba también alturas de tarjeta e interesado y el orden visual de cifras/productos. Flujo de clientes aprobado; auditoría de cinco tamaños y ambos temas aprobada en Chromium y WebKit. No quedan incidencias funcionales o de adaptabilidad bloqueantes.
+
 ## Referencia y alcance
 
 Referencia seleccionada: `C:/Users/ccaba/.codex/generated_images/01a15a58-2596-7332-aa93-286a0314d77e/exec-d28a144d-7322-48c7-a4c6-a2bd2e8fcee2.png`.

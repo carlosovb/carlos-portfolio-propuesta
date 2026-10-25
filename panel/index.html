@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="../css/confirm.css?v=apex1" />
     <link rel="stylesheet" href="../css/contract-controls.css?v=profileguard1" />
     <link rel="stylesheet" href="../css/devices.css?v=devices1" />
-    <link rel="stylesheet" href="../css/client-directory.css?v=people1" />
+    <link rel="stylesheet" href="../css/client-directory.css?v=people2" />
   </head>
   <body class="panel-page">
     <section class="panel-login" id="login-screen" aria-labelledby="login-title">
@@ -735,7 +735,7 @@
               <div class="clients-section-heading">
                 <div>
                   <p class="eyebrow">Cada cliente, a mano</p>
-                  <h2>Tu cartera</h2>
+                  <h2>Clientes</h2>
                   <button type="button" id="clients-trash-open" class="panel-secondary">
                     Eliminados · 10 días ↗
                   </button>
@@ -750,7 +750,7 @@
                     type="search"
                     id="clients-search"
                     maxlength="120"
-                    placeholder="Nombre, teléfono, compañía, producto…"
+                    placeholder="Buscar cliente o producto"
                     autocomplete="off"
                   />
                 </label>
@@ -775,7 +775,7 @@
                     aria-pressed="true"
                     title="Vista de lista"
                   >
-                    ☷
+                    <img src="../assets/icons/list.svg" alt="" />
                     <span>Lista</span>
                   </button>
                   <button
@@ -784,7 +784,7 @@
                     aria-pressed="false"
                     title="Vista de tarjetas"
                   >
-                    ▦
+                    <img src="../assets/icons/layout-grid.svg" alt="" />
                     <span>Tarjetas</span>
                   </button>
                   <button
@@ -793,7 +793,7 @@
                     aria-pressed="false"
                     title="Lista compacta"
                   >
-                    ≡
+                    <img src="../assets/icons/list-details.svg" alt="" />
                     <span>Compacta</span>
                   </button>
                 </div>
@@ -1488,6 +1488,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m6 6 12 12M18 6 6 18" />
         </svg>
+        <span class="client-close-label">Cerrar ficha →</span>
       </button>
       <header class="client-file-header">
         <p class="eyebrow">
@@ -1692,7 +1693,7 @@
     <script src="../js/contract-controls.js?v=apex2" defer></script>
     <script src="../js/date-picker.js?v=safarimonth1" defer></script>
     <script src="../js/product-picker.js?v=apex1" defer></script>
-    <script src="../js/client-products.js?v=people1" defer></script>
+    <script src="../js/client-products.js?v=people2" defer></script>
     <script src="../js/clients-workspace.js?v=insights1" defer></script>
     <dialog id="clients-trash-dialog" aria-labelledby="clients-trash-title">
       <div class="trash-heading">
@@ -1724,7 +1725,7 @@
         </button>
       </div>
     </dialog>
-    <script src="../js/clients.js?v=people1" defer></script>
+    <script src="../js/clients.js?v=people2" defer></script>
     <script src="../js/client-trash.js?v=apex1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
@@ -1736,12 +1737,12 @@
     <script src="../js/team.js?v=devices1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
-    <script src="../js/premeeting-panel.js?v=people1" defer></script>
+    <script src="../js/premeeting-panel.js?v=people2" defer></script>
     <script src="../js/resources.js?v=apex1" defer></script>
     <script src="../js/statistics.js?v=devices1-closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel-insights.js?v=people1" defer></script>
-    <script src="../js/panel.js?v=people1" defer></script>
+    <script src="../js/panel-insights.js?v=people2" defer></script>
+    <script src="../js/panel.js?v=people2" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

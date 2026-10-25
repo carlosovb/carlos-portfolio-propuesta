@@ -154,6 +154,32 @@ const contracts = [
     );
     assert.equal(await page.locator('#clients-list tr[data-current="true"]').count(), 1);
     assert.match(await page.locator(".contract-metrics").textContent(), /420 U/);
+    const cardBounds = await page
+      .locator('#clients-list tr[data-category="client"]')
+      .first()
+      .boundingBox();
+    const interestedBounds = await page
+      .locator('#clients-list tr[data-category="interested"]')
+      .first()
+      .boundingBox();
+    assert(
+      cardBounds.height >= 240 && cardBounds.height <= 285,
+      "Tarjeta con la densidad de la referencia",
+    );
+    assert(interestedBounds.height < 95, "Interesados en filas compactas");
+    const metricsBounds = await page.locator(".contract-metrics").boundingBox();
+    const productHeadingBounds = await page
+      .locator(".client-products-heading")
+      .boundingBox();
+    assert(
+      metricsBounds.y < productHeadingBounds.y,
+      "Cifras antes del listado de productos",
+    );
+    assert(
+      await page.locator(".client-close-label").isVisible(),
+      "Cierre textual de la ficha lateral",
+    );
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: path.join(dir, prefix + "-desktop.png") });
     await page.locator("#clients-list .client-identity").nth(1).click();
     assert.match(await page.locator("#client-detail-name").textContent(), /Daniel/);
@@ -206,6 +232,17 @@ const contracts = [
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth + 1,
           ),
+          `Sin desbordamiento en ${width}px, tema ${theme}: ${await page.evaluate(() =>
+            [...document.querySelectorAll("body *")]
+              .filter(
+                (e) =>
+                  e.getBoundingClientRect().right > innerWidth + 1 &&
+                  e.getBoundingClientRect().width > 0,
+              )
+              .slice(0, 8)
+              .map((e) => e.tagName + "." + e.className)
+              .join(", "),
+          )}`,
         );
         await page.screenshot({
           path: path.join(dir, `${prefix}-directory-${theme}-${width}.png`),
@@ -232,9 +269,11 @@ const contracts = [
         `<body style="margin:0;display:flex">${[ref, path.join(dir, prefix + "-desktop.png")].map((file) => `<div style="position:relative;width:700px;height:650px;overflow:hidden"><img style="position:absolute;left:-225px;top:-160px;width:1487px;height:1058px;max-width:none" src="data:image/png;base64,${fs.readFileSync(file).toString("base64")}"></div>`).join("")}</body>`,
       );
       await board.screenshot({ path: path.join(dir, "client-design-focus.png") });
-      await board.setViewportSize({width:1240,height:800});
-      await board.setContent(`<body style="margin:0;display:flex">${[ref,path.join(dir,prefix+'-desktop.png')].map((file,i)=>`<div style="position:relative;width:620px;height:800px;overflow:hidden"><img style="position:absolute;left:-${i?868:860}px;top:-160px;width:1487px;height:1058px;max-width:none" src="data:image/png;base64,${fs.readFileSync(file).toString('base64')}"></div>`).join('')}</body>`);
-      await board.screenshot({path:path.join(dir,'client-design-detail-focus.png')});
+      await board.setViewportSize({ width: 1240, height: 800 });
+      await board.setContent(
+        `<body style="margin:0;display:flex">${[ref, path.join(dir, prefix + "-desktop.png")].map((file, i) => `<div style="position:relative;width:620px;height:800px;overflow:hidden"><img style="position:absolute;left:-${i ? 868 : 860}px;top:-160px;width:1487px;height:1058px;max-width:none" src="data:image/png;base64,${fs.readFileSync(file).toString("base64")}"></div>`).join("")}</body>`,
+      );
+      await board.screenshot({ path: path.join(dir, "client-design-detail-focus.png") });
     }
     console.log(
       `${safari ? "WebKit" : "Chromium"}: ficha lateral/modal, cambio de cliente, productos, contacto, limpieza, cinco anchuras y ambos temas verificados.`,

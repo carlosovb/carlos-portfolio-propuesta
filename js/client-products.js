@@ -105,7 +105,6 @@
       node("div", "TU CARTERA", "eyebrow"),
       node("h3", "Productos en cartera"),
     );
-    host.append(heading);
     const note = node("p");
     note.setAttribute("role", "status");
     note.hidden = true;
@@ -230,7 +229,7 @@
       all.prepend(check);
       bulk.append(all);
     }
-    toolbar.append(tabs, controls);
+    toolbar.append(heading, controls, tabs);
     host.append(toolbar);
     const list = node("div", undefined, "contract-list");
     const companies = new Map();
@@ -245,7 +244,10 @@
           logo.src = "../assets/companies/" + company.logo;
           logo.alt = "";
           logo.dataset.company = company.id;
-          heading.append(logo);
+          const brand = node("span", undefined, "contract-brand-icon");
+          brand.dataset.company = company.id;
+          brand.append(logo);
+          heading.append(brand);
         }
         heading.append(node("h4", label));
         const count = visibleRows.filter(
