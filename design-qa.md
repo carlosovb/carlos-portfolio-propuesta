@@ -55,3 +55,13 @@ Aprobadas las pruebas de diseño en Chromium y WebKit, el flujo de clientes y la
 La migración de valor predeterminado no actualiza filas de preferencias ni cambia permisos o información de clientes. La prueba SQL confirma que una elección Compacta permanece intacta después de la migración y que cada cuenta mantiene su propia elección.
 
 No quedan P0/P1/P2 abiertos en la vista Tarjetas. Diferencias aceptadas: datos y recuentos ficticios, rol real del usuario en el menú, controles adicionales disponibles al desplegar y ausencia del resplandor previamente rechazado por el usuario. La preferencia personal solo se cambia con una selección expresa del titular.
+
+## Resultado publicado — verificación final
+
+Despliegue `818dff69452641084a061188032696b9e5ecd47f`: completado correctamente. Se ejecutó `client-design.cjs` contra la URL pública en Chromium y WebKit, sin interceptar archivos del sitio ni cargar sustituciones locales. Solo se simularon autenticación y datos ficticios.
+
+Ambos motores aprobaron la ficha lateral, su conversión a modal, cambio de cliente, confirmación de edición pendiente, pestañas, plegado de compañías, limpieza al cerrar y ausencia de desbordamientos. Se comprobaron portátiles de 1100, 1200 y 1366 px, referencia de 1487 px y anchuras de 1024, 768, 390 y 320 px. La fuente local se cargó; no hubo errores JavaScript ni recursos CSS/JS/fuentes/imágenes fallidos.
+
+Se abrieron e inspeccionaron `client-live-comparison.png`, `client-live-focus.png` y `client-live-detail-focus.png` con la referencia al lado en cada imagen. También se generaron las capturas publicadas con prefijo `client-live-webkit-`. La prueba publicada de Chromium comenzó con Compacta para reproducir el problema de una vista guardada y luego seleccionó explícitamente Tarjetas.
+
+La consulta de verificación de la base de datos confirmó `default_cards: true` y la conservación de la preferencia Compacta existente. El cambio personal de esa preferencia continúa pendiente de la autorización solicitada al titular; el acceso «Ver tarjetas» permite elegirla expresamente desde la interfaz. No se ha cambiado ninguna elección personal sin autorización.
