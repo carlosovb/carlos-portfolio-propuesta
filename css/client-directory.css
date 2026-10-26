@@ -1998,11 +1998,25 @@ html[data-theme="dark"]
 #clients-table-wrap[data-view="compact"] .client-identity strong {
   font-size: 13px;
 }
-/* El bloque de compañía queda centrado en cada tarjeta de cliente. */
+/* Compañías a la izquierda, centradas verticalmente entre los separadores. */
+#clients-table-wrap[data-view="cards"] tr:not([data-category="interested"]) {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+#clients-table-wrap[data-view="cards"] .client-locality {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 #clients-table-wrap[data-view="cards"] .client-company-marks {
-  align-items: center;
+  flex: 1;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block: 12px;
 }
 #clients-table-wrap[data-view="cards"] .client-company-mark {
-  justify-content: center;
+  justify-content: flex-start;
   max-width: 100%;
+}
+#clients-table-wrap[data-view="cards"] .client-portfolio {
+  margin-top: 0;
 }

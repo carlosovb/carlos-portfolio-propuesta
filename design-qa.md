@@ -82,3 +82,7 @@ Se revisaron visualmente Inicio, el indicador de conexiones y la ficha de consul
 En Clientes, el bloque logo/nombre se centra dentro de cada tarjeta; una prueba compara ambos centros con una tolerancia de 1 px. En Herramientas y recursos, AXA vuelve al PNG transparente `axa.png`, blanco en oscuro y en color en claro, independiente del SVG de Clientes. `resources-flow.cjs` verifica la separación de archivos y ambos filtros de tema.
 
 La suite completa del proyecto pasó con los nuevos tests de conexiones, además de las pruebas de diseño en Chromium y WebKit. No se modifican preferencias de vista guardadas ni datos financieros o de clientes.
+
+### Alineación de compañías en tarjetas
+
+Logos y nombres a la izquierda, centrados verticalmente entre los separadores. La prueba de diseño comprueba ambas alineaciones y conserva la vista guardada del consultor.

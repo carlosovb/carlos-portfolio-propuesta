@@ -194,12 +194,9 @@ const contracts = [
       .first()
       .boundingBox();
     const companyArea = await companiesInCard.boundingBox();
-    assert(
-      Math.abs(
-        companyBounds.x + companyBounds.width / 2 - companyArea.x - companyArea.width / 2,
-      ) <= 1,
-      "Compañía centrada en la tarjeta",
-    );
+    assert(Math.abs(companyBounds.x - companyArea.x) <= 1,"Compañía alineada a la izquierda");
+    const lastCompanyBounds=await companiesInCard.locator('.client-company-mark').last().boundingBox();
+    assert(Math.abs((companyBounds.y+lastCompanyBounds.y+lastCompanyBounds.height)/2-companyArea.y-companyArea.height/2)<=1,"Compañías centradas verticalmente entre separadores");
     const productCheckbox = await page
       .locator(".contract-card > input")
       .first()
