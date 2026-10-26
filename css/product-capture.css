@@ -1,0 +1,88 @@
+.capture-import {
+  padding: 14px;
+  margin: 0 0 18px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.capture-body {
+  padding-top: 16px;
+}
+.capture-body[hidden],
+.capture-body [hidden] {
+  display: none !important;
+}
+.capture-body p {
+  line-height: 1.5;
+  font-size: 13px;
+}
+.capture-body input[type="file"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+}
+.capture-body progress {
+  width: 100%;
+  accent-color: var(--accent, #e5af84);
+  height: 8px;
+}
+.capture-preview > img {
+  display: block;
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  margin: 16px auto;
+  border-radius: 8px;
+}
+.capture-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding-block: 16px;
+  border-block: 1px solid var(--line);
+}
+.capture-summary div {
+  min-width: 0;
+}
+.capture-summary dt {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.capture-summary dd {
+  margin: 5px 0 0;
+  font-weight: 600;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.capture-note {
+  border-left: 2px solid var(--accent, #e5af84);
+  padding-left: 12px;
+}
+.capture-confirm {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  margin-block: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.capture-confirm input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+}
+@media (max-width: 480px) {
+  .capture-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .capture-import {
+    padding: 10px;
+  }
+  .capture-import button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}

@@ -331,7 +331,7 @@
     const status = el(
       "p",
       "client-import-guide-status",
-      "Añade sus productos y continúa. Puedes guardar varios para esta persona.",
+      "Añade sus productos a mano o desde una captura y continúa. Puedes guardar varios para esta persona.",
     );
     status.setAttribute("role", "status");
     const actions = el("div", "client-import-guide-actions"),

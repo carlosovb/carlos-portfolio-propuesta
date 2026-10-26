@@ -9,7 +9,8 @@
     editing = null,
     busy = false,
     selected = new Set(),
-    scope = "current";
+    scope = "current",
+    captureCleanup = null;
   const node = (tag, text, cls) => {
     const n = document.createElement(tag);
     if (text !== undefined) n.textContent = text;
@@ -25,6 +26,8 @@
     return b;
   };
   function reset() {
+    captureCleanup?.();
+    captureCleanup = null;
     epoch++;
     client = null;
     rows = [];
@@ -96,6 +99,8 @@
     return input;
   }
   function render() {
+    captureCleanup?.();
+    captureCleanup = null;
     host.dataset.editing = "false";
     host.replaceChildren();
     if (!client) return;
@@ -187,6 +192,12 @@
     add.disabled = client.is_active === false;
     if (add.disabled) add.title = "Reactiva el contacto antes de añadir productos";
     controls.append(add);
+    const capture = button("Importar captura", async () => {
+      await startNew();
+      host.querySelector(".capture-import > button")?.click();
+    });
+    capture.disabled = add.disabled;
+    controls.append(capture);
     const remove = button(
       "Eliminar seleccionados",
       async () => {
@@ -553,6 +564,8 @@
     announceCompanies();
   }
   async function editor() {
+    captureCleanup?.();
+    captureCleanup = null;
     const box = document.getElementById("client-product-editor");
     box.replaceChildren();
     if (!editing) return;
@@ -587,6 +600,26 @@
             : "Nuevo producto contratado",
       ),
     );
+    if (!editing.id && !editing.is_apex && window.ProductCapture) {
+      captureCleanup = window.ProductCapture.mount(form, {
+        client,
+        existing: rows,
+        current: () => ticket === epoch && selectedProduct === editing,
+        onDraft: (draft) => {
+          editing = draft;
+          editor();
+        },
+      });
+    }
+    if (editing._capture) {
+      form.append(
+        node(
+          "p",
+          "Borrador desde captura · Revisa todos los campos. Completa la fecha de firma y el multiplicador que correspondía entonces.",
+          "capture-note",
+        ),
+      );
+    }
     const conditions = node("section", undefined, "product-conditions");
     const apex = !!editing.is_apex;
     const parent = apex ? rows.find((r) => r.id === editing.parent_product_id) : null;
@@ -612,14 +645,16 @@
       grid,
       "Tipo de aportación",
       "payment_type",
-      editing.payment_type || "monthly",
+      editing._capture ? editing.payment_type : editing.payment_type || "monthly",
       {
         options: [
+          ...(editing._capture ? [["", "Selecciona la periodicidad"]] : []),
           ["monthly", "Mensual · €/mes"],
           ["single", "Aportación única"],
         ],
       },
     );
+    payment.required = true;
     if (apex) {
       payment.value = "single";
       payment.disabled = true;
@@ -665,10 +700,10 @@
       signature,
       "Fecha de firma",
       "signed_on",
-      editing.id ? editing.signed_on : today,
+      editing._capture ? "" : editing.id ? editing.signed_on : today,
       { type: "date" },
     );
-    signed.required = apex;
+    signed.required = apex || !!editing._capture;
     signed.min = apex && parent?.signed_on ? parent.signed_on : "2000-01-01";
     signed.max = today;
     window.DatePicker.mount(signed);
@@ -680,10 +715,10 @@
       signature,
       "Tu multiplicador al firmar",
       "signed_multiplier",
-      editing.id ? editing.signed_multiplier : me.multiplier,
+      editing._capture ? "" : editing.id ? editing.signed_multiplier : me.multiplier,
       { options: multipliers },
     );
-    multiplier.required = apex;
+    multiplier.required = apex || !!editing._capture;
     signature.append(
       node(
         "p",
@@ -694,12 +729,27 @@
     );
     conditions.append(signature);
     form.append(conditions);
+    if (editing._capture) {
+      const confirmation = node("label", undefined, "capture-confirm");
+      const checkbox = node("input");
+      checkbox.type = "checkbox";
+      checkbox.required = true;
+      confirmation.append(
+        checkbox,
+        document.createTextNode(
+          "He revisado los datos importados, la fecha de firma y el multiplicador histórico.",
+        ),
+      );
+      form.append(confirmation);
+    }
     const actions = node("div", undefined, "contract-actions"),
       save = node("button", apex ? "Guardar APEX" : "Guardar producto", "btn");
     save.type = "submit";
     actions.append(
       save,
       button("Cancelar", () => {
+        captureCleanup?.();
+        captureCleanup = null;
         editing = null;
         host.dataset.editing = "false";
         box.replaceChildren();
@@ -729,7 +779,7 @@
       const selection = picker.read(Object.fromEntries(new FormData(form)));
       const pias = /pias/i.test(selection.product || "");
       const monthly = !apex && payment.value === "monthly";
-      signed.required = apex || (pias && !monthly);
+      signed.required = apex || !!editing._capture || (pias && !monthly);
       amount.min = apex ? "600" : "0.01";
       amount.max = pias ? (monthly ? "666" : "8000") : "100000000";
       amount.setCustomValidity("");
@@ -808,7 +858,8 @@
       budgetVersion++;
       const selection = picker.read(Object.fromEntries(new FormData(form)));
       const pias = /pias/i.test(selection.product || "");
-      signed.required = apex || (pias && payment.value === "single");
+      signed.required =
+        apex || !!editing._capture || (pias && payment.value === "single");
       amount.min = apex ? "600" : "0.01";
       amount.max = pias
         ? !apex && payment.value === "monthly"

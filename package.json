@@ -5,6 +5,7 @@
   "description": "Portfolio estático y panel privado de consultores",
   "scripts": {
     "start": "node server.cjs",
+    "test:capturas": "node tests/product-capture.cjs && node tests/capture-recovery.cjs",
     "test": "node tests/profile-flow.cjs && node tests/profile-permissions.cjs && node tests/invitations.cjs && node tests/team-permissions.cjs && node tests/clients-permissions.cjs && node tests/clients-flow.cjs && node tests/premeeting-permissions.cjs && node tests/premeeting-flow.cjs && node tests/resources-permissions.cjs && node tests/resources-flow.cjs && node tests/client-products-permissions.cjs && node tests/backend-cache.cjs && node tests/career-progress.cjs && node tests/career-privacy.cjs && node tests/unit-statistics.cjs && node tests/client-workspace.cjs && node tests/client-trash.cjs && node tests/client-apex.cjs && node tests/automatic-signatures.cjs && node tests/presence-flow.cjs && node tests/offices-referrals.cjs && node tests/panel-intelligence.cjs && node tests/responsive-audit.cjs && node tests/client-design.cjs && node tests/connection-history.cjs && node tests/connection-panel-flow.cjs"
   },
   "devDependencies": {
