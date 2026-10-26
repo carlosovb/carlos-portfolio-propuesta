@@ -98,6 +98,8 @@ html[data-theme="dark"] .clients-workspace {
   max-width: none;
   padding: 30px 28px;
   min-width: 0;
+  margin: 0;
+  align-self: start;
 }
 .clients-workspace .panel-heading {
   margin: 0 0 6px;
@@ -1707,4 +1709,292 @@ html[data-theme="dark"] #client-detail-dialog .contract-chevron {
   min-height: 30px;
   padding: 0 5px;
   color: var(--accent);
+}
+/* Correcciones de controles y densidad: 26/10/2026. */
+.clients-workbar .clients-search {
+  position: relative;
+}
+.clients-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 19px;
+  height: 19px;
+  pointer-events: none;
+}
+html[data-theme="dark"] .clients-search-icon {
+  filter: invert(80%);
+}
+#client-detail-dialog .contract-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  column-gap: 10px;
+  padding: 14px 0;
+}
+#client-detail-dialog .contract-card > input {
+  position: static;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  justify-self: center;
+  width: 18px;
+  height: 18px;
+  margin: 13px 0 0;
+}
+#client-detail-dialog .contract-copy {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+#clients-table-wrap[data-view="cards"]
+  .client-company-mark[data-company="axa"]
+  .client-brand-icon,
+#client-detail-dialog .contract-brand-icon[data-company="axa"] {
+  background: none;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark[data-company="axa"] img,
+#client-detail-dialog .contract-brand-icon[data-company="axa"] img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0;
+  filter: none;
+}
+/* Lista y Compacta usan filas: identidad, contacto y compañías comparten espacio. */
+#clients-table-wrap:not([data-view="cards"]) .clients-table,
+#clients-table-wrap:not([data-view="cards"]) tbody {
+  display: block;
+}
+#clients-table-wrap:not([data-view="cards"]) thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+#clients-table-wrap:not([data-view="cards"]) tr {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 70px 30px;
+  grid-template-rows: auto auto auto;
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 12px;
+  min-height: 98px;
+}
+#clients-table-wrap:not([data-view="cards"]) td {
+  display: block;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-select-cell {
+  grid-column: 1;
+  grid-row: 1/4;
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-select-cell input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-identity {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 30px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-monogram {
+  display: grid;
+  place-items: center;
+  float: none;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  margin: 0;
+  font-size: 12px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-identity > span:last-child {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 7px;
+  min-width: 0;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-identity strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-category {
+  margin: 0;
+  padding: 2px 5px;
+  font-size: 9px;
+  line-height: 1.3;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-contact {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 9px;
+  font-size: 11px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-contact small {
+  display: inline;
+  font-size: 10px;
+  margin: 0;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-locality {
+  grid-column: 2;
+  grid-row: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 7px;
+  color: var(--muted);
+  font-size: 10px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-locality > small {
+  display: none;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-company-marks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-company-mark {
+  font-size: 9px;
+  padding: 2px 5px;
+  line-height: 1.2;
+  gap: 4px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-company-mark .client-brand-icon {
+  display: none;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-portfolio {
+  grid-column: 3;
+  grid-row: 1/4;
+  align-self: center;
+  min-width: 0;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-portfolio-summary {
+  gap: 3px;
+  text-align: right;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-portfolio-summary strong {
+  font-size: 16px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-portfolio-summary small {
+  font-size: 10px;
+  line-height: 1.3;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-state {
+  display: none;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-action {
+  grid-column: 4;
+  grid-row: 1/4;
+  align-self: center;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-action button {
+  display: block;
+  width: 30px;
+  height: 34px;
+  min-height: 34px;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  border-radius: 50%;
+  background: transparent url("../assets/icons/chevron-down.svg") center/16px no-repeat;
+  transform: rotate(-90deg);
+}
+html[data-theme="dark"]
+  #clients-table-wrap:not([data-view="cards"])
+  .client-action
+  button {
+  filter: invert(85%);
+}
+#clients-table-wrap[data-view="compact"] tr {
+  min-height: 72px;
+  padding: 9px 12px;
+  row-gap: 3px;
+}
+#clients-table-wrap[data-view="compact"] .client-identity {
+  min-height: 0;
+}
+#clients-table-wrap[data-view="compact"] .client-monogram,
+#clients-table-wrap[data-view="compact"] .client-contact small {
+  display: none;
+}
+#clients-table-wrap[data-view="compact"] .client-identity strong {
+  font-size: 12px;
+}
+#clients-table-wrap[data-view="compact"] .client-portfolio-summary strong {
+  font-size: 14px;
+}
+@media (max-width: 550px) {
+  #clients-table-wrap:not([data-view="cards"]) tr {
+    grid-template-columns: 20px minmax(0, 1fr) 49px 25px;
+    column-gap: 7px;
+    padding: 10px 8px;
+  }
+  #clients-table-wrap:not([data-view="cards"]) .client-action button {
+    width: 25px;
+  }
+  #clients-table-wrap:not([data-view="cards"]) .client-identity {
+    gap: 6px;
+  }
+  #clients-table-wrap:not([data-view="cards"]) .client-identity strong {
+    font-size: 12px;
+  }
+  #clients-table-wrap:not([data-view="cards"]) .client-monogram {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    font-size: 10px;
+  }
+  #clients-table-wrap:not([data-view="cards"]) .client-portfolio-summary strong {
+    font-size: 13px;
+  }
+  #clients-table-wrap:not([data-view="cards"]) .client-portfolio-summary small {
+    font-size: 9px;
+  }
+  #clients-table-wrap[data-view="compact"] tr {
+    min-height: 74px;
+  }
+}
+#clients-table-wrap:not([data-view="cards"]) .client-portfolio {
+  grid-row: 1/3;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-state {
+  display: block;
+  grid-column: 3;
+  grid-row: 3;
+  text-align: right;
+  align-self: center;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-status {
+  font-size: 9px;
+  line-height: 1.2;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+#clients-table-wrap:not([data-view="cards"]) .client-identity strong {
+  font-size: 14px;
+}
+#clients-table-wrap[data-view="compact"] .client-identity strong {
+  font-size: 13px;
 }

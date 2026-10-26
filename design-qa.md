@@ -65,3 +65,12 @@ Ambos motores aprobaron la ficha lateral, su conversión a modal, cambio de clie
 Se abrieron e inspeccionaron `client-live-comparison.png`, `client-live-focus.png` y `client-live-detail-focus.png` con la referencia al lado en cada imagen. También se generaron las capturas publicadas con prefijo `client-live-webkit-`. La prueba publicada de Chromium comenzó con Compacta para reproducir el problema de una vista guardada y luego seleccionó explícitamente Tarjetas.
 
 La consulta de verificación de la base de datos confirmó `default_cards: true` y la conservación de la preferencia Compacta existente. El cambio personal de esa preferencia continúa pendiente de la autorización solicitada al titular; el acceso «Ver tarjetas» permite elegirla expresamente desde la interfaz. No se ha cambiado ninguna elección personal sin autorización.
+
+## Correcciones de controles — 26/10/2026
+
+- La lupa es ahora el SVG Search de Tabler, centrado al 50 % respecto al campo.
+- Lista y Compacta usan filas de aproximadamente 98 y 72 px en la referencia de prueba, conservando selección, estado, contacto, compañías y unidades. La cabecera permanece arriba al cambiar de vista: se elimina el margen vertical automático.
+- La selección del producto tiene una columna de 22 px y un espacio de 10 px antes del título.
+- Se utiliza `axa-official.svg`, extraído de la cabecera oficial de https://www.axa.es/ el 26/10/2026, sin redibujar ni recolorear. Conserva el fondo azul, el texto blanco y la diagonal roja. El catálogo compartido lo utiliza en tarjetas, ficha, selector y recursos.
+
+El test de diseño mide el centrado de la lupa (máximo 1 px de desviación), la altura de las filas (Lista hasta 130 px y Compacta hasta 100 px en escritorio), la estabilidad de la cabecera, la separación de la casilla y la carga del logo sin filtros. Capturas: `client-design-density-list.png`, `client-design-density-compact.png`, `client-design-axa-logo.png`, `client-design-product-selection.png`; los equivalentes publicados usan `client-live-`. Se comprueban Chromium, WebKit y tamaños móviles. La vista personal guardada se conserva.

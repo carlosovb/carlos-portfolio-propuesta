@@ -156,8 +156,53 @@ const contracts = [
     await page.screenshot({ path: path.join(dir, prefix + "-initial.png") });
     if ((await page.locator("#clients-table-wrap").getAttribute("data-view")) !== "cards")
       await page.locator('[data-client-view="cards"]').click();
+    const searchIcon = await page.locator(".clients-search-icon").boundingBox();
+    const searchField = await page.locator("#clients-search").boundingBox();
+    assert(
+      Math.abs(
+        searchIcon.y + searchIcon.height / 2 - searchField.y - searchField.height / 2,
+      ) <= 1,
+      "Lupa centrada verticalmente",
+    );
+    const directoryHeadingTop = (await page.locator('.panel-heading h1').boundingBox()).y;
+    for (const view of ["list", "compact"]) {
+      await page.locator('[data-client-view="' + view + '"]').click();
+      const row = await page.locator("#clients-list tr").first().boundingBox();
+      assert(
+        row.height <= (view === "compact" ? 100 : 130),
+        view + ": filas densas, sin altura de tarjetas",
+      );
+      assert(Math.abs((await page.locator('.panel-heading h1').boundingBox()).y - directoryHeadingTop) < 1, 'Cambiar de vista no centra verticalmente la página');
+      await page.screenshot({
+        path: path.join(dir, prefix + "-density-" + view + ".png"),
+      });
+    }
+    await page.locator('[data-client-view="cards"]').click();
     await page.locator("#clients-list .client-identity").first().click();
     await page.locator(".contract-company").first().waitFor();
+    const productCheckbox = await page
+      .locator(".contract-card > input")
+      .first()
+      .boundingBox();
+    const productName = await page.locator(".contract-summary h5").first().boundingBox();
+    assert(
+      productName.x >= productCheckbox.x + productCheckbox.width + 8,
+      "La selección del producto tiene su propia columna",
+    );
+    const axaLogo = page.locator('.contract-brand-icon[data-company="axa"] img');
+    assert.match(await axaLogo.getAttribute("src"), /axa-official\.svg$/);
+    assert.equal(
+      await axaLogo.evaluate((img) => getComputedStyle(img).filter),
+      "none",
+      "AXA conserva los colores oficiales",
+    );
+    await page
+      .locator(".contract-company-heading")
+      .first()
+      .screenshot({ path: path.join(dir, prefix + "-axa-logo.png") });
+    await page.locator('.contract-card > input').first().check();
+    await page.locator('.contract-card').first().screenshot({path:path.join(dir,prefix+'-product-selection.png')});
+    await page.locator('.contract-card > input').first().uncheck();
     await page.locator(".contract-summary").first().click();
     await page.getByRole("button", { name: "Editar", exact: true }).first().click();
     await page.locator(".contract-editor [name=amount]").waitFor();

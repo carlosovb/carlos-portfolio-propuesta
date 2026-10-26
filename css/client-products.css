@@ -1300,3 +1300,10 @@ html[data-theme="dark"] .product-choice-copy img {
     transition: none;
   }
 }
+/* El SVG oficial de AXA conserva su fondo y sus colores originales. */
+html[data-theme="dark"] .resource-company[data-company="axa"] img,
+html[data-theme="dark"] .resource-company-identity[data-company="axa"] img,
+html[data-theme="dark"] .product-choice-copy img[data-company="axa"],
+html[data-theme="dark"] .contract-company-heading img[data-company="axa"] {
+  filter: none;
+}
