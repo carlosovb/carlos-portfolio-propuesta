@@ -80,6 +80,7 @@ const root = path.resolve(__dirname, ".."),
       return json(true);
     }
     if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
+    if (url.pathname.endsWith("/rpc/update_panel_connection_presence")) return json({people:[],events:[]});
     if (url.pathname === "/auth/v1/token")
       return json({
         access_token: "fake",

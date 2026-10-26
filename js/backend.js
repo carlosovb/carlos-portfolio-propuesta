@@ -53,6 +53,8 @@
         "get_career_progress",
         "get_my_clients_without_products",
         "update_panel_presence",
+        "update_panel_connection_presence",
+        "get_panel_connection_activity",
         "get_panel_presence",
         "get_panel_activity",
         "get_panel_notifications",
@@ -507,6 +509,21 @@
           signal: AbortSignal.timeout(5000),
         })
       ).json();
+    },
+    async updateConnectionPresence(sessionId, connected) {
+      try {
+        return (
+          await authenticated("/rest/v1/rpc/update_panel_connection_presence", {
+            method: "POST",
+            body: JSON.stringify({ p_session: sessionId, p_connected: connected }),
+            keepalive: !connected,
+            signal: AbortSignal.timeout(5000),
+          })
+        ).json();
+      } catch (error) {
+        if (error.status !== 404) throw error;
+        return this.updatePresence(sessionId, connected);
+      }
     },
     async clientsWithoutProducts() {
       return (

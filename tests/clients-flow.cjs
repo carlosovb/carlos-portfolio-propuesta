@@ -267,6 +267,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
         });
       }
       if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
+      if (url.pathname.endsWith("/rpc/update_panel_connection_presence")) return json({people:[],events:[]});
       if (url.pathname.endsWith("/rpc/get_my_team_profile"))
         return json({
           user_id: uid,

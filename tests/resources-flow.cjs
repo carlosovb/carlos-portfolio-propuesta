@@ -63,6 +63,8 @@ const server = http.createServer((req, res) => {
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
     if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
+    if (url.pathname.endsWith("/rpc/update_panel_connection_presence"))
+      return json({ people: [], events: [] });
     if (url.pathname === "/auth/v1/token")
       return json({
         access_token: "fake",
@@ -234,6 +236,22 @@ const server = http.createServer((req, res) => {
       path: path.join(process.env.TEMP, "company-gallery.png"),
       fullPage: true,
     });
+    const axaResourceLogo = page.locator('.resource-company[data-company="axa"] img');
+    assert.match(
+      await axaResourceLogo.getAttribute("src"),
+      /axa\.png$/,
+      "Herramientas conserva el logo transparente",
+    );
+    await page.evaluate(() => (document.documentElement.dataset.theme = "dark"));
+    assert.match(
+      await axaResourceLogo.evaluate((img) => getComputedStyle(img).filter),
+      /brightness/,
+    );
+    await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
+    assert.equal(
+      await axaResourceLogo.evaluate((img) => getComputedStyle(img).filter),
+      "none",
+    );
     await page.locator('.resource-company[data-company="axa"]').hover();
     await page.waitForTimeout(400);
     assert.equal(

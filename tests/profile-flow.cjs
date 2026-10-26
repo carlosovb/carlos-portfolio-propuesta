@@ -114,6 +114,7 @@ async function mock(context, state) {
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
     if (url.pathname.endsWith("/rpc/save_client_view_preference")) return json(null);
     if (url.pathname.endsWith("/rpc/update_panel_presence")) return json([]);
+    if (url.pathname.endsWith("/rpc/update_panel_connection_presence")) return json({people:[],events:[]});
     if (url.pathname.endsWith("/rpc/get_my_office"))
       return json({
         office_code: state.office || "LPA1",

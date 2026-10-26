@@ -115,6 +115,7 @@
       "team-member-manager",
       "team-member-office",
       "team-member-since",
+      "team-member-connection",
       "team-member-reports",
       "team-member-clients",
       "team-member-interested",
@@ -288,6 +289,9 @@
     get("team-member-multiplier").textContent = multiplier(member.multiplier);
     get("team-member-office").textContent = member.office_code || "Pendiente de indicar";
     get("team-member-since").textContent = formatStartDate(member.consultant_since);
+    get("team-member-connection").replaceChildren(
+      ...(window.PanelPresence ? [window.PanelPresence.details(member.user_id)] : []),
+    );
     const manager = members.find((person) => person.user_id === member.manager_id);
     get("team-member-manager").textContent = member.is_root
       ? "Responsable principal · Raíz del equipo"

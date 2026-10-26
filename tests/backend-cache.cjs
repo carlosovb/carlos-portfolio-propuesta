@@ -73,6 +73,8 @@ const vm = require("node:vm"),
       if (path.endsWith("/get_career_progress"))
         return json({ user_id: body.p_user_id, counts: {}, units_available: false });
       if (path.endsWith("/update_panel_presence")) return json([]);
+      if (path.endsWith("/update_panel_connection_presence"))
+        return json({ people: [], events: [] });
       if (path.endsWith("/client_products"))
         return json([{ id: "11111111-1111-4111-8111-111111111111" }]);
       if (path.endsWith("/logout")) return json({});
@@ -103,6 +105,13 @@ const vm = require("node:vm"),
   await b.updatePresence("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", true);
   await b.updatePresence("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", true);
   assert.equal(count("rpc/update_panel_presence"), 2, "Presence is never cached");
+  await b.updateConnectionPresence("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", true);
+  await b.updateConnectionPresence("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", true);
+  assert.equal(
+    count("rpc/update_panel_connection_presence"),
+    2,
+    "El historial de conexiones no se cachea",
+  );
   await b.listClients();
   assert.equal(count("rpc/search_my_clients"), 1, "Presence updates preserve data cache");
   b.invalidateCache();

@@ -146,7 +146,10 @@
         brand = window.PortfolioCompanies.find(company);
       if (brand) {
         const img = node("img");
-        img.src = new URL("assets/companies/" + brand.logo, applicationRoot).href;
+        img.src = new URL(
+          "assets/companies/" + (brand.resourceLogo || brand.logo),
+          applicationRoot,
+        ).href;
         img.alt = "";
         img.style.viewTransitionName = "company-logo-" + brand.id;
         identity.dataset.company = brand.id;
@@ -182,7 +185,10 @@
           const brand = !company && window.PortfolioCompanies.find(name);
           if (brand) {
             const img = node("img");
-            img.src = new URL("assets/companies/" + brand.logo, applicationRoot).href;
+            img.src = new URL(
+              "assets/companies/" + (brand.resourceLogo || brand.logo),
+              applicationRoot,
+            ).href;
             img.alt = "";
             img.style.viewTransitionName = "company-logo-" + brand.id;
             img.width = brand.id === "axa" ? 160 : 280;

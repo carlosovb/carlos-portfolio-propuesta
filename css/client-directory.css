@@ -1998,3 +1998,11 @@ html[data-theme="dark"]
 #clients-table-wrap[data-view="compact"] .client-identity strong {
   font-size: 13px;
 }
+/* El bloque de compañía queda centrado en cada tarjeta de cliente. */
+#clients-table-wrap[data-view="cards"] .client-company-marks {
+  align-items: center;
+}
+#clients-table-wrap[data-view="cards"] .client-company-mark {
+  justify-content: center;
+  max-width: 100%;
+}

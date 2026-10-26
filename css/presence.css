@@ -145,3 +145,134 @@ html[data-theme="light"] .presence-role[data-position="zone_coordinator"] {
   box-sizing: border-box;
   max-width: min(340px, calc(100vw - 40px));
 }
+/* Registro de conexiones, integrado en Inicio y Equipo. */
+.presence-list {
+  width: min(420px, calc(100vw - 40px));
+  max-width: calc(100vw - 40px);
+  max-height: min(480px, 65dvh);
+  padding: 12px;
+}
+.presence-tabs {
+  display: flex;
+  gap: 4px;
+  position: sticky;
+  top: -12px;
+  background: var(--panel);
+  padding: 6px 0 10px;
+  z-index: 1;
+}
+.presence-tabs button {
+  flex: 1;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  background: none;
+  white-space: nowrap;
+}
+.presence-tabs button[aria-pressed="true"] {
+  border-color: var(--line);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+}
+.presence-body {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+.presence-body .presence-person,
+.presence-event {
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.presence-body .presence-person:last-child,
+.presence-event:last-child {
+  border-bottom: 0;
+}
+.presence-person-state[data-state="online"] {
+  color: #50c99b;
+}
+.presence-person-time {
+  line-height: 1.6;
+}
+.presence-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  font-size: 12px;
+}
+.presence-event > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.presence-event strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.presence-event[data-kind="connected"] > div > span {
+  color: #50c99b;
+}
+.presence-event[data-kind="disconnected"] > div > span {
+  color: var(--accent);
+}
+.presence-event time,
+.presence-event small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.presence-empty,
+.presence-footnote {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 8px 0;
+}
+.presence-footnote {
+  padding-top: 10px;
+}
+.presence-latest-change {
+  display: block;
+  max-width: 530px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.presence-latest-change[hidden] {
+  display: none;
+}
+.team-presence .presence-latest-change {
+  display: none;
+}
+.presence-detail {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.presence-last-connection {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+html[data-theme="light"] .presence-person-state[data-state="online"],
+html[data-theme="light"] .presence-event[data-kind="connected"] > div > span {
+  color: #237350;
+}
+@media (max-width: 550px) {
+  .presence-tabs button {
+    font-size: 10px;
+    padding: 5px 4px;
+    min-height: 40px;
+  }
+  .presence-list {
+    width: min(360px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+  }
+}

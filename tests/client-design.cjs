@@ -164,7 +164,7 @@ const contracts = [
       ) <= 1,
       "Lupa centrada verticalmente",
     );
-    const directoryHeadingTop = (await page.locator('.panel-heading h1').boundingBox()).y;
+    const directoryHeadingTop = (await page.locator(".panel-heading h1").boundingBox()).y;
     for (const view of ["list", "compact"]) {
       await page.locator('[data-client-view="' + view + '"]').click();
       const row = await page.locator("#clients-list tr").first().boundingBox();
@@ -172,7 +172,12 @@ const contracts = [
         row.height <= (view === "compact" ? 100 : 130),
         view + ": filas densas, sin altura de tarjetas",
       );
-      assert(Math.abs((await page.locator('.panel-heading h1').boundingBox()).y - directoryHeadingTop) < 1, 'Cambiar de vista no centra verticalmente la página');
+      assert(
+        Math.abs(
+          (await page.locator(".panel-heading h1").boundingBox()).y - directoryHeadingTop,
+        ) < 1,
+        "Cambiar de vista no centra verticalmente la página",
+      );
       await page.screenshot({
         path: path.join(dir, prefix + "-density-" + view + ".png"),
       });
@@ -180,6 +185,21 @@ const contracts = [
     await page.locator('[data-client-view="cards"]').click();
     await page.locator("#clients-list .client-identity").first().click();
     await page.locator(".contract-company").first().waitFor();
+    const companiesInCard = page
+      .locator("#clients-list tr")
+      .first()
+      .locator(".client-company-marks");
+    const companyBounds = await companiesInCard
+      .locator(".client-company-mark")
+      .first()
+      .boundingBox();
+    const companyArea = await companiesInCard.boundingBox();
+    assert(
+      Math.abs(
+        companyBounds.x + companyBounds.width / 2 - companyArea.x - companyArea.width / 2,
+      ) <= 1,
+      "Compañía centrada en la tarjeta",
+    );
     const productCheckbox = await page
       .locator(".contract-card > input")
       .first()
@@ -200,9 +220,12 @@ const contracts = [
       .locator(".contract-company-heading")
       .first()
       .screenshot({ path: path.join(dir, prefix + "-axa-logo.png") });
-    await page.locator('.contract-card > input').first().check();
-    await page.locator('.contract-card').first().screenshot({path:path.join(dir,prefix+'-product-selection.png')});
-    await page.locator('.contract-card > input').first().uncheck();
+    await page.locator(".contract-card > input").first().check();
+    await page
+      .locator(".contract-card")
+      .first()
+      .screenshot({ path: path.join(dir, prefix + "-product-selection.png") });
+    await page.locator(".contract-card > input").first().uncheck();
     await page.locator(".contract-summary").first().click();
     await page.getByRole("button", { name: "Editar", exact: true }).first().click();
     await page.locator(".contract-editor [name=amount]").waitFor();

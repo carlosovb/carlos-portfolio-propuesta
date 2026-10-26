@@ -74,3 +74,11 @@ La consulta de verificación de la base de datos confirmó `default_cards: true`
 - Se utiliza `axa-official.svg`, extraído de la cabecera oficial de https://www.axa.es/ el 26/10/2026, sin redibujar ni recolorear. Conserva el fondo azul, el texto blanco y la diagonal roja. El catálogo compartido lo utiliza en tarjetas, ficha, selector y recursos.
 
 El test de diseño mide el centrado de la lupa (máximo 1 px de desviación), la altura de las filas (Lista hasta 130 px y Compacta hasta 100 px en escritorio), la estabilidad de la cabecera, la separación de la casilla y la carga del logo sin filtros. Capturas: `client-design-density-list.png`, `client-design-density-compact.png`, `client-design-axa-logo.png`, `client-design-product-selection.png`; los equivalentes publicados usan `client-live-`. Se comprueban Chromium, WebKit y tamaños móviles. La vista personal guardada se conserva.
+
+## Conexiones y ajustes de compañía — 26/10/2026
+
+Se revisaron visualmente Inicio, el indicador de conexiones y la ficha de consultor con datos ficticios. Capturas: `connections-panel-home.png`, `connections-panel-team-320.png`, `connections-panel-consultant.png`. Los controles mantienen el estilo del panel y no se desbordan a 320 px. Se verificó también en WebKit.
+
+En Clientes, el bloque logo/nombre se centra dentro de cada tarjeta; una prueba compara ambos centros con una tolerancia de 1 px. En Herramientas y recursos, AXA vuelve al PNG transparente `axa.png`, blanco en oscuro y en color en claro, independiente del SVG de Clientes. `resources-flow.cjs` verifica la separación de archivos y ambos filtros de tema.
+
+La suite completa del proyecto pasó con los nuevos tests de conexiones, además de las pruebas de diseño en Chromium y WebKit. No se modifican preferencias de vista guardadas ni datos financieros o de clientes.

@@ -5,6 +5,7 @@
       id: "axa",
       name: "AXA",
       logo: "axa-official.svg",
+      resourceLogo: "axa.png",
       products: [
         {
           id: "pias-proyecto-futuro",
