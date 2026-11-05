@@ -67,28 +67,20 @@ html:has(.login-loading[open]) { overflow: hidden; }
 }
 
 .login-loading-mark {
-  display: block;
-  width: clamp(106px, min(31vw, 34vh), 166px);
-  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+  font-size: clamp(42px, min(11vw, 14vh), 62px);
+  line-height: 1.65;
+  /* Escalar las medidas del monograma de escritorio, de 80 × 76 px a 31 px de letra. */
+  width: calc(80em / 31);
+  height: calc(76em / 31);
+  letter-spacing: calc(-2em / 31);
   margin: clamp(14px, 3vh, 28px) 0 0;
-  border: 1px solid var(--line);
-  border-radius: 24%;
-  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
-  box-shadow: 5px 5px 0 color-mix(in srgb, var(--accent) 35%, transparent);
-}
-
-.login-loading-letter {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 8;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-}
-
-.login-loading-dot {
-  fill: var(--accent);
-  transform-box: fill-box;
-  transform-origin: center;
+  padding: 0;
+  border-width: calc(1em / 31);
+  border-radius: calc(13em / 31);
 }
 
 .login-loading-rule {
@@ -128,16 +120,12 @@ html:has(.login-loading[open]) { overflow: hidden; }
     animation: login-content-in 440ms cubic-bezier(.2, .7, .25, 1) 160ms both;
   }
 
-  .login-loading.is-entering .login-loading-letter {
-    animation: login-letter 460ms cubic-bezier(.3, .1, .2, 1) 235ms both;
+  .login-loading.is-entering .login-loading-mark {
+    animation: login-mark-in 420ms cubic-bezier(.2, .7, .25, 1) 235ms both;
   }
 
-  .login-loading.is-entering .login-loading-letter + .login-loading-letter {
-    animation-delay: 335ms;
-  }
-
-  .login-loading.is-entering .login-loading-dot {
-    animation: login-dot 220ms ease-out 660ms both;
+  .login-loading.is-entering .login-loading-mark > span {
+    animation: login-dot 220ms ease-out 600ms both;
   }
 
   .login-loading.is-greeting .login-loading-message {
@@ -173,15 +161,14 @@ html:has(.login-loading[open]) { overflow: hidden; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes login-letter {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
+@keyframes login-mark-in {
+  from { opacity: 0; transform: scale(.88); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes login-dot {
-  from { opacity: 0; transform: scale(.3); }
-  70% { opacity: 1; transform: scale(1.18); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes login-content-out {
