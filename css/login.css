@@ -1,0 +1,126 @@
+.login-layout {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: #eeeae2;
+  color: #102e2e;
+  font-family: "Inter Panel", "Segoe UI", sans-serif;
+}
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 28px;
+  background: #fffdf8;
+  border: 1px solid #dedbd0;
+  border-radius: 22px;
+  box-shadow: 0 18px 46px #102e2e16;
+}
+.login-header {
+  --login-copper: #f5d3af;
+  margin: -28px -28px 0;
+  padding: 26px 28px 28px;
+  border-radius: 21px 21px 0 0;
+  border-bottom: 3px solid #c79468;
+  background: linear-gradient(125deg, #102e2e, #20534a);
+  color: #fffaf0;
+}
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  color: var(--login-copper);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.login-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.login-heading .login-brand { margin: 0; }
+.login-heading .login-logo {
+  flex: none;
+  margin: 0;
+  color: #fffaf0;
+}
+.login-heading .login-logo span { color: var(--login-copper); }
+.login-heading .login-theme {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: #fffaf0;
+  border: 1px solid #ffffff55;
+  border-radius: 50%;
+  background: #ffffff0d;
+  cursor: pointer;
+}
+.login-heading .login-theme:hover { background: #ffffff24; }
+.login-header :focus-visible { outline-color: var(--login-copper); }
+.login-card #login-title {
+  margin: 0;
+  color: inherit;
+  font: 750 clamp(25px, 5vw, 33px)/1.12 "Inter Panel", "Segoe UI", sans-serif;
+  letter-spacing: -.045em;
+}
+.login-description { margin: 10px 0 0; color: #cedbd4; font-size: 14px; }
+.login-layout #login-form { gap: 0; margin-top: 20px; }
+.login-layout label { margin: 0 0 8px; font-size: 14px; font-weight: 700; }
+.login-layout input { width: 100%; min-height: 50px; margin: 0 0 18px; border: 1px solid #aebbb2; border-radius: 10px; background: #f1f1ea; color: #102e2e; color-scheme: light; }
+.login-layout input::placeholder { color: #50635c; opacity: 1; }
+.login-password { position: relative; }
+.login-password input { margin: 0; padding-right: 94px; }
+#login-password-toggle { position: absolute; inset: 3px 4px 3px auto; padding: 0 11px; border: 0; border-radius: 7px; background: transparent; color: #155047; font: 700 13px "Segoe UI", sans-serif; cursor: pointer; }
+.login-recover { width: fit-content; padding-block: 10px; color: #155047; font-size: 13px; font-weight: 650; }
+.login-recover { margin: 6px 0 10px; }
+.login-recover:hover { text-decoration: underline; }
+.login-layout #login-button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 10px 16px; border: 0; border-radius: 10px; background: #155047; color: #fff; font: inherit; font-weight: 750; text-align: left; cursor: pointer; }
+.login-layout #login-button:hover:not(:disabled) { background: #20675b; }
+.login-layout #login-notice { background: #e6efe8; color: #102e2e; border-color: #357566; }
+.login-layout :focus-visible { outline: 3px solid #0b7668; outline-offset: 3px; }
+
+@media (max-width: 380px) {
+  .login-card { padding: 20px; }
+  .login-header { margin: -20px -20px 0; padding: 22px 20px; }
+}
+
+[data-theme="dark"] .login-layout { background: #101b29; color: #f7efe3; }
+[data-theme="dark"] .login-card { background: #172536; border-color: #344557; }
+[data-theme="dark"] .login-header { background: linear-gradient(125deg, #112c30, #183c39); }
+[data-theme="dark"] .login-layout input {
+  background: #101c2b;
+  border-color: #485b6b;
+  color: #f7efe3;
+  color-scheme: dark;
+}
+[data-theme="dark"] .login-layout input::placeholder { color: #b1bfca; }
+[data-theme="dark"] .login-layout #login-password-toggle,
+[data-theme="dark"] .login-recover { color: #b8e4d4; }
+[data-theme="dark"] .login-layout #login-button { background: #a8d9c6; color: #102e2e; }
+[data-theme="dark"] .login-layout #login-button:hover:not(:disabled) { background: #bce8d7; }
+[data-theme="dark"] .login-layout #login-notice { background: #203a3d; color: #e3f1eb; }
+[data-theme="dark"] .login-layout :focus-visible { outline-color: #a8d9c6; }
+
+.portfolio-handoff-status { display: none; }
+.portfolio-handoff #login-screen { display: none; }
+.portfolio-handoff .portfolio-handoff-status {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: #eeeae2;
+  color: #102e2e;
+}
+[data-theme="dark"].portfolio-handoff .portfolio-handoff-status {
+  background: #101b29;
+  color: #f7efe3;
+}

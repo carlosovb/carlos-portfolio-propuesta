@@ -71,7 +71,7 @@
         return;
       }
       message("Acceso correcto. Abriendo tu panel…");
-      window.location.assign(new URL("panel/", document.baseURI).href);
+      window.location.assign(new URL("panel/?acceso=portfolio", document.baseURI).href);
     } catch {
       form.elements.password.value = "";
       await backend.signOut();

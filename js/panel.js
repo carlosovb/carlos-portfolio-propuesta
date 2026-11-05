@@ -217,7 +217,7 @@
     renderIdentity();
     window.PanelPresence?.start();
     const ticket = epoch;
-    setView(account?.profile_complete === false ? "profile" : "home").then(() => {
+    return setView(account?.profile_complete === false ? "profile" : "home").then(() => {
       if (active && ticket === epoch) window.PanelInsights?.start(account);
     });
   }
@@ -823,9 +823,10 @@
   );
   get("login-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!backend.ready || loggingOut) return;
+    if (!backend.ready || loggingOut || get("login-button").disabled) return;
     const form = event.currentTarget;
-    get("login-button").disabled = true;
+    const submit = get("login-button");
+    submit.disabled = true;
     notice("login-notice", "Comprobando acceso…");
     try {
       await backend.signIn(
@@ -833,7 +834,7 @@
         form.elements.password.value,
       );
       form.reset();
-      enterPanel();
+      await enterPanel();
     } catch {
       form.elements.password.value = "";
       notice(
@@ -841,7 +842,8 @@
         "No se ha podido acceder. Comprueba tus datos y que tu cuenta esté autorizada.",
       );
     } finally {
-      get("login-button").disabled = false;
+      submit.disabled = false;
+      get(active ? "panel-title" : "login-password").focus({ preventScroll: true });
     }
   });
 
@@ -961,40 +963,50 @@
     if (event.persisted) location.reload();
   });
 
-  const themeButton = document.querySelector(".theme");
+  const themeButtons = document.querySelectorAll("button.theme");
   let selectedTheme = document.documentElement.dataset.theme;
-  themeButton.addEventListener("click", () => {
-    const theme = selectedTheme === "dark" ? "light" : "dark";
-    selectedTheme = theme;
-    const render = () => {
-      document.documentElement.dataset.theme = theme;
-      themeButton.textContent = theme === "dark" ? "☀" : "☾";
-      themeButton.setAttribute(
-        "aria-label",
-        theme === "dark" ? "Activar modo claro" : "Activar modo oscuro",
-      );
-    };
-    if (window.transitionPortfolioTheme) window.transitionPortfolioTheme(render);
-    else render();
+  function renderTheme() {
+    document.documentElement.dataset.theme = selectedTheme;
+    const dark = selectedTheme === "dark";
+    themeButtons.forEach((button) => {
+      const label = dark ? "Activar modo claro" : "Activar modo oscuro";
+      button.textContent = dark ? "☀" : "☾";
+      button.setAttribute("aria-label", label);
+      button.title = label;
+    });
+  }
+  renderTheme();
+  themeButtons.forEach((button) => button.addEventListener("click", () => {
+    selectedTheme = selectedTheme === "dark" ? "light" : "dark";
+    if (window.transitionPortfolioTheme) window.transitionPortfolioTheme(renderTheme);
+    else renderTheme();
     try {
-      localStorage.setItem("carlos-theme", theme);
+      localStorage.setItem("carlos-theme", selectedTheme);
     } catch {}
-    themeButton.setAttribute(
-      "aria-label",
-      theme === "dark" ? "Activar modo claro" : "Activar modo oscuro",
-    );
-  });
+  }));
 
   // Acceso desde el formulario de la página principal, sin pedir la contraseña otra vez.
+  const handoff = document.documentElement.classList.contains("portfolio-handoff");
+  function finishHandoff() {
+    if (!handoff) return;
+    document.documentElement.classList.remove("portfolio-handoff");
+    const url = new URL(location.href);
+    url.searchParams.delete("acceso");
+    history.replaceState(history.state, "", url);
+    get(active ? "panel-title" : "login-email").focus({ preventScroll: true });
+  }
   if (backend.ready) {
     get("login-button").disabled = true;
     backend
       .resumePanelRedirect()
-      .then((restored) => {
-        if (restored) enterPanel();
+      .then(async (restored) => {
+        if (!restored) return;
+        await enterPanel();
       })
+      .catch(() => logout("No se ha podido abrir el panel. Vuelve a iniciar sesión."))
       .finally(() => {
+        finishHandoff();
         get("login-button").disabled = false;
       });
-  }
+  } else finishHandoff();
 })();

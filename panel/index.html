@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow, noarchive" />
     <meta name="referrer" content="no-referrer" />
-    <title>Mi panel · Carlos Caballero Dávila</title>
+    <title>Panel de consultores</title>
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg?v=cc1" />
     <script src="../js/theme-init.js?v=panel1"></script>
     <link rel="stylesheet" href="../css/base.css?v=panel1" />
@@ -29,48 +29,44 @@
     <link rel="stylesheet" href="../css/contract-controls.css?v=profileguard1" />
     <link rel="stylesheet" href="../css/devices.css?v=devices1" />
     <link rel="stylesheet" href="../css/client-directory.css?v=companyalign3" />
+    <link rel="stylesheet" href="../css/login.css?v=renewal-12" />
   </head>
   <body class="panel-page">
-    <section class="panel-login" id="login-screen" aria-labelledby="login-title">
-      <a href="../" class="panel-mark" aria-label="Volver al portfolio">
-        CC
-        <span>·</span>
-      </a>
-      <p class="eyebrow">Tu espacio de trabajo</p>
-      <h1 id="login-title">
-        Todo empieza
-        <br />
-        con una conversación.
-      </h1>
-      <p class="panel-subtitle">Accede a tu espacio privado de consultor.</p>
-      <form id="login-form">
-        <label>
-          Correo de acceso
-          <input
-            type="email"
-            name="email"
-            autocomplete="username"
-            maxlength="254"
-            required
-          />
-        </label>
-        <label>
-          Contraseña
-          <input
-            type="password"
-            name="password"
-            autocomplete="current-password"
-            required
-          />
-        </label>
-        <button type="submit" class="btn" id="login-button" disabled>
-          Entrar en mi panel ↗
-        </button>
-      </form>
-      <a href="../cuenta/?modo=recuperar" class="panel-back">He olvidado mi contraseña</a>
-      <p id="login-notice" class="panel-notice" role="status">Conectando…</p>
-      <a href="../" class="panel-back">← Volver al portfolio</a>
-    </section>
+    <p class="portfolio-handoff-status" role="status">Abriendo tu panel…</p>
+    <script>
+      if (new URLSearchParams(location.search).get("acceso") === "portfolio") {
+        document.documentElement.classList.add("portfolio-handoff");
+      }
+    </script>
+    <main class="login-layout" id="login-screen" aria-labelledby="login-title">
+      <section class="login-card">
+        <div class="login-header">
+          <div class="login-heading">
+            <p class="login-brand">
+              <span class="panel-mark login-logo" aria-hidden="true">CC<span>·</span></span>
+              Panel de consultores
+            </p>
+            <button type="button" class="theme login-theme" aria-label="Activar modo oscuro">☾</button>
+          </div>
+          <h1 id="login-title">Bienvenido al panel</h1>
+          <p class="login-description">Clientes, solicitudes y equipo en un mismo espacio.</p>
+        </div>
+        <form id="login-form">
+          <label for="login-email">Correo de acceso</label>
+          <input id="login-email" type="email" name="email" autocomplete="username"
+            maxlength="254" placeholder="nombre@ejemplo.com" required />
+          <label for="login-password">Contraseña</label>
+          <div class="login-password">
+            <input id="login-password" type="password" name="password"
+              autocomplete="current-password" required />
+            <button type="button" id="login-password-toggle" aria-controls="login-password" hidden>Mostrar</button>
+          </div>
+          <a href="../cuenta/?modo=recuperar" class="login-recover">He olvidado mi contraseña</a>
+          <button type="submit" id="login-button" disabled>Entrar en mi panel <span aria-hidden="true">→</span></button>
+        </form>
+        <p id="login-notice" class="panel-notice" role="status">Conectando…</p>
+      </section>
+    </main>
 
     <div class="panel-shell" id="panel-screen" hidden>
       <aside class="panel-sidebar">
@@ -212,7 +208,7 @@
         <div class="panel-heading">
           <div>
             <p class="eyebrow">Tu actividad</p>
-            <h1 id="panel-title">Bienvenido, Carlos.</h1>
+            <h1 id="panel-title" tabindex="-1">Bienvenido, Carlos.</h1>
           </div>
           <div class="panel-controls">
             <button
@@ -1769,7 +1765,8 @@
     <script src="../js/statistics.js?v=devices1-closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
     <script src="../js/panel-insights.js?v=controls4" defer></script>
-    <script src="../js/panel.js?v=controls4" defer></script>
+    <script src="../js/panel.js?v=login-renewal1" defer></script>
+    <script src="../js/login-visibility.js?v=1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"
