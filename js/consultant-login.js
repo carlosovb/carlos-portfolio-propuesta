@@ -6,6 +6,7 @@
   const open = document.getElementById("open-consultant-login");
   const submit = document.getElementById("consultant-login-submit");
   const notice = document.getElementById("consultant-login-notice");
+  const transition = window.LoginTransition;
   let pending = false;
   let generation = 0;
 
@@ -52,6 +53,8 @@
     if (pending || !backend?.ready || !form.reportValidity()) return;
     const current = ++generation;
     pending = true;
+    transition.start(submit);
+    let redirecting = false;
     submit.disabled = true;
     form.setAttribute("aria-busy", "true");
     message("Comprobando acceso…");
@@ -65,13 +68,20 @@
         await backend.signOut();
         return;
       }
+      await transition.waitForIntro();
+      if (current !== generation || !dialog.open) {
+        await backend.signOut();
+        return;
+      }
       await backend.preparePanelRedirect();
       if (current !== generation || !dialog.open) {
         await backend.signOut();
         return;
       }
       message("Acceso correcto. Abriendo tu panel…");
+      transition.rememberStart();
       window.location.assign(new URL("panel/?acceso=portfolio", document.baseURI).href);
+      redirecting = true;
     } catch {
       form.elements.password.value = "";
       await backend.signOut();
@@ -80,6 +90,7 @@
           "No se ha podido acceder. Comprueba el correo, la contraseña y los permisos de tu cuenta.",
         );
     } finally {
+      if (!redirecting) transition.reset();
       pending = false;
       submit.disabled = !backend?.ready;
       form.removeAttribute("aria-busy");
@@ -87,6 +98,7 @@
   });
   addEventListener("pageshow", (event) => {
     if (event.persisted) {
+      transition.reset();
       form.reset();
       if (dialog.open) dialog.close();
       backend.signOut();

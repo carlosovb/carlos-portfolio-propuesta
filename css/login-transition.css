@@ -1,0 +1,197 @@
+.login-loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 24px;
+  border: 0;
+  isolation: isolate;
+  background:
+    url("../finance-background.svg") center / cover,
+    radial-gradient(ellipse at center, var(--panel), transparent 70%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Aptos", "Segoe UI", sans-serif;
+  text-align: center;
+}
+
+.login-loading:not([open]) { display: none; }
+.login-loading::backdrop { background: transparent; }
+html:has(.login-loading[open]) { overflow: hidden; }
+#panel-title[tabindex="-1"]:focus { outline: none; }
+
+.login-loading::before,
+.login-loading::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.login-loading::before {
+  inset: clamp(10px, 3vw, 34px);
+  z-index: -1;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+
+.login-loading::after {
+  inset: 0;
+  z-index: -1;
+  background: var(--mint);
+  opacity: 0;
+}
+
+.login-loading-content {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 680px);
+  line-height: 1.2;
+}
+
+.login-loading-content p { margin: 0; }
+.login-loading-content [hidden] { display: none; }
+
+.login-loading-kicker {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+}
+
+.login-loading-mark {
+  display: block;
+  width: clamp(106px, min(31vw, 34vh), 166px);
+  height: auto;
+  margin: clamp(14px, 3vh, 28px) 0 0;
+  border: 1px solid var(--line);
+  border-radius: 24%;
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.login-loading-letter {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+}
+
+.login-loading-dot {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.login-loading-rule {
+  width: 48px;
+  height: 1px;
+  margin: clamp(14px, 3vh, 27px) 0 16px;
+  background: var(--accent);
+}
+
+.login-loading-message {
+  min-height: 4.75rem;
+  align-content: start;
+}
+
+.login-loading-label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.login-loading-name {
+  padding-top: 5px;
+  overflow-wrap: anywhere;
+  font: 650 clamp(27px, 6vw, 56px)/1.05 "Aptos Display", "Segoe UI", sans-serif;
+  letter-spacing: -.045em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-loading.is-entering {
+    animation: login-arrival 460ms cubic-bezier(.24, .74, .25, 1) both;
+  }
+
+  .login-loading.is-entering::after {
+    animation: login-copper-in 470ms ease-out both;
+  }
+
+  .login-loading.is-entering .login-loading-content {
+    animation: login-content-in 440ms cubic-bezier(.2, .7, .25, 1) 160ms both;
+  }
+
+  .login-loading.is-entering .login-loading-letter {
+    animation: login-letter 460ms cubic-bezier(.3, .1, .2, 1) 235ms both;
+  }
+
+  .login-loading.is-entering .login-loading-letter + .login-loading-letter {
+    animation-delay: 335ms;
+  }
+
+  .login-loading.is-entering .login-loading-dot {
+    animation: login-dot 220ms ease-out 660ms both;
+  }
+
+  .login-loading.is-greeting .login-loading-message {
+    animation: login-content-in 280ms ease-out both;
+  }
+
+  .login-loading.is-leaving {
+    animation: login-departure 490ms cubic-bezier(.55, .1, .25, 1) both;
+  }
+
+  .login-loading.is-leaving .login-loading-content {
+    animation: login-content-out 240ms ease-in both;
+  }
+
+  .login-loading.is-leaving::after {
+    background: var(--accent);
+    animation: login-copper-out 490ms ease-in both;
+  }
+}
+
+@keyframes login-arrival {
+  from { clip-path: inset(var(--login-origin) round 12px); }
+  to { clip-path: inset(0 round 0); }
+}
+
+@keyframes login-copper-in {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes login-content-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes login-letter {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes login-dot {
+  from { opacity: 0; transform: scale(.3); }
+  70% { opacity: 1; transform: scale(1.18); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes login-content-out {
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes login-departure {
+  from { clip-path: inset(0); }
+  to { clip-path: inset(50% 0); }
+}
+
+@keyframes login-copper-out {
+  0%, 55% { opacity: 0; }
+  96%, 100% { opacity: .85; }
+}

@@ -1,6 +1,7 @@
 // Datos de clientes y credenciales solo en memoria; nunca en localStorage ni GitHub.
 (() => {
   const backend = window.PortfolioBackend;
+  const loginTransition = window.LoginTransition;
   const get = (id) => document.getElementById(id);
   const statuses = {
     pending: "Pendiente de contactar",
@@ -209,6 +210,7 @@
 
   function enterPanel() {
     account = backend.panelAccess;
+    loginTransition.greet(account?.profile);
     active = true;
     epoch++;
     get("login-screen").hidden = true;
@@ -826,6 +828,7 @@
     if (!backend.ready || loggingOut || get("login-button").disabled) return;
     const form = event.currentTarget;
     const submit = get("login-button");
+    loginTransition.start(submit);
     submit.disabled = true;
     notice("login-notice", "Comprobando acceso…");
     try {
@@ -835,6 +838,7 @@
       );
       form.reset();
       await enterPanel();
+      await loginTransition.playExit();
     } catch {
       form.elements.password.value = "";
       notice(
@@ -843,6 +847,7 @@
       );
     } finally {
       submit.disabled = false;
+      loginTransition.reset();
       get(active ? "panel-title" : "login-password").focus({ preventScroll: true });
     }
   });
@@ -989,6 +994,7 @@
   const handoff = document.documentElement.classList.contains("portfolio-handoff");
   function finishHandoff() {
     if (!handoff) return;
+    loginTransition.reset();
     document.documentElement.classList.remove("portfolio-handoff");
     const url = new URL(location.href);
     url.searchParams.delete("acceso");
@@ -1002,6 +1008,7 @@
       .then(async (restored) => {
         if (!restored) return;
         await enterPanel();
+        if (handoff) await loginTransition.playExit();
       })
       .catch(() => logout("No se ha podido abrir el panel. Vuelve a iniciar sesión."))
       .finally(() => {

@@ -29,13 +29,37 @@
     <link rel="stylesheet" href="../css/contract-controls.css?v=profileguard1" />
     <link rel="stylesheet" href="../css/devices.css?v=devices1" />
     <link rel="stylesheet" href="../css/client-directory.css?v=companyalign3" />
-    <link rel="stylesheet" href="../css/login.css?v=renewal-12" />
+    <link rel="stylesheet" href="../css/login.css?v=12" />
+    <link rel="stylesheet" href="../css/login-transition.css?v=cc2" />
   </head>
   <body class="panel-page">
-    <p class="portfolio-handoff-status" role="status">Abriendo tu panel…</p>
+    <dialog
+      id="login-loading"
+      class="login-loading"
+      aria-label="Acceso privado"
+      aria-describedby="login-loading-status"
+      closedby="none"
+    >
+      <div class="login-loading-content">
+        <p class="login-loading-kicker" aria-hidden="true">Acceso privado</p>
+        <svg class="login-loading-mark" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+          <g transform="translate(19 48)">
+            <path class="login-loading-letter" pathLength="1" d="M49 17a21 21 0 1 0 0 30" />
+            <path class="login-loading-letter" pathLength="1" d="M91 47a21 21 0 1 1 0-30" />
+            <circle class="login-loading-dot" cx="106" cy="47" r="4.5" />
+          </g>
+        </svg>
+        <div class="login-loading-rule" aria-hidden="true"></div>
+        <div id="login-loading-status" class="login-loading-message" role="status" aria-atomic="true">
+          <p id="login-loading-label" class="login-loading-label">Preparando tu panel…</p>
+          <p id="login-loading-name" class="login-loading-name" hidden></p>
+        </div>
+      </div>
+    </dialog>
     <script>
       if (new URLSearchParams(location.search).get("acceso") === "portfolio") {
         document.documentElement.classList.add("portfolio-handoff");
+        document.getElementById("login-loading").showModal();
       }
     </script>
     <main class="login-layout" id="login-screen" aria-labelledby="login-title">
@@ -1765,7 +1789,8 @@
     <script src="../js/statistics.js?v=devices1-closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
     <script src="../js/panel-insights.js?v=controls4" defer></script>
-    <script src="../js/panel.js?v=login-renewal1" defer></script>
+    <script src="../js/login-transition.js?v=cc3" defer></script>
+    <script src="../js/panel.js?v=login-transition2" defer></script>
     <script src="../js/login-visibility.js?v=1" defer></script>
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button

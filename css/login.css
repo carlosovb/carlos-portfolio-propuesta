@@ -107,20 +107,3 @@
 [data-theme="dark"] .login-layout #login-button:hover:not(:disabled) { background: #bce8d7; }
 [data-theme="dark"] .login-layout #login-notice { background: #203a3d; color: #e3f1eb; }
 [data-theme="dark"] .login-layout :focus-visible { outline-color: #a8d9c6; }
-
-.portfolio-handoff-status { display: none; }
-.portfolio-handoff #login-screen { display: none; }
-.portfolio-handoff .portfolio-handoff-status {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: grid;
-  place-items: center;
-  margin: 0;
-  background: #eeeae2;
-  color: #102e2e;
-}
-[data-theme="dark"].portfolio-handoff .portfolio-handoff-status {
-  background: #101b29;
-  color: #f7efe3;
-}

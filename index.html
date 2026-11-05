@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/consultant-login.css?v=20261021-login2" />
     <link rel="stylesheet" href="css/theme-transition.css?v=20261021-theme2" />
     <link rel="stylesheet" href="css/devices.css?v=devices1" />
+    <link rel="stylesheet" href="css/login-transition.css?v=cc2" />
   </head>
   <body>
     <header class="site-header">
@@ -674,7 +675,8 @@
     <script src="js/backend-config.js?v=20261021-panel1" defer></script>
     <script src="js/backend.js?v=apex1" defer></script>
     <script src="js/contact.js?v=20261021-confirmacion2" defer></script>
-    <script src="js/consultant-login.js?v=renewal1" defer></script>
+    <script src="js/login-transition.js?v=cc3" defer></script>
+    <script src="js/consultant-login.js?v=loader5" defer></script>
     <a
       class="back-to-top"
       href="#inicio"
@@ -705,5 +707,28 @@
         <a href="#contacto">Solicitar mi primera reunión ↗</a>
       </nav>
     </div>
+    <dialog
+      id="login-loading"
+      class="login-loading"
+      aria-label="Acceso privado"
+      aria-describedby="login-loading-status"
+      closedby="none"
+    >
+      <div class="login-loading-content">
+        <p class="login-loading-kicker" aria-hidden="true">Acceso privado</p>
+        <svg class="login-loading-mark" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+          <g transform="translate(19 48)">
+            <path class="login-loading-letter" pathLength="1" d="M49 17a21 21 0 1 0 0 30" />
+            <path class="login-loading-letter" pathLength="1" d="M91 47a21 21 0 1 1 0-30" />
+            <circle class="login-loading-dot" cx="106" cy="47" r="4.5" />
+          </g>
+        </svg>
+        <div class="login-loading-rule" aria-hidden="true"></div>
+        <div id="login-loading-status" class="login-loading-message" role="status" aria-atomic="true">
+          <p id="login-loading-label" class="login-loading-label">Preparando tu panel…</p>
+          <p id="login-loading-name" class="login-loading-name" hidden></p>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>
