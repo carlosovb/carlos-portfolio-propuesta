@@ -667,6 +667,7 @@
   document.addEventListener("panel-view-changed", () => {
     if (active && startup) setTimeout(tryStartup, 0);
   });
+  get("login-loading").addEventListener("close", tryStartup);
   window.PanelInsights = {
     start,
     reset,

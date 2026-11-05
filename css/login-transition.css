@@ -22,6 +22,8 @@
 
 .login-loading:not([open]) { display: none; }
 .login-loading::backdrop { background: transparent; }
+/* Reserve the scrollbar space before the panel is revealed. */
+html:has(#panel-screen) { scrollbar-gutter: stable; }
 html:has(.login-loading[open]) { overflow: hidden; }
 #panel-title[tabindex="-1"]:focus { outline: none; }
 
