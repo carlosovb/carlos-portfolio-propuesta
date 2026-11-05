@@ -431,7 +431,7 @@ if (require.main === module) (async () => {
           .evaluate((el) => el.readOnly),
         true,
       );
-      assert.equal(await page.locator(".panel-version").textContent(), "v0.6.1");
+      assert.equal(await page.locator(".panel-version").textContent(), "v0.6.2");
       await page.locator("#my-office").selectOption("__add__", { force: true });
       await page.locator("#new-office-code").fill("LPA2");
       await page.locator("#create-office").click();

@@ -3437,15 +3437,18 @@ html[data-theme="light"] .finance-caption > span {
     width: 29px;
     height: 29px;
   }
-} /* Prueba de identidad: tinta, marfil y cobre. */
+} /* Modo claro: marfil, tinta y cobre. */
 html[data-theme="light"] {
-  --bg: #f6f1e8;
-  --ink: #202e40;
-  --muted: #656b73;
-  --panel: #eae3d8;
-  --line: #d1c7b9;
-  --accent: #98552f;
+  --bg: #e8e9e8;
+  --ink: #162638;
+  --muted: #4e5a68;
+  --panel: #f2f1ed;
+  --line: #afb7bd;
+  --accent: #86492f;
   --mint: #e4b28b;
+  --night: #dce1e3;
+  --light-field-border: #8e8073;
+  --light-selection: #f0e3d6;
 }
 html[data-theme="dark"] {
   --bg: #101c2c;
@@ -3775,4 +3778,53 @@ html[data-theme] .page-progress {
 }
 #metodo + #preguntas {
   padding-block-start: clamp(40px, 4.5vw, 56px);
+}
+
+html[data-theme="light"] :is(input, select, textarea):not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"]):enabled {
+  border-color: var(--light-field-border);
+}
+html[data-theme="light"] :is(input, textarea)::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+html[data-theme="light"] :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+html[data-theme="light"] .site-header nav,
+html[data-theme="light"] .panel-sidebar {
+  background: var(--night);
+}
+html[data-theme="light"] .login-layout {
+  background: var(--bg);
+  color: var(--ink);
+}
+html[data-theme="light"] .login-card { background: var(--panel); border-color: var(--line); }
+html[data-theme="light"] .login-header {
+  background: linear-gradient(125deg, #162638, #34475a);
+}
+html[data-theme="light"] .login-description { color: #e6e9ed; }
+html[data-theme="light"] .login-header :focus-visible { outline-color: #f5d3af; }
+html[data-theme="light"] .login-layout input { background: var(--bg); color: var(--ink); }
+html[data-theme="light"] .login-layout :is(#login-password-toggle, .login-recover) { color: var(--accent); }
+html[data-theme="light"] .login-layout #login-button { background: var(--accent); color: #fffdf9; }
+html[data-theme="light"] .login-layout #login-button:hover:not(:disabled) { background: #703620; }
+html[data-theme="light"] .login-layout #login-notice {
+  background: var(--light-selection);
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+/* Centrado del monograma en la cabecera del portfolio. */
+.site-header .brand .brand-monogram {
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-width: 62px;
+  min-height: 50px;
+}
+.site-header .brand .brand-monogram > span {
+  font-size: inherit;
+  line-height: 1;
+  margin: 0;
 }

@@ -93,7 +93,7 @@
 
 [data-theme="dark"] .login-layout { background: #101b29; color: #f7efe3; }
 [data-theme="dark"] .login-card { background: #172536; border-color: #344557; }
-[data-theme="dark"] .login-header { background: linear-gradient(125deg, #112c30, #183c39); }
+[data-theme="dark"] .login-header { background: linear-gradient(125deg, #101c2c, #26374c); }
 [data-theme="dark"] .login-layout input {
   background: #101c2b;
   border-color: #485b6b;
@@ -102,8 +102,8 @@
 }
 [data-theme="dark"] .login-layout input::placeholder { color: #b1bfca; }
 [data-theme="dark"] .login-layout #login-password-toggle,
-[data-theme="dark"] .login-recover { color: #b8e4d4; }
-[data-theme="dark"] .login-layout #login-button { background: #a8d9c6; color: #102e2e; }
-[data-theme="dark"] .login-layout #login-button:hover:not(:disabled) { background: #bce8d7; }
-[data-theme="dark"] .login-layout #login-notice { background: #203a3d; color: #e3f1eb; }
-[data-theme="dark"] .login-layout :focus-visible { outline-color: #a8d9c6; }
+[data-theme="dark"] .login-recover { color: #e4b28b; }
+[data-theme="dark"] .login-layout #login-button { background: #e4b28b; color: #162638; }
+[data-theme="dark"] .login-layout #login-button:hover:not(:disabled) { background: #edc5a6; }
+[data-theme="dark"] .login-layout #login-notice { background: #26374c; color: #f3ece1; border-color: #ad7b59; }
+[data-theme="dark"] .login-layout :focus-visible { outline-color: #e4b28b; }

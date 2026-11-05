@@ -1,0 +1,96 @@
+/* Ajustes de contraste por componente para el modo claro. */
+html[data-theme="light"] #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-monogram {
+  color: #65428e;
+}
+html[data-theme="light"] #client-detail-dialog[data-category="interested"] {
+  --contact-color: #65428e;
+}
+html[data-theme="light"] .stats-range-error { color: #a42e34; }
+
+html[data-theme="light"] .hero {
+  background-color: var(--bg);
+}
+html[data-theme="light"] :is(input, select, textarea):not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"]) {
+  background-color: #f4f3ef;
+}
+html[data-theme="light"] :is(.login-card, .account-card) {
+  background-color: var(--panel);
+}
+
+/* El cobre conserva el mismo matiz que en el tema oscuro. */
+html[data-theme="light"] {
+  --copper-fill: #e4b28b;
+  --light-selection: #ebd4c1;
+}
+html[data-theme="light"] .panel-sidebar {
+  background: #dce1e3;
+  border-color: #afb7bd;
+}
+html[data-theme="light"] .panel-sidebar [aria-current="page"] {
+  background: var(--light-selection);
+  color: #162638;
+  border-color: #b37c56;
+}
+html[data-theme="light"] .login-layout #login-button {
+  background: var(--copper-fill);
+  color: #162638;
+}
+html[data-theme="light"] .login-layout #login-button:hover:not(:disabled) {
+  background: #edc5a6;
+}
+html[data-theme="light"] .login-layout #login-notice {
+  background: #ebded2;
+}
+
+/* Superficies compartidas por las fichas y ventanas del panel. */
+html[data-theme="light"] .panel-page dialog:not(.login-loading) {
+  background-color: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+  font-family: inherit;
+}
+html[data-theme="light"] .panel-page dialog:not(.login-loading)::backdrop {
+  background: #101c2c99;
+}
+
+/* Bloques de énfasis azul tinta dentro del modo claro. */
+html[data-theme="light"] .ink-feature {
+  --bg: #1b2a3d;
+  --panel: #26374c;
+  --ink: #f3ece1;
+  --muted: #c4cbd5;
+  --accent: #e4b28b;
+  --line: #495565;
+  --mint: #e4b28b;
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(130deg, #203044, #182537);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+html[data-theme="light"] .ink-feature :is(h2, h3, strong) { color: var(--ink); }
+html[data-theme="light"] .ink-feature :is(p, dt) { color: var(--muted); }
+html[data-theme="light"] .ink-feature .eyebrow { color: var(--accent); }
+html[data-theme="light"] .ink-feature :is(.btn, button.btn) {
+  background: #e4b28b;
+  color: #162638;
+  border-color: #e4b28b;
+}
+html[data-theme="light"] .ink-feature :is(.panel-secondary, .panel-text-button) {
+  color: #f3ece1;
+  border-color: #647285;
+}
+html[data-theme="light"] .ink-feature :focus-visible {
+  outline-color: #e4b28b;
+}
+html[data-theme="light"] .follow.ink-feature {
+  padding: clamp(24px, 4vw, 44px);
+  background-image:
+    radial-gradient(ellipse at 100% 0%, #b7896326, transparent 55%),
+    linear-gradient(130deg, #203044, #182537);
+}
+html[data-theme="light"] .follow.ink-feature strong { color: #e4b28b; }
+html[data-theme="light"] .team-member-hero.ink-feature {
+  padding: clamp(20px, 3vw, 32px);
+}
