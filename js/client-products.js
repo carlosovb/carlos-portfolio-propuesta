@@ -481,10 +481,7 @@
         detail.append(apexList);
       }
       const tools = node("div", undefined, "contract-detail-actions");
-      if (
-        window.PortfolioCompanies.find(row.company)?.id === "axa" &&
-        row.product === "PIAS Proyecto Futuro"
-      ) {
+      if (window.PortfolioCompanies.apex(row.company, row.product)) {
         const addApex = button("+ Añadir APEX", () => {
           editing = {
             is_apex: true,
@@ -668,6 +665,7 @@
     const conditions = node("section", undefined, "product-conditions");
     const apex = !!editing.is_apex;
     const parent = apex ? rows.find((r) => r.id === editing.parent_product_id) : null;
+    const apexRule = apex ? window.PortfolioCompanies.apex(editing.company, editing.product) : null;
     let picker;
     if (apex) {
       const context = node("div", undefined, "contract-apex-context");
@@ -675,6 +673,16 @@
         node("strong", editing.company + " · " + editing.product),
         node("span", editing.portfolio + " · Aportación única adicional"),
       );
+      if (apexRule?.wait) {
+        context.append(
+          node("span", "Mínimo " + euro(apexRule.minimum) + " · " +
+            (apexRule.annual ? "Hasta el margen disponible del límite anual de 8.000 €" : "Sin máximo contractual indicado")),
+          node("span", "En la contratación o a partir de " + apexRule.wait + " desde la aceptación por Intesa. Gastos sobre la APEX: 5 %."),
+          node("span", apexRule.transferAll
+            ? "Pago de la APEX por transferencia bancaria."
+            : "Transferencia bancaria obligatoria para la APEX inicial."),
+        );
+      }
       form.append(context);
       conditions.hidden = false;
       picker = {
@@ -709,7 +717,7 @@
       type: "number",
       required: true,
     });
-    const amountControl = window.ContractControls.amount(amount);
+    const amountControl = window.ContractControls.amount(amount, apexRule?.wait ? [300, 500, 1000, 2000, 3000, 5000] : undefined);
     const units = field(
       grid,
       apex ? "Unidades de la APEX" : "Unidades generadas (opcional)",
@@ -825,7 +833,7 @@
       const pias = /pias/i.test(selection.product || "");
       const monthly = !apex && payment.value === "monthly";
       signed.required = apex || !!editing._capture || (pias && !monthly);
-      amount.min = apex ? "600" : "0.01";
+      amount.min = apex ? String(apexRule?.minimum ?? 600) : "0.01";
       amount.max = pias ? (monthly ? "666" : "8000") : "100000000";
       amount.setCustomValidity("");
       if (!pias) {
@@ -880,7 +888,7 @@
         if (max < Number(amount.min))
           amount.setCustomValidity(
             apex
-              ? "No queda margen para una APEX mínima de 600 €."
+              ? "No queda margen para una APEX mínima de " + euro(Number(amount.min)) + "."
               : "No queda margen anual para esta aportación.",
           );
         else if (candidate > Number(result.remaining))
@@ -905,7 +913,7 @@
       const pias = /pias/i.test(selection.product || "");
       signed.required =
         apex || !!editing._capture || (pias && payment.value === "single");
-      amount.min = apex ? "600" : "0.01";
+      amount.min = apex ? String(apexRule?.minimum ?? 600) : "0.01";
       amount.max = pias
         ? !apex && payment.value === "monthly"
           ? "666"

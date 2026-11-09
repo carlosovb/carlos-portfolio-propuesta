@@ -120,6 +120,7 @@ const assert = require("node:assert/strict");
     await db.exec("reset role");
     await db.exec(fs.readFileSync("database/client-apex.sql", "utf8"));
     await db.exec(fs.readFileSync("database/client-apex.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/intesa-apex.sql", "utf8"));
     await as(other);
     const rates = JSON.stringify({ [owner]: 3.5, [member]: 2.5 });
     const add = async ({
@@ -132,11 +133,13 @@ const assert = require("node:assert/strict");
       apex = false,
       payment = "monthly",
       target = client,
+      company = "AXA",
+      product = "PIAS Proyecto Futuro",
     } = {}) =>
       (
         await db.query(
-          "insert into public.client_products(client_id,company,product,portfolio,payment_type,amount,units,signed_on,signed_multiplier,signature_rates,is_apex,parent_product_id) values($1,'AXA','PIAS Proyecto Futuro',$2,$3,$4,$5,$6,$7,$8,$9,$10) returning id",
-          [target, portfolio, payment, amount, units, date, factor, rates, apex, parent],
+          "insert into public.client_products(client_id,company,product,portfolio,payment_type,amount,units,signed_on,signed_multiplier,signature_rates,is_apex,parent_product_id) values($1,$11,$12,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning id",
+          [target, portfolio, payment, amount, units, date, factor, rates, apex, parent, company, product],
         )
       ).rows[0].id;
     await assert.rejects(() => add({ portfolio: "" }));
@@ -362,6 +365,27 @@ const assert = require("node:assert/strict");
       (await db.query("select count(*) n from private.deleted_pias_payments")).rows[0].n,
       4,
     );
+    await as(other);
+    await db.query("select public.import_my_clients($1::jsonb,false)", [
+      JSON.stringify([{ first_name: "Intesa", last_name: "Prueba", client_type: "Cliente" }]),
+    ]);
+    const intesaClient = (await db.query("select id from public.portfolio_clients where first_name='Intesa'")).rows[0].id;
+    for (const product of ["TOP Plan", "TOP Premium", "TOP PIAS", "TOP10"]) {
+      const terms = { target: intesaClient, company: "Intesa Sanpaolo Assicurazioni", product,
+        portfolio: "Global Equity DB - Clase E" };
+      const parent = await add({ ...terms, amount: product === "TOP Premium" ? 3000 : 50,
+        payment: product === "TOP Premium" ? "single" : "monthly" });
+      const extra = { ...terms, parent, apex: true, payment: "single" };
+      await assert.rejects(() => add({ ...extra, amount: 299.99 }), /at least 300/);
+      await assert.rejects(() => add({ ...extra, amount: 300, date: "2024-02-28" }), /precede/);
+      if (product === "TOP PIAS") {
+        await assert.rejects(() => add({ ...extra, amount: 7400.01 }), /annual limit/);
+        await add({ ...extra, amount: 7400 });
+      } else {
+        await add({ ...extra, amount: 300 });
+        await add({ ...extra, amount: 15000 });
+      }
+    }
     console.log(
       "APEX: cartera obligatoria, 666 al mes, mínimo 600, límite anual 8000, firmas independientes, aislamiento e historial permanente comprobados.",
     );

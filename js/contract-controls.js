@@ -55,7 +55,7 @@
     select.addEventListener("change", sync);
     sync();
   }
-  function amount(input) {
+  function amount(input, examples) {
     let suppressFocus = false;
     const wrap = el("span", null, "contract-amount-wrap");
     input.after(wrap);
@@ -71,12 +71,13 @@
     wrap.append(trigger, popup);
     function show() {
       close();
-      const max = Math.min(input.max === "" ? 8000 : Number(input.max), 8000),
+      const maximum = input.max === "" ? 8000 : Number(input.max);
+      const max = examples ? maximum : Math.min(maximum, 8000),
         min = Number(input.min) || 0.01;
       popup.replaceChildren();
-      const values = [];
-      for (let n = 50; n <= max; n += 50) if (n >= min) values.push(n);
-      if (max >= min && !values.includes(max)) values.push(max);
+      const values = examples ? examples.filter((value) => value >= min && value <= max) : [];
+      if (!examples) for (let n = 50; n <= max; n += 50) if (n >= min) values.push(n);
+      if (max >= min && !values.includes(max) && (!examples || max <= 8000)) values.push(max);
       if (!values.length) {
         popup.append(el("small", max < min ? "No queda margen para la aportación mínima." : "Escribe el importe exacto."));
       }
