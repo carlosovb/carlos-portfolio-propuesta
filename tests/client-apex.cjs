@@ -122,6 +122,7 @@ const assert = require("node:assert/strict");
     await db.exec(fs.readFileSync("database/client-apex.sql", "utf8"));
     await db.exec(fs.readFileSync("database/intesa-apex.sql", "utf8"));
     await db.exec(fs.readFileSync("database/top10-periodicity.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/product-contribution-limits.sql", "utf8"));
     await as(other);
     const rates = JSON.stringify({ [owner]: 3.5, [member]: 2.5 });
     const add = async ({
@@ -136,16 +137,18 @@ const assert = require("node:assert/strict");
       target = client,
       company = "AXA",
       product = "PIAS Proyecto Futuro",
+      withInitial = false,
     } = {}) =>
       (
         await db.query(
-          "insert into public.client_products(client_id,company,product,portfolio,payment_type,amount,units,signed_on,signed_multiplier,signature_rates,is_apex,parent_product_id) values($1,$11,$12,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning id",
-          [target, portfolio, payment, amount, units, date, factor, rates, apex, parent, company, product],
+          "insert into public.client_products(client_id,company,product,portfolio,payment_type,amount,units,signed_on,signed_multiplier,signature_rates,is_apex,parent_product_id,top_pias_with_initial) values($1,$11,$12,$2,$3,$4,$5,$6,$7,$8,$9,$10,$13) returning id",
+          [target, portfolio, payment, amount, units, date, factor, rates, apex, parent, company, product, withInitial],
         )
       ).rows[0].id;
     await assert.rejects(() => add({ portfolio: "" }));
     await assert.rejects(() => add({ portfolio: "Otra cartera" }));
     await assert.rejects(() => add({ amount: 667 }));
+    await assert.rejects(() => add({ amount: 49.99 }), /AXA PIAS requires/);
     await assert.rejects(() => add({ payment: "single", date: null }));
     const parent = await add();
     const budget = async (year = 2024) =>
@@ -395,7 +398,36 @@ const assert = require("node:assert/strict");
       const saved = await add({ ...top10, payment, amount: minimum });
       assert.equal((await db.query("select payment_type from public.client_products where id=$1", [saved])).rows[0].payment_type, payment);
     }
-    await assert.rejects(() => add({ ...top10, product: "TOP Plan", payment: "annual", amount: 600 }), /payment_type_check/);
+    await assert.rejects(() => add({ ...top10, product: "TOP Plan", payment: "quarterly", amount: 149.99 }), /at least 600/);
+    await add({ ...top10, product: "TOP Plan", payment: "annual", amount: 13000 });
+    await assert.rejects(() => add({ ...top10, product: "TOP Premium", payment: "single", amount: 2999.99 }), /at least 3000/);
+    await assert.rejects(() => add({ ...top10, product: "TOP PIAS", payment: "quarterly", amount: 150 }), /annual limit/);
+    await db.query("select public.import_my_clients($1::jsonb,false)", [
+      JSON.stringify([{ first_name: "Modalidad", last_name: "Prueba", client_type: "Cliente" }]),
+    ]);
+    const modeClient = (await db.query("select id from public.portfolio_clients where first_name='Modalidad'")).rows[0].id;
+    const alternate = { ...top10, target: modeClient, product: "TOP PIAS", payment: "annual", amount: 50 };
+    await assert.rejects(() => add(alternate), /at least 600/);
+    await assert.rejects(() => add({ ...alternate, withInitial: true, date: null }), /signature date/);
+    await assert.rejects(() => add({ ...alternate, withInitial: true, payment: "monthly" }), /annual payment/);
+    const alternateId = await add({ ...alternate, withInitial: true });
+    const modeBudget = async (year) =>
+      (await db.query("select public.get_client_pias_budget($1,$2) data", [modeClient, year])).rows[0].data.reserved;
+    assert.equal(await modeBudget(2024), 3050);
+    assert.equal(await modeBudget(2025), 50);
+    await assert.rejects(() => add({ ...alternate, parent: alternateId, apex: true, payment: "single", amount: 4950.01 }), /annual limit/);
+    await db.query("delete from public.client_products where id=$1", [alternateId]);
+    assert.equal(await modeBudget(2024), 3050);
+    for (const product of ["TOP Plan", "TOP PIAS"]) {
+      for (const [payment, minimum] of [["monthly", 50], ["quarterly", 150], ["annual", 600]]) {
+        const terms = { ...alternate, product, payment, date: "2024-03-01" };
+        await assert.rejects(() => add({ ...terms, amount: minimum - 0.01 }), /at least 600/);
+        await add({ ...terms, amount: minimum });
+      }
+    }
+    assert.equal(await modeBudget(2024), 4850);
+    await assert.rejects(() => add({ ...alternate, amount: 3150.01 }), /annual limit/);
+    await add({ ...alternate, amount: 3150 });
     const legacy = await add({ ...top10, payment: "annual", amount: 600, units: null });
     await db.exec("reset role");
     await db.exec(fs.readFileSync("database/required-product-units.sql", "utf8"));

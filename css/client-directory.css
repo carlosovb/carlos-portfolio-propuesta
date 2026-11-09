@@ -445,7 +445,8 @@ html[data-theme="dark"] .clients-view-switch button img {
   display: none;
 }
 #clients-table-wrap[data-view="cards"] .client-brand-icon,
-#client-detail-dialog .contract-brand-icon {
+#client-detail-dialog .contract-brand-icon,
+.product-company-options .product-brand-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -457,7 +458,8 @@ html[data-theme="dark"] .clients-view-switch button img {
   border-radius: 1px;
 }
 #clients-table-wrap[data-view="cards"] [data-company="intesa"] .client-brand-icon,
-#client-detail-dialog .contract-brand-icon[data-company="intesa"] {
+#client-detail-dialog .contract-brand-icon[data-company="intesa"],
+.product-company-options .product-brand-icon {
   height: auto;
   aspect-ratio: 1;
   background: #287454;
@@ -472,12 +474,14 @@ html[data-theme="dark"] .clients-view-switch button img {
   filter: brightness(0) invert(1);
 }
 #clients-table-wrap[data-view="cards"] .client-company-mark[data-company="intesa"] .client-brand-icon img,
-#client-detail-dialog .contract-brand-icon[data-company="intesa"] img {
+#client-detail-dialog .contract-brand-icon[data-company="intesa"] img,
+.product-company-options .product-brand-icon img {
   width: calc(100% - 6px);
   height: auto;
   aspect-ratio: 49 / 48;
   object-fit: cover;
   object-position: left center;
+  filter: brightness(0) invert(1);
 }
 #clients-table-wrap[data-view="cards"] .client-portfolio {
   align-self: end;

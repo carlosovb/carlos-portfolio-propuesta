@@ -24,6 +24,7 @@
           id: "pias-proyecto-futuro",
           name: "PIAS Proyecto Futuro",
           type: "Seguro de ahorro · PIAS",
+          contribution: { monthly: [50, 666], single: [600, 8000] },
           portfolios: [
             "Conservadora+",
             "Moderada+",
@@ -40,10 +41,10 @@
       name: "Intesa Sanpaolo Assicurazioni",
       logo: "intesa-sanpaolo-assicurazioni.png",
       products: [
-        { name: "TOP Plan", type: "Ahorro periódico", portfolios: planBaskets, apex: intesaApex },
-        { name: "TOP Premium", type: "Prima única", portfolios: intesaBaskets(["Base", "Standard", "Plus"]), apex: { ...intesaApex, wait: "30 días", transferAll: true } },
-        { name: "TOP PIAS", type: "Seguro de ahorro · PIAS", portfolios: planBaskets, apex: { ...intesaApex, annual: 8000 } },
-        { name: "TOP10", type: "Ahorro periódico", portfolios: intesaBaskets(["Conservador", "Moderado", "Dinámico"]), apex: intesaApex },
+        { name: "TOP Plan", type: "Ahorro periódico", portfolios: planBaskets, apex: intesaApex, contribution: { monthly: [50], quarterly: [150], annual: [600] } },
+        { name: "TOP Premium", type: "Prima única", portfolios: intesaBaskets(["Base", "Standard", "Plus"]), apex: { ...intesaApex, wait: "30 días", transferAll: true }, contribution: { single: [3000] } },
+        { name: "TOP PIAS", type: "Seguro de ahorro · PIAS", portfolios: planBaskets, apex: { ...intesaApex, annual: 8000 }, contribution: { monthly: [50, 666.66], quarterly: [150, 2000], annual: [600, 8000] } },
+        { name: "TOP10", type: "Ahorro periódico", portfolios: intesaBaskets(["Conservador", "Moderado", "Dinámico"]), apex: intesaApex, contribution: { monthly: [50, 1000], quarterly: [150, 3000], annual: [600, 12000] } },
       ],
     },
   ];
@@ -64,6 +65,7 @@
   window.PortfolioCompanies = {
     list: companies,
     find,
+    contribution: (company, product) => find(company)?.products.find((item) => norm(item.name) === norm(product))?.contribution,
     isTop10: (company, product) => find(company)?.id === "intesa" && norm(product) === "top10",
     apex: (company, product) => {
       const brand = find(company);

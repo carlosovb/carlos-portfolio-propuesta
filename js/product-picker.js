@@ -33,7 +33,11 @@
       img.src = "../assets/companies/" + company.logo;
       img.alt = "";
       img.dataset.company = company.id;
-      copy.append(img);
+      if (company.id === "intesa") {
+        const brand = node("span", undefined, "product-brand-icon");
+        brand.append(img);
+        copy.append(brand);
+      } else copy.append(img);
     }
     copy.append(node("strong", title));
     if (description) copy.append(node("small", description));

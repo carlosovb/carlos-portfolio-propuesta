@@ -457,11 +457,17 @@
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
       const query = new URLSearchParams({
         select:
-          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,archived_at,is_apex,parent_product_id",
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,archived_at,is_apex,parent_product_id,top_pias_with_initial",
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });
-      return (await authenticated("/rest/v1/client_products?" + query)).json();
+      try {
+        return (await authenticated("/rest/v1/client_products?" + query)).json();
+      } catch (error) {
+        if (error.status !== 400) throw error;
+        query.set("select", query.get("select").replace(",top_pias_with_initial", ""));
+        return (await authenticated("/rest/v1/client_products?" + query)).json();
+      }
     },
     async getPiasBudget(clientId, year, exclude = null) {
       return (
@@ -484,6 +490,8 @@
         signed_on: fields.signed_on,
         signed_multiplier: fields.signed_multiplier,
       };
+      if (fields.top_pias_with_initial !== undefined)
+        body.top_pias_with_initial = fields.top_pias_with_initial;
       const query = new URLSearchParams({ select: "id" });
       if (id) {
         query.set("id", "eq." + id);

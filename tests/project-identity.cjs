@@ -49,6 +49,18 @@ for (const [frequency, type, amount] of [["MENSUAL", "monthly", 50], ["TRIMESTRA
   assert.equal(result.draft.amount, amount);
 }
 
+const fillableCover = cover(["Forma de pago prima periódica", "Prima periódica anual total"]);
+fillableCover.push({ str: "Aportación inicial obligatoria", width: 140, transform: [1, 0, 0, 1, 320, 650] });
+const widget = (fieldValue, rect) => ({ subtype: "Widget", fieldType: "Tx", fieldValue, rect });
+const fillableTop10 = parser.parseProject("Intesa TOP10", fillableCover, [
+  widget("MENSUAL", [210, 645, 310, 660]),
+  widget("1.200 Euros", [210, 630, 310, 645]),
+  widget("300 Euros", [470, 645, 550, 660]),
+]);
+assert.equal(fillableTop10.draft.payment_type, "monthly");
+assert.equal(fillableTop10.draft.amount, 100);
+assert.equal(fillableTop10.draft.units, null);
+
 function fixture(withName = true) {
   const lines = [
     "AXA PIAS Proyecto Futuro",

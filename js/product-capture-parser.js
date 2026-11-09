@@ -243,17 +243,35 @@
         text += item.text;
         right = item.x + item.width;
       }
-      return { y: row.y, text: text.trim().replace(/\s+/g, " ") };
+      return { y: row.y, text: text.trim().replace(/\s+/g, " "), items: row.items };
     });
   }
 
-  function intesaCover(items) {
+  function intesaCover(items, fields) {
     const rows = projectRows(items);
     const find = (pattern) => rows.map((row) => row.text.match(pattern)).find(Boolean);
+    function paymentField(label, value) {
+      const inline = find(new RegExp(label.source + "\\s*" + value.source, "i"));
+      if (inline) return inline[1];
+      const labelOnly = new RegExp(label.source + "$", "i");
+      const row = rows.find(({ items }) => items.some(({ text }) => labelOnly.test(text.trim())));
+      if (!row) return undefined;
+      const index = row.items.findIndex(({ text }) => labelOnly.test(text.trim()));
+      const { x, width } = row.items[index];
+      const nextX = row.items[index + 1]?.x ?? Infinity;
+      const exactValue = new RegExp("^" + value.source + "$", "i");
+      // Algunos proyectos guardan los valores de la portada en campos rellenables.
+      const field = fields.filter(({ subtype, fieldType, hidden, rect, fieldValue }) =>
+        subtype === "Widget" && fieldType === "Tx" && !hidden &&
+        typeof fieldValue === "string" && exactValue.test(fieldValue.trim()) &&
+        rect?.[0] >= x + width - 1 && rect[0] < nextX && row.y >= rect[1] && row.y <= rect[3]
+      ).sort((a, b) => a.rect[0] - b.rect[0])[0];
+      return field?.fieldValue.trim().match(value)?.[1];
+    }
     const holder = find(/^Nombre y Apellidos del Tomador\s*:\s*(\p{L}[\p{L}\p{M} ,.'’\-]+)$/iu)?.[1]?.trim() || "";
-    const frequency = find(/^Forma de pago prima peri[oó]dica\s*:?\s*(MENSUAL|TRIMESTRAL|ANUAL)\b/i)?.[1]?.toLowerCase();
+    const frequency = paymentField(/^Forma de pago prima peri[oó]dica\s*:?/, /(MENSUAL|TRIMESTRAL|ANUAL)\b/i)?.toLowerCase();
     const money = (value) => number(/^\d{1,3}(?:\.\d{3})+$/.test(value || "") ? value.replace(/\./g, "") : value);
-    const annual = money(find(/^Prima peri[oó]dica anual total\s*:?\s*([\d.,]+)\s*(?:euros?\b|€)/i)?.[1]);
+    const annual = money(paymentField(/^Prima peri[oó]dica anual total\s*:?/, /([\d.,]+)\s*(?:euros?\b|€)/i));
     const single = money(find(/^Prima (?:[uú]nica(?: inicial)?|inicial [uú]nica)\s*:?\s*([\d.,]+)\s*(?:euros?\b|€)/i)?.[1]);
     const allocation = rows.findIndex((row) => /^Asignaci[oó]n de la prima\b/i.test(row.text));
     const funds = [];
@@ -290,27 +308,27 @@
       holder,
       basket,
       monthly: frequency === "mensual" && annual > 0 ? Math.round(annual * 100 / 12) / 100 : null,
-      top10: annual > 0 && frequency === "trimestral" ? { type: "quarterly", amount: Math.round(annual * 25) / 100 }
+      periodic: annual > 0 && frequency === "trimestral" ? { type: "quarterly", amount: Math.round(annual * 25) / 100 }
         : annual > 0 && frequency === "anual" ? { type: "annual", amount: annual } : null,
       single: single > 0 ? single : null,
     };
   }
 
-  function parseProject(text, coverItems = []) {
+  function parseProject(text, coverItems = [], coverFields = []) {
     text = String(text || "").replace(/[^\S\r\n]+/g, " ").trim();
     if (!text) throw Error("project-format");
     const normalized = norm(text);
     const productField = text.match(/^[ \t]*(?:Producto|Denominaci[oó]n del producto)[ \t]*(?::\s*|\r?\n[ \t]*)([^\r\n]+)/im)?.[1];
     const identity = identify(text, productField);
-    const cover = identity.company === "Intesa Sanpaolo Assicurazioni" ? intesaCover(coverItems) : {};
+    const cover = identity.company === "Intesa Sanpaolo Assicurazioni" ? intesaCover(coverItems, coverFields) : {};
     const holder = cover.holder || text.match(/^\s*(?:Documento preparado para|Tomador(?: del seguro)?|Nombre del cliente|Cliente)\s*:\s*([^\n]+)/im)?.[1]?.trim() || "";
     const selected = normalized.match(/cartera\s+(conservadora|moderada|equilibrada|dinamica|responsable|global)\s*\+/)?.[1];
     const basket = cover.basket || basketName(text);
     const monthly = cover.monthly ?? number(text.match(/\bMensual\s+([\d.,]+)\s*€/i)?.[1] ||
       normalized.match(/(?:aportacion|prima) mensual\s*:\s*([\d.,]+)/)?.[1]);
     const single = cover.single ?? number(normalized.match(/(?:aportacion|prima) unica(?: inicial)?\s*:\s*([\d.,]+)/)?.[1]);
-    const top10 = identity.product === "TOP10" ? cover.top10 : null;
-    const paymentType = top10?.type || (monthly !== null && single === null ? "monthly"
+    const periodic = cover.periodic || (cover.monthly ? { type: "monthly", amount: cover.monthly } : null);
+    const paymentType = periodic?.type || (monthly !== null && single === null ? "monthly"
       : single !== null && monthly === null ? "single" : "");
     const signature = documentSignature(text);
     const chosenPortfolio = identity.company === "AXA"
@@ -321,7 +339,7 @@
         ...identity,
         portfolio: chosenPortfolio,
         payment_type: paymentType,
-        amount: top10?.amount ?? (paymentType === "monthly" ? monthly : paymentType === "single" ? single : null),
+        amount: periodic?.amount ?? (paymentType === "monthly" ? monthly : paymentType === "single" ? single : null),
         units: null, signed_on: signature, signed_multiplier: "",
       },
       source: {

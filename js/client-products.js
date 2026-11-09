@@ -20,10 +20,19 @@
   const euro = (value) =>
     new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(value);
   const periods = {
-    monthly: { count: 12, minimum: 50, suffix: "/mes", label: "al mes" },
-    quarterly: { count: 4, minimum: 150, suffix: "/trimestre", label: "por trimestre" },
-    annual: { count: 1, minimum: 600, suffix: "/año", label: "al año" },
+    monthly: { count: 12, suffix: "/mes", label: "al mes" },
+    quarterly: { count: 4, suffix: "/trimestre", label: "por trimestre" },
+    annual: { count: 1, suffix: "/año", label: "al año" },
   };
+  const topPiasEntry = 3000;
+  function renderTopPiasInitial(host) {
+    host.replaceChildren(
+      node("span", "Aportación inicial del contrato"),
+      node("strong", euro(topPiasEntry)),
+      node("span", "Primer pago · entrada y primera cuota"),
+      node("strong", euro(topPiasEntry + 50)),
+    );
+  }
   function top10Initial(payment, amount) {
     const cents = Math.round(Number(amount) * 100);
     const extra = cents * ({ monthly: 3, quarterly: 1, annual: 0 }[payment]);
@@ -444,6 +453,11 @@
         renderTop10Initial(initial, row.payment_type, row.amount);
         detail.append(initial);
       }
+      if (row.top_pias_with_initial) {
+        const initial = node("div", undefined, "contract-apex-context contract-top10-initial");
+        renderTopPiasInitial(initial);
+        detail.append(initial);
+      }
       const extras = rows.filter((p) => p.is_apex && p.parent_product_id === row.id);
       if (extras.length) {
         const apexList = node("section", undefined, "contract-apex-list");
@@ -720,6 +734,15 @@
       };
     } else picker = window.ProductPicker.mount(form, editing, conditions);
     conditions.append(node("h5", "Condiciones del contrato"));
+    const mode = node("div");
+    const modeLabel = node("label", undefined, "capture-confirm");
+    const initialMode = node("input");
+    initialMode.type = "checkbox";
+    initialMode.checked = !!editing.top_pias_with_initial;
+    mode.hidden = true;
+    modeLabel.append(initialMode, "Modalidad de 50 €/año con 3.000 € iniciales");
+    mode.append(modeLabel);
+    conditions.append(mode);
     const payment = field(
       grid,
       "Tipo de aportación",
@@ -747,6 +770,10 @@
       required: true,
     });
     const amountControl = window.ContractControls.amount(amount, apexRule?.wait ? [300, 500, 1000, 2000, 3000, 5000] : undefined);
+    const amountLimits = node("small", "", "contract-amount-limits");
+    amountLimits.id = "contract-amount-limits";
+    amount.setAttribute("aria-describedby", amountLimits.id);
+    amount.closest("label").append(amountLimits);
     const units = field(
       grid,
       apex ? "Unidades de la APEX" : "Unidades generadas",
@@ -860,45 +887,79 @@
     });
     let budgetVersion = 0,
       budgetTimer;
+    let ordinaryPayment = initialMode.checked ? "monthly" : payment.value;
+    let ordinaryAmount = initialMode.checked ? "" : amount.value;
+    let withEntry = !!editing.top_pias_with_initial;
     function configureAmount(selection) {
       const top10 = !apex && window.PortfolioCompanies.isTop10(selection.company, selection.product);
-      const legacySingle = top10 && editing.id && editing.payment_type === "single" &&
-        window.PortfolioCompanies.isTop10(editing.company, editing.product);
+      const rules = window.PortfolioCompanies.contribution(selection.company, selection.product);
+      const topPias = !apex && window.PortfolioCompanies.find(selection.company)?.id === "intesa" &&
+        selection.product === "TOP PIAS";
+      mode.hidden = !topPias;
+      if (!topPias) initialMode.checked = false;
+      const useEntry = topPias && initialMode.checked;
+      if (useEntry !== withEntry) {
+        if (useEntry) {
+          ordinaryPayment = payment.value;
+          ordinaryAmount = amount.value;
+        } else {
+          payment.value = ordinaryPayment;
+          amount.value = ordinaryAmount;
+        }
+        withEntry = useEntry;
+      }
+      amount.readOnly = withEntry;
+      if (withEntry) {
+        payment.value = "annual";
+        amount.value = "50";
+      }
       if (!apex) {
         for (const option of payment.options) {
-          const hide = ["quarterly", "annual"].includes(option.value) ? !top10
-            : option.value === "single" && top10 && !legacySingle;
+          const legacy = editing.id && editing.payment_type === option.value &&
+            editing.company === selection.company && editing.product === selection.product;
+          const hide = withEntry ? option.value !== "annual"
+            : !!option.value && (rules ? !rules[option.value] && !legacy : ["quarterly", "annual"].includes(option.value));
           option.hidden = option.disabled = hide;
         }
-        if (payment.selectedOptions[0]?.disabled) payment.value = "monthly";
+        if (payment.selectedOptions[0]?.disabled) {
+          payment.value = Array.from(payment.options).find((option) => !option.disabled).value;
+        }
         paymentControl.refresh();
       }
       const pias = /pias/i.test(selection.product || "");
-      const monthly = !apex && payment.value === "monthly";
+      const count = apex ? 1 : periods[payment.value]?.count ?? 1;
       const period = top10 && periods[payment.value];
-      signed.required = apex || !!editing._capture || (pias && !monthly);
-      const minimum = String(apex ? apexRule?.minimum ?? 600 : period ? period.minimum : 0.01);
-      const maximum = String(period ? 12000 / period.count : pias ? (monthly ? 666 : 8000) : 100000000);
+      signed.required = withEntry || apex || !!editing._capture || (pias && payment.value === "single");
+      const [min, cap] = rules?.[payment.value] ?? [0.01];
+      const minimum = String(withEntry ? 50 : apex ? apexRule?.minimum ?? 600 : min);
+      const productCap = withEntry ? 50 : apex ? apexRule?.annual : cap;
+      const maximum = String(productCap ?? (pias ? 8000 : 100000000));
+      amountLimits.textContent = rules || apexRule
+        ? "Mínimo " + euro(Number(minimum)) + (pias ? " · Sujeto al margen anual del PIAS"
+          : productCap ? " · Máximo " + euro(productCap) : "")
+        : "";
       if (amount.min !== minimum || amount.max !== maximum) {
         amount.min = minimum;
         amount.max = maximum;
         amountControl.refresh();
       }
       amount.setCustomValidity("");
-      initial.hidden = !period || !amount.value;
-      if (!initial.hidden) renderTop10Initial(initial, payment.value, amount.value);
-      return { pias, monthly };
+      initial.hidden = !withEntry && (!period || !amount.value);
+      if (withEntry) renderTopPiasInitial(initial);
+      else if (!initial.hidden) renderTop10Initial(initial, payment.value, amount.value);
+      return { pias, count, maximum };
     }
     async function updateBudget() {
       const version = ++budgetVersion;
       const selection = picker.read(Object.fromEntries(new FormData(form)));
-      const { pias, monthly } = configureAmount(selection);
+      const { pias, count, maximum } = configureAmount(selection);
       if (!pias) {
         budget.hidden = true;
         save.disabled = false;
         return true;
       }
       const year = Number((signed.value || signed.max).slice(0, 4));
+      const entry = withEntry ? topPiasEntry : 0;
       budget.hidden = false;
       budget.textContent = "Comprobando margen anual…";
       save.disabled = true;
@@ -909,11 +970,12 @@
           const reserved = rest.reduce(
             (sum, r) =>
               sum +
-              (r.payment_type === "monthly"
-                ? Number(r.amount) * 12
+              (periods[r.payment_type]
+                ? Number(r.amount) * periods[r.payment_type].count
                 : Number(r.signed_on?.slice(0, 4)) === year
                   ? Number(r.amount)
-                  : 0),
+                  : 0) +
+              (r.top_pias_with_initial && Number(r.signed_on?.slice(0, 4)) === year ? topPiasEntry : 0),
             0,
           );
           result = { reserved, remaining: Math.max(0, 8000 - reserved) };
@@ -925,12 +987,10 @@
           !form.isConnected
         )
           return false;
-        const max = monthly
-          ? Math.min(666, Math.floor((Number(result.remaining) / 12) * 100) / 100)
-          : Number(result.remaining);
+        const max = Math.min(Number(maximum || Infinity), Math.floor((Number(result.remaining) - entry) * 100 / count) / 100);
         amount.max = String(Math.max(0, max));
         amountControl.refresh();
-        const candidate = Number(amount.value || 0) * (monthly ? 12 : 1),
+        const candidate = Number(amount.value || 0) * count + entry,
           available = Number(result.remaining) - candidate;
         budget.dataset.error = String(available < 0 || max < Number(amount.min));
         budget.textContent =
@@ -940,7 +1000,9 @@
           " de 8.000 € anuales · " +
           euro(Math.max(0, available)) +
           " disponibles. " +
-          (monthly ? "Se reservan 12 mensualidades completas. " : "") +
+          (count > 1 ? "Se reservan " + count + " cuotas completas. " : "") +
+          (entry ? "Incluye los 3.000 € de entrada del contrato. " : "") +
+          (entry && available < 0 ? "No hay margen para esta modalidad. " : "") +
           "Incluye los PIAS registrados de este cliente.";
         if (max < Number(amount.min))
           amount.setCustomValidity(
@@ -950,7 +1012,7 @@
           );
         else if (candidate > Number(result.remaining))
           amount.setCustomValidity("Esta aportación supera el margen anual disponible.");
-        return amount.checkValidity();
+        return available >= 0 && max >= Number(amount.min) && amount.checkValidity();
       } catch {
         if (ticket === epoch && version === budgetVersion) {
           budget.dataset.error = "true";
@@ -1006,6 +1068,7 @@
         signed_multiplier:
           values.signed_multiplier === "" ? null : Number(values.signed_multiplier),
       };
+      if (withEntry || editing.top_pias_with_initial) fields.top_pias_with_initial = withEntry;
       const ticket = epoch,
         target = client.id,
         id = editing.id || null;
