@@ -19,6 +19,37 @@
   };
   const euro = (value) =>
     new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(value);
+  function basketChart(row) {
+    if (window.PortfolioCompanies.find(row.company)?.id !== "intesa" || !row.portfolio) return null;
+    const shares = row.portfolio.split(/\s+\+\s+/).map((part) => {
+      const match = part.match(/^(.+?)\s+(\d+(?:[.,]\d{1,2})?)\s*%$/);
+      return match && { name: match[1], cents: Math.round(Number(match[2].replace(",", ".")) * 100) };
+    });
+    if (shares.length === 1 && !shares[0]) shares[0] = { name: row.portfolio, cents: 10000 };
+    if (shares.some((share) => !share || share.cents <= 0) ||
+        shares.reduce((total, share) => total + share.cents, 0) !== 10000) return null;
+    const chart = node("div", undefined, "contract-basket-chart");
+    const ring = node("span", undefined, "contract-basket-ring");
+    ring.setAttribute("aria-hidden", "true");
+    const legend = node("ul");
+    let start = 0;
+    const colors = ["#de9e72", "#5bb9ae", "#7ea3dd", "#c98bba"];
+    const segments = shares.map(({ name, cents }, index) => {
+      const color = colors[index] || "hsl(" + ((index * 137) % 360) + " 60% 57%)";
+      const item = node("li");
+      const dot = node("span", undefined, "contract-basket-dot");
+      dot.style.backgroundColor = color;
+      dot.setAttribute("aria-hidden", "true");
+      item.append(dot, node("span", name), node("strong", (cents / 100).toLocaleString("es-ES") + " %"));
+      legend.append(item);
+      const segment = color + " " + (start / 100) + "% " + ((start + cents) / 100) + "%";
+      start += cents;
+      return segment;
+    });
+    ring.style.backgroundImage = "conic-gradient(" + segments.join(",") + ")";
+    chart.append(ring, legend);
+    return chart;
+  }
   const button = (text, fn, cls = "panel-secondary") => {
     const b = node("button", text, cls);
     b.type = "button";
@@ -380,7 +411,10 @@
           : []),
       ].forEach(([label, value]) => {
         const item = node("div");
-        item.append(node("dt", label), node("dd", value));
+        const description = node("dd");
+        const chart = label === "Cartera de fondos" && basketChart(row);
+        description.append(chart || value);
+        item.append(node("dt", label), description);
         dl.append(item);
       });
       detail.append(dl);

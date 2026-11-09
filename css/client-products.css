@@ -1134,6 +1134,42 @@ html[data-theme="dark"] .product-choice-copy img {
 .intesa-basket-add {
   margin-top: 3px;
 }
+.contract-basket-chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px 12px;
+  align-items: center;
+}
+.contract-basket-ring {
+  width: clamp(46px, 8vw, 64px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  mask-image: radial-gradient(transparent 44%, #000 46%);
+}
+.contract-basket-chart ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.contract-basket-chart li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: baseline;
+  font-size: .8125rem;
+  overflow-wrap: anywhere;
+}
+.contract-basket-chart li strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.contract-basket-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
 .product-portfolio-options .axa-choice .product-choice-copy {
   display: grid;
   grid-template-columns: 1fr auto;

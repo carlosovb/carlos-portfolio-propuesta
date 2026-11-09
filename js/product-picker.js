@@ -288,7 +288,15 @@
           : "";
         addBasket("", remaining, true);
       });
-      group.addEventListener("input", update);
+      group.addEventListener("input", (event) => {
+        const edited = rows.find(({ weight }) => weight === event.target);
+        if (rows.length === 2 && edited?.weight.value && edited.weight.validity.valid &&
+            rows.every(({ basket }) => basket.value)) {
+          const other = rows.find((row) => row !== edited);
+          other.weight.value = (10000 - Math.round(Number(edited.weight.value) * 100)) / 100;
+        }
+        update();
+      });
       group.addEventListener("change", update);
       readMix = () => rows.filter(({ basket, weight }) => basket.value && weight.value)
         .map(({ basket, weight }) => basket.value + " " + Number(weight.value) + " %").join(" + ");
