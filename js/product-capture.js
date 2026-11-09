@@ -348,7 +348,25 @@
       ];
       for (const [name, value] of data) {
         const pair = el("div");
-        pair.append(el("dt", name), el("dd", value || "Pendiente de completar"));
+        const detail = el("dd", value || "Pendiente de completar");
+        pair.append(el("dt", name), detail);
+        if (name === "Cartera propuesta" && source.project && draft.company === "Intesa Sanpaolo Assicurazioni" && value) {
+          const parts = value.split(/\s+\+\s+/);
+          const shares = parts.length === 1 ? [[value, "100"]] : parts.map((part) => {
+            const match = part.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*%$/);
+            return match && match.slice(1);
+          });
+          if (shares.every(Boolean)) {
+            const list = el("ul", null, "capture-basket-shares");
+            for (const [basket, weight] of shares) {
+              const item = el("li");
+              item.append(el("span", basket), el("strong", weight.replace(".", ",") + " %"));
+              list.append(item);
+            }
+            pair.classList.add("capture-baskets");
+            detail.replaceChildren(list);
+          }
+        }
         grid.append(pair);
       }
       preview.append(grid);

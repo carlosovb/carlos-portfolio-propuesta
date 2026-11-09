@@ -56,6 +56,30 @@
   font-size: 14px;
   overflow-wrap: anywhere;
 }
+.capture-baskets {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.capture-basket-shares {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.capture-basket-shares li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.capture-basket-shares strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 .capture-note {
   border-left: 2px solid var(--accent, #e5af84);
   padding-left: 12px;

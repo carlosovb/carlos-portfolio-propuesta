@@ -197,49 +197,72 @@
         ? new Map(previous) : new Map();
       const registered = saved && !single && !previousMix.size ? saved : "";
       const group = node("div", undefined, "intesa-basket-allocation");
-      group.hidden = !previousMix.size;
-      const summary = node("p", "", "intesa-basket-total");
+      const header = node("div", undefined, "intesa-basket-header");
+      const summary = node("strong", "", "intesa-basket-total");
       summary.setAttribute("aria-live", "polite");
-      group.append(summary);
+      header.append(node("span", "Aportación distribuida"), summary);
+      const progress = node("progress", undefined, "intesa-basket-progress");
+      progress.max = 100;
+      progress.setAttribute("aria-label", "Porcentaje de la aportación distribuido");
+      const list = node("div", undefined, "intesa-basket-list");
+      const add = node("button", "+ Añadir cesta", "panel-secondary intesa-basket-add");
+      add.type = "button";
+      group.append(header, progress, list, add);
       portfolios.append(group);
-      const rows = names.map((name) => {
+      const rows = [];
+      function addBasket(name = "", value = "", focus = false) {
         const row = node("div", undefined, "intesa-basket-row");
-        const label = node("label");
-        const check = node("input");
-        check.type = "checkbox";
-        check.checked = previousMix.has(name);
-        label.append(check, document.createTextNode(name));
+        const basket = node("select");
+        basket.setAttribute("aria-label", "Cesta");
+        basket.append(new Option("Elige una cesta", ""));
+        for (const option of names) basket.append(new Option(option, option));
+        basket.value = name;
         const weight = node("input");
         weight.type = "number";
         weight.min = "0.01";
         weight.max = "100";
         weight.step = "0.01";
-        weight.value = previousMix.get(name) ?? "";
-        weight.setAttribute("aria-label", "Porcentaje de " + name);
+        weight.value = value;
         const percentage = node("span", undefined, "intesa-basket-weight");
         const unit = node("span", "%");
         unit.setAttribute("aria-hidden", "true");
         percentage.append(weight, unit);
-        row.append(label, percentage);
-        group.append(row);
-        return { name, check, weight, percentage };
-      });
+        const remove = node("button", "×", "intesa-basket-remove");
+        remove.type = "button";
+        const entry = { basket, weight, remove };
+        row.append(basket, percentage, remove);
+        list.append(row);
+        rows.push(entry);
+        remove.addEventListener("click", () => {
+          const index = rows.indexOf(entry);
+          rows.splice(index, 1);
+          row.remove();
+          update();
+          (rows[index]?.basket || rows[index - 1]?.basket || add).focus();
+        });
+        if (focus) {
+          update();
+          basket.focus();
+        }
+      }
       const update = () => {
         group.hidden = !mixRadio.checked;
-        const selected = rows.filter(({ check }) => check.checked);
-        let cents = 0;
-        let valid = selected.length >= 2;
-        for (const { check, weight, percentage } of rows) {
-          check.disabled = group.hidden;
-          weight.disabled = group.hidden || !check.checked;
-          weight.required = !weight.disabled;
-          percentage.hidden = !check.checked;
-          if (check.checked) {
-            cents += Math.round(Number(weight.value) * 100);
-            if (!weight.value || !weight.validity.valid) valid = false;
+        const namesInUse = new Set(rows.map(({ basket }) => basket.value).filter(Boolean));
+        let cents = 0, valid = rows.length >= 2 && namesInUse.size === rows.length;
+        for (const { basket, weight, remove } of rows) {
+          basket.disabled = weight.disabled = group.hidden;
+          basket.required = weight.required = !group.hidden;
+          weight.setAttribute("aria-label", basket.value ? "Porcentaje de " + basket.value : "Porcentaje de la cesta");
+          remove.setAttribute("aria-label", basket.value ? "Quitar " + basket.value : "Quitar cesta");
+          for (const option of basket.options) {
+            option.disabled = option.value !== basket.value && namesInUse.has(option.value);
           }
+          cents += Math.round(Number(weight.value) * 100);
+          if (!weight.value || !weight.validity.valid) valid = false;
         }
-        summary.textContent = "Total asignado · " + (cents / 100).toLocaleString("es-ES") + " % de 100 %";
+        add.disabled = rows.length >= names.length || namesInUse.size !== rows.length;
+        summary.textContent = (cents / 100).toLocaleString("es-ES") + " % / 100 %";
+        progress.value = Math.min(cents / 100, 100);
         summary.dataset.complete = String(valid && cents === 10000);
         mixRadio.setCustomValidity(!group.hidden && (!valid || cents !== 10000)
           ? "Selecciona al menos dos cestas y reparte exactamente el 100 %." : "");
@@ -252,10 +275,23 @@
       for (const name of names) choice(options, "portfolio", name, name, "100 %", name === single, select);
       if (registered) choice(options, "portfolio", registered, registered, "Cesta registrada", true, select);
       const mixRadio = choice(options, "portfolio", mix, "Repartir entre cestas", "Asigna un porcentaje a cada una", !!previousMix.size, select);
+      mixRadio.addEventListener("invalid", (event) => {
+        if (group.hidden) return;
+        event.preventDefault();
+        (rows.at(-1)?.weight || add).focus();
+      });
+      for (const [name, weight] of previousMix) addBasket(name, weight);
+      add.addEventListener("click", () => {
+        const first = rows[0]?.weight;
+        const remaining = rows.length === 1 && first.value && first.validity.valid
+          ? (10000 - Math.round(Number(first.value) * 100)) / 100
+          : "";
+        addBasket("", remaining, true);
+      });
       group.addEventListener("input", update);
       group.addEventListener("change", update);
-      readMix = () => rows.filter(({ check, weight }) => check.checked && weight.value)
-        .map(({ name, weight }) => name + " " + Number(weight.value) + " %").join(" + ");
+      readMix = () => rows.filter(({ basket, weight }) => basket.value && weight.value)
+        .map(({ basket, weight }) => basket.value + " " + Number(weight.value) + " %").join(" + ");
       select(previousMix.size ? mix : single || registered || "");
     }
     function renderProducts(selectedCompany, savedProduct = "", savedPortfolio = "") {

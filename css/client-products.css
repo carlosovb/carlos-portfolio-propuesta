@@ -1066,43 +1066,73 @@ html[data-theme="dark"] .product-choice-copy img {
   gap: 10px;
 }
 .intesa-basket-allocation {
-  margin-top: 8px;
-  border-top: 1px solid var(--line);
+  margin-top: 6px;
+  padding: clamp(12px, 2vw, 18px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+.intesa-basket-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: .8125rem;
 }
 .intesa-basket-total {
-  margin: 10px 0 4px;
-  color: var(--muted);
-  font-size: .875rem;
-  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  font-variant-numeric: tabular-nums;
 }
 .intesa-basket-total[data-complete="true"] {
   color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.intesa-basket-progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  margin: 9px 0 13px;
+  accent-color: var(--accent);
 }
 .intesa-basket-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 105px;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) clamp(66px, 16vw, 100px) auto;
+  gap: clamp(5px, 1vw, 10px);
   align-items: center;
-  min-height: 42px;
+  margin-bottom: 8px;
 }
-.intesa-basket-row label {
+.intesa-basket-row select {
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+.intesa-basket-remove {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+}
+.intesa-basket-remove:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.intesa-basket-weight {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-.intesa-basket-row input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  min-height: 0;
-  flex: none;
-}
-.intesa-basket-weight:not([hidden]) {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .intesa-basket-weight input {
   min-width: 0;
+  padding-inline: 6px;
+}
+.intesa-basket-add {
+  margin-top: 3px;
 }
 .product-portfolio-options .axa-choice .product-choice-copy {
   display: grid;
