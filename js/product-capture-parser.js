@@ -251,7 +251,7 @@
     const rows = projectRows(items);
     const find = (pattern) => rows.map((row) => row.text.match(pattern)).find(Boolean);
     const holder = find(/^Nombre y Apellidos del Tomador\s*:\s*(\p{L}[\p{L}\p{M} ,.'’\-]+)$/iu)?.[1]?.trim() || "";
-    const periodicity = find(/^Forma de pago prima peri[oó]dica\s*:?\s*(MENSUAL)\b/i)?.[1];
+    const frequency = find(/^Forma de pago prima peri[oó]dica\s*:?\s*(MENSUAL|TRIMESTRAL|ANUAL)\b/i)?.[1]?.toLowerCase();
     const money = (value) => number(/^\d{1,3}(?:\.\d{3})+$/.test(value || "") ? value.replace(/\./g, "") : value);
     const annual = money(find(/^Prima peri[oó]dica anual total\s*:?\s*([\d.,]+)\s*(?:euros?\b|€)/i)?.[1]);
     const single = money(find(/^Prima (?:[uú]nica(?: inicial)?|inicial [uú]nica)\s*:?\s*([\d.,]+)\s*(?:euros?\b|€)/i)?.[1]);
@@ -289,7 +289,9 @@
     return {
       holder,
       basket,
-      monthly: periodicity && annual > 0 ? Math.round(annual * 100 / 12) / 100 : null,
+      monthly: frequency === "mensual" && annual > 0 ? Math.round(annual * 100 / 12) / 100 : null,
+      top10: annual > 0 && frequency === "trimestral" ? { type: "quarterly", amount: Math.round(annual * 25) / 100 }
+        : annual > 0 && frequency === "anual" ? { type: "annual", amount: annual } : null,
       single: single > 0 ? single : null,
     };
   }
@@ -307,8 +309,9 @@
     const monthly = cover.monthly ?? number(text.match(/\bMensual\s+([\d.,]+)\s*€/i)?.[1] ||
       normalized.match(/(?:aportacion|prima) mensual\s*:\s*([\d.,]+)/)?.[1]);
     const single = cover.single ?? number(normalized.match(/(?:aportacion|prima) unica(?: inicial)?\s*:\s*([\d.,]+)/)?.[1]);
-    const paymentType = monthly !== null && single === null ? "monthly"
-      : single !== null && monthly === null ? "single" : "";
+    const top10 = identity.product === "TOP10" ? cover.top10 : null;
+    const paymentType = top10?.type || (monthly !== null && single === null ? "monthly"
+      : single !== null && monthly === null ? "single" : "");
     const signature = documentSignature(text);
     const chosenPortfolio = identity.company === "AXA"
       ? portfolios.find(([key]) => key === selected)?.[1] || ""
@@ -318,7 +321,7 @@
         ...identity,
         portfolio: chosenPortfolio,
         payment_type: paymentType,
-        amount: paymentType === "monthly" ? monthly : paymentType === "single" ? single : null,
+        amount: top10?.amount ?? (paymentType === "monthly" ? monthly : paymentType === "single" ? single : null),
         units: null, signed_on: signature, signed_multiplier: "",
       },
       source: {

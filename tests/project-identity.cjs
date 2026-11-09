@@ -41,6 +41,13 @@ assert.equal(premium.draft.payment_type, "single");
 assert.equal(premium.draft.amount, 12000);
 assert.equal(premium.draft.portfolio, "Perfil Moderado ESG 60 % + Global Equity DB - Clase E 40 %");
 assert.equal(parser.parseProject("Intesa TOP10", cover(allocation.slice(0, 4))).draft.portfolio, "");
+for (const [frequency, type, amount] of [["MENSUAL", "monthly", 50], ["TRIMESTRAL", "quarterly", 150], ["ANUAL", "annual", 600]]) {
+  const result = parser.parseProject("Intesa TOP10", cover([
+    "Forma de pago prima periódica " + frequency, "Prima periódica anual total 600 Euros",
+  ]));
+  assert.equal(result.draft.payment_type, type);
+  assert.equal(result.draft.amount, amount);
+}
 
 function fixture(withName = true) {
   const lines = [

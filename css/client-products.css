@@ -1170,6 +1170,16 @@ html[data-theme="dark"] .product-choice-copy img {
   height: 8px;
   border-radius: 50%;
 }
+.contract-top10-initial:not([hidden]) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 5px 12px;
+  margin-block: 12px;
+}
+.contract-top10-initial strong {
+  text-align: right;
+}
 .product-portfolio-options .axa-choice .product-choice-copy {
   display: grid;
   grid-template-columns: 1fr auto;

@@ -37,7 +37,7 @@
     group.setAttribute("role", "group");
     group.setAttribute("aria-label", "Tipo de aportación");
     const buttons = [...select.options].map((option) => {
-      const b = el("button", option.value === "monthly" ? "Mensual" : "Única");
+      const b = el("button", option.value === "single" ? "Única" : option.text.split(" · ")[0]);
       b.type = "button";
       b.dataset.payment = option.value;
       b.addEventListener("click", () => {
@@ -47,13 +47,15 @@
       group.append(b);
       return b;
     });
-    const sync = () =>
-      buttons.forEach((b) =>
-        b.setAttribute("aria-pressed", String(b.dataset.payment === select.value)),
-      );
+    const sync = () => buttons.forEach((b, index) => {
+      b.hidden = select.options[index].hidden;
+      b.disabled = select.options[index].disabled;
+      b.setAttribute("aria-pressed", String(b.dataset.payment === select.value));
+    });
     select.after(group);
     select.addEventListener("change", sync);
     sync();
+    return { refresh: sync };
   }
   function amount(input, examples) {
     let suppressFocus = false;

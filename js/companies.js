@@ -64,6 +64,7 @@
   window.PortfolioCompanies = {
     list: companies,
     find,
+    isTop10: (company, product) => find(company)?.id === "intesa" && norm(product) === "top10",
     apex: (company, product) => {
       const brand = find(company);
       const entry = brand?.products.find((item) => norm(item.name) === norm(product));

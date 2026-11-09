@@ -121,6 +121,7 @@ const assert = require("node:assert/strict");
     await db.exec(fs.readFileSync("database/client-apex.sql", "utf8"));
     await db.exec(fs.readFileSync("database/client-apex.sql", "utf8"));
     await db.exec(fs.readFileSync("database/intesa-apex.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/top10-periodicity.sql", "utf8"));
     await as(other);
     const rates = JSON.stringify({ [owner]: 3.5, [member]: 2.5 });
     const add = async ({
@@ -386,6 +387,24 @@ const assert = require("node:assert/strict");
         await add({ ...extra, amount: 15000 });
       }
     }
+    const top10 = { target: intesaClient, company: "Intesa Sanpaolo Assicurazioni",
+      product: "TOP10", portfolio: "Global Equity DB - Clase E" };
+    for (const [payment, minimum, maximum] of [["monthly", 50, 1000], ["quarterly", 150, 3000], ["annual", 600, 12000]]) {
+      await assert.rejects(() => add({ ...top10, payment, amount: minimum - 0.01 }), /TOP10 requires/);
+      await assert.rejects(() => add({ ...top10, payment, amount: maximum + 0.01 }), /TOP10 requires/);
+      const saved = await add({ ...top10, payment, amount: minimum });
+      assert.equal((await db.query("select payment_type from public.client_products where id=$1", [saved])).rows[0].payment_type, payment);
+    }
+    await assert.rejects(() => add({ ...top10, product: "TOP Plan", payment: "annual", amount: 600 }), /payment_type_check/);
+    const legacy = await add({ ...top10, payment: "annual", amount: 600, units: null });
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/required-product-units.sql", "utf8"));
+    await as(other);
+    await assert.rejects(() => add({ ...top10, payment: "annual", amount: 600, units: null }), /Introduce las unidades/);
+    await assert.rejects(() => db.query("update public.client_products set units=null where id=$1", [legacy]), /Introduce las unidades/);
+    await db.query("update public.client_products set amount=650 where id=$1", [legacy]);
+    await db.query("update public.client_products set units=0 where id=$1", [legacy]);
+    assert.equal(Number((await db.query("select units from public.client_products where id=$1", [legacy])).rows[0].units), 0);
     console.log(
       "APEX: cartera obligatoria, 666 al mes, mínimo 600, límite anual 8000, firmas independientes, aislamiento e historial permanente comprobados.",
     );

@@ -328,11 +328,7 @@
         ["Aportación", draft.amount == null ? "" : draft.amount + " €"],
         [
           "Periodicidad",
-          draft.payment_type === "monthly"
-            ? "Mensual"
-            : draft.payment_type === "single"
-              ? "Única"
-              : "",
+          { monthly: "Mensual", quarterly: "Trimestral", annual: "Anual", single: "Única" }[draft.payment_type] || "",
         ],
         [
           "Unidades a guardar",

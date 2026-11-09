@@ -19,6 +19,25 @@
   };
   const euro = (value) =>
     new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(value);
+  const periods = {
+    monthly: { count: 12, minimum: 50, suffix: "/mes", label: "al mes" },
+    quarterly: { count: 4, minimum: 150, suffix: "/trimestre", label: "por trimestre" },
+    annual: { count: 1, minimum: 600, suffix: "/año", label: "al año" },
+  };
+  function top10Initial(payment, amount) {
+    const cents = Math.round(Number(amount) * 100);
+    const extra = cents * ({ monthly: 3, quarterly: 1, annual: 0 }[payment]);
+    return { extra: extra / 100, first: (cents + extra) / 100 };
+  }
+  function renderTop10Initial(host, payment, amount) {
+    const { extra, first } = top10Initial(payment, amount);
+    host.replaceChildren(
+      node("span", "Prima adicional inicial calculada"),
+      node("strong", extra ? euro(extra) : "No se exige con pago anual"),
+      node("span", "Primer pago calculado"),
+      node("strong", euro(first)),
+    );
+  }
   function basketChart(row) {
     if (window.PortfolioCompanies.find(row.company)?.id !== "intesa" || !row.portfolio) return null;
     const shares = row.portfolio.split(/\s+\+\s+/).map((part) => {
@@ -151,9 +170,11 @@
     const visibleRows = baseRows.filter((r) =>
       scope === "history" ? !!r.archived_at : !r.archived_at,
     );
+    const recurringLabel = liveRows.some((r) => ["quarterly", "annual"].includes(r.payment_type))
+      ? "Equivalente mensual" : "Aportación mensual";
     const monthly = liveRows
-        .filter((r) => r.payment_type === "monthly")
-        .reduce((s, r) => s + Number(r.amount), 0),
+        .filter((r) => periods[r.payment_type])
+        .reduce((s, r) => s + Number(r.amount) * periods[r.payment_type].count / 12, 0),
       single = rows
         .filter((r) => !r.archived_at)
         .filter((r) => r.payment_type === "single")
@@ -167,7 +188,7 @@
       ],
       ["en cartera", String(liveRows.length)],
       [
-        "Aportación mensual",
+        recurringLabel,
         new Intl.NumberFormat("es-ES", {
           style: "currency",
           currency: "EUR",
@@ -183,7 +204,7 @@
       box.append(node("small", label), node("strong", value));
       if (label === "en cartera")
         box.querySelector("strong").append(node("span", " productos", "metric-suffix"));
-      if (label === "Aportación mensual")
+      if (label === recurringLabel)
         box.querySelector("strong").append(node("span", "/mes", "metric-month-suffix"));
       metrics.append(box);
     });
@@ -353,14 +374,14 @@
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
             }).format(row.amount) +
-            (row.payment_type === "monthly" ? "/mes" : " · aportación única"),
+            (periods[row.payment_type]?.suffix || " · aportación única"),
           "contract-portfolio-label",
         ),
       );
       const payment = node("span", undefined, "contract-payment");
       payment.append(
         node("strong", euro(row.amount)),
-        node("small", row.payment_type === "monthly" ? "al mes" : "aportación única"),
+        node("small", periods[row.payment_type]?.label || "aportación única"),
       );
       const units = node("span", undefined, "contract-units");
       units.append(
@@ -418,6 +439,11 @@
         dl.append(item);
       });
       detail.append(dl);
+      if (window.PortfolioCompanies.isTop10(row.company, row.product) && periods[row.payment_type]) {
+        const initial = node("div", undefined, "contract-apex-context contract-top10-initial");
+        renderTop10Initial(initial, row.payment_type, row.amount);
+        detail.append(initial);
+      }
       const extras = rows.filter((p) => p.is_apex && p.parent_product_id === row.id);
       if (extras.length) {
         const apexList = node("section", undefined, "contract-apex-list");
@@ -703,16 +729,19 @@
         options: [
           ...(editing._capture ? [["", "Selecciona la periodicidad"]] : []),
           ["monthly", "Mensual · €/mes"],
+          ["quarterly", "Trimestral · €/trimestre"],
+          ["annual", "Anual · €/año"],
           ["single", "Aportación única"],
         ],
       },
     );
     payment.required = true;
+    let paymentControl;
     if (apex) {
       payment.value = "single";
       payment.disabled = true;
       payment.closest("label").hidden = true;
-    } else window.ContractControls.payment(payment);
+    } else paymentControl = window.ContractControls.payment(payment);
     const amount = field(grid, "Importe en euros", "amount", editing.amount, {
       type: "number",
       required: true,
@@ -720,15 +749,19 @@
     const amountControl = window.ContractControls.amount(amount, apexRule?.wait ? [300, 500, 1000, 2000, 3000, 5000] : undefined);
     const units = field(
       grid,
-      apex ? "Unidades de la APEX" : "Unidades generadas (opcional)",
+      apex ? "Unidades de la APEX" : "Unidades generadas",
       "units",
       editing.units,
       {
         type: "number",
       },
     );
-    units.required = apex;
+    units.required = true;
     conditions.append(grid);
+    const initial = node("div", undefined, "contract-apex-context contract-top10-initial");
+    initial.hidden = true;
+    initial.setAttribute("aria-live", "polite");
+    conditions.append(initial);
     const budget = node("p", undefined, "contract-pias-budget");
     budget.setAttribute("role", "status");
     budget.hidden = true;
@@ -827,15 +860,39 @@
     });
     let budgetVersion = 0,
       budgetTimer;
+    function configureAmount(selection) {
+      const top10 = !apex && window.PortfolioCompanies.isTop10(selection.company, selection.product);
+      const legacySingle = top10 && editing.id && editing.payment_type === "single" &&
+        window.PortfolioCompanies.isTop10(editing.company, editing.product);
+      if (!apex) {
+        for (const option of payment.options) {
+          const hide = ["quarterly", "annual"].includes(option.value) ? !top10
+            : option.value === "single" && top10 && !legacySingle;
+          option.hidden = option.disabled = hide;
+        }
+        if (payment.selectedOptions[0]?.disabled) payment.value = "monthly";
+        paymentControl.refresh();
+      }
+      const pias = /pias/i.test(selection.product || "");
+      const monthly = !apex && payment.value === "monthly";
+      const period = top10 && periods[payment.value];
+      signed.required = apex || !!editing._capture || (pias && !monthly);
+      const minimum = String(apex ? apexRule?.minimum ?? 600 : period ? period.minimum : 0.01);
+      const maximum = String(period ? 12000 / period.count : pias ? (monthly ? 666 : 8000) : 100000000);
+      if (amount.min !== minimum || amount.max !== maximum) {
+        amount.min = minimum;
+        amount.max = maximum;
+        amountControl.refresh();
+      }
+      amount.setCustomValidity("");
+      initial.hidden = !period || !amount.value;
+      if (!initial.hidden) renderTop10Initial(initial, payment.value, amount.value);
+      return { pias, monthly };
+    }
     async function updateBudget() {
       const version = ++budgetVersion;
       const selection = picker.read(Object.fromEntries(new FormData(form)));
-      const pias = /pias/i.test(selection.product || "");
-      const monthly = !apex && payment.value === "monthly";
-      signed.required = apex || !!editing._capture || (pias && !monthly);
-      amount.min = apex ? String(apexRule?.minimum ?? 600) : "0.01";
-      amount.max = pias ? (monthly ? "666" : "8000") : "100000000";
-      amount.setCustomValidity("");
+      const { pias, monthly } = configureAmount(selection);
       if (!pias) {
         budget.hidden = true;
         save.disabled = false;
@@ -910,16 +967,7 @@
       clearTimeout(budgetTimer);
       budgetVersion++;
       const selection = picker.read(Object.fromEntries(new FormData(form)));
-      const pias = /pias/i.test(selection.product || "");
-      signed.required =
-        apex || !!editing._capture || (pias && payment.value === "single");
-      amount.min = apex ? String(apexRule?.minimum ?? 600) : "0.01";
-      amount.max = pias
-        ? !apex && payment.value === "monthly"
-          ? "666"
-          : "8000"
-        : "100000000";
-      amount.setCustomValidity("");
+      const { pias } = configureAmount(selection);
       if (!pias) {
         budget.hidden = true;
         save.disabled = false;
