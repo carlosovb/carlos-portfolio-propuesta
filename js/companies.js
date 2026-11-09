@@ -26,6 +26,12 @@
       id: "intesa",
       name: "Intesa Sanpaolo Assicurazioni",
       logo: "intesa-sanpaolo-assicurazioni.png",
+      products: [
+        { name: "TOP Plan", type: "Ahorro periódico" },
+        { name: "TOP Premium", type: "Prima única" },
+        { name: "TOP PIAS", type: "Seguro de ahorro · PIAS" },
+        { name: "TOP10", type: "Ahorro periódico" },
+      ],
     },
   ];
   const norm = (value) =>

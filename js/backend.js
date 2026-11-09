@@ -51,6 +51,8 @@
       [
         ...cachedRpcs,
         "get_career_progress",
+        "list_career_requests",
+        "list_career_trophies",
         "get_my_clients_without_products",
         "update_panel_presence",
         "update_panel_connection_presence",
@@ -228,6 +230,10 @@
     async panelQuery(name, args = {}) {
       if (
         ![
+          "list_career_requests",
+          "list_career_trophies",
+          "request_career_promotion",
+          "review_career_request",
           "get_panel_activity",
           "add_client_note",
           "get_my_client",
@@ -314,6 +320,25 @@
       return new Blob([await response.arrayBuffer()], {
         type: path.endsWith(".html") ? "text/html" : "application/pdf",
       });
+    },
+    async updateResource(id, fields) {
+      if (!/^[0-9a-f-]{36}$/i.test(id)) throw Error("Recurso no válido.");
+      let link = null;
+      if (["link", "web"].includes(fields.kind)) {
+        const url = new URL(fields.url);
+        if (url.protocol !== "https:" || url.username || url.password) throw Error("Enlace no válido.");
+        link = url.href;
+      }
+      const response = await authenticated("/rest/v1/rpc/update_resource", {
+        method: "POST",
+        body: JSON.stringify({
+          p_id: id,
+          p_product: fields.product.trim(),
+          p_title: fields.title.trim(),
+          p_url: link,
+        }),
+      });
+      if ((await response.json()) !== id) throw Error("No se ha confirmado la actualización.");
     },
     async archiveResource(id, archived) {
       if (!/^[0-9a-f-]{36}$/i.test(id)) throw Error("Recurso no válido.");
@@ -474,8 +499,9 @@
         headers: { Prefer: "return=representation" },
         body: JSON.stringify(body),
       });
-      if ((await response.json()).length !== 1)
-        throw Error("No se ha confirmado el guardado.");
+      const saved = await response.json();
+      if (saved.length !== 1) throw Error("No se ha confirmado el guardado.");
+      return saved[0].id;
     },
     async deleteClientProducts(clientId, ids) {
       if (

@@ -103,7 +103,7 @@ const client = {
     await login(page, process.env.PRODUCT_CAPTURE_URL || `http://127.0.0.1:${server.address().port}/`);
     await page.evaluate(() => window.PanelNavigation.go("clients"));
     await page.locator("#clients-list .client-identity").first().click();
-    await page.getByRole("button", { name: "Importar captura", exact: true }).click();
+    await page.getByRole("button", { name: "Importar captura o proyecto", exact: true }).click();
     const image = await page.evaluate(() => {
       const c = document.createElement("canvas");
       c.width = 1800;
@@ -228,7 +228,7 @@ const client = {
         external.push(r.url());
     });
     await lab.goto(`http://127.0.0.1:${server.address().port}/pruebas-capturas/`);
-    await lab.getByRole("button", { name: "Importar captura", exact: true }).click();
+    await lab.getByRole("button", { name: "Importar captura o proyecto", exact: true }).click();
     await lab.locator(".capture-body input[type=file]").waitFor();
     await lab.locator(".capture-body input[type=file]").setInputFiles({
       name: "contrato-ficticio.png",

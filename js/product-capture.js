@@ -5,6 +5,7 @@
     if (["localhost", "127.0.0.1"].includes(location.hostname))
       window.dispatchEvent(new CustomEvent("capture-diagnostic", { detail }));
   }
+  const pdfBase = new URL("../assets/vendor/pdfjs/", document.currentScript.src);
   let library;
   function load() {
     if (window.Tesseract) return Promise.resolve();
@@ -66,7 +67,7 @@
   }
   function mount(form, { client, existing, onDraft, current }) {
     const root = el("section", null, "capture-import");
-    const trigger = button("Importar desde captura", () => {
+    const trigger = button("Importar captura o proyecto", () => {
       body.hidden = !body.hidden;
       trigger.setAttribute("aria-expanded", String(!body.hidden));
       if (!body.hidden) file.focus();
@@ -74,10 +75,10 @@
     trigger.setAttribute("aria-expanded", "false");
     const body = el("div", null, "capture-body");
     body.hidden = true;
-    const label = el("label", "Sube una captura o pégala aquí con Ctrl + V");
+    const label = el("label", "Sube una captura o un proyecto PDF. También puedes pegar una captura con Ctrl + V");
     const file = el("input");
     file.type = "file";
-    file.accept = "image/png,image/jpeg,image/webp";
+    file.accept = "image/png,image/jpeg,image/webp,application/pdf,.pdf";
     label.append(file);
     const status = el(
       "p",
@@ -103,6 +104,7 @@
     form.append(root);
     let generation = 0,
       worker = null,
+      pdfTask = null,
       url = null,
       dead = false,
       lastImage = null;
@@ -115,10 +117,16 @@
       const active = worker;
       worker = null;
       if (active) active.terminate().catch(() => {});
+      pdfTask?.destroy().catch(() => {});
+      pdfTask = null;
       progress.hidden = cancel.hidden = true;
       file.disabled = false;
     }
     async function accept(image) {
+      if (image && (image.type === "application/pdf" || /\.pdf$/i.test(image.name || ""))) {
+        await acceptProject(image);
+        return;
+      }
       stop();
       release();
       preview.replaceChildren();
@@ -246,6 +254,66 @@
         }
       }
     }
+    async function acceptProject(documentFile) {
+      stop();
+      release();
+      preview.replaceChildren();
+      retry.hidden = true;
+      if (!documentFile.size || documentFile.size > 10 * 1024 * 1024) {
+        status.textContent = "Selecciona un proyecto PDF de hasta 10 MB.";
+        return;
+      }
+      lastImage = documentFile;
+      const ticket = generation;
+      const valid = () => !dead && ticket === generation && root.isConnected && current();
+      file.disabled = true;
+      progress.hidden = cancel.hidden = false;
+      progress.value = 0;
+      status.textContent = "Leyendo el proyecto en tu dispositivo…";
+      let task;
+      try {
+        const pdfjs = await import(new URL("pdf.mjs", pdfBase).href);
+        if (!valid()) return;
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdf.worker.mjs", pdfBase).href;
+        task = pdfjs.getDocument({
+          data: new Uint8Array(await documentFile.arrayBuffer()),
+          isEvalSupported: false,
+        });
+        pdfTask = task;
+        const pdf = await task.promise;
+        if (!valid()) return;
+        if (pdf.numPages > 200) throw Error("project-pages");
+        const pages = [...new Set([1, 2, 3, pdf.numPages].filter((n) => n <= pdf.numPages))];
+        const text = [];
+        for (const [index, pageNumber] of pages.entries()) {
+          if (!valid()) return;
+          const page = await pdf.getPage(pageNumber);
+          const content = await page.getTextContent();
+          text.push(content.items.map((item) => item.str + (item.hasEOL ? "\n" : " ")).join(""));
+          progress.value = (index + 1) / pages.length;
+        }
+        if (!valid()) return;
+        const result = window.ProductCaptureParser.parseProject(text.join("\n"));
+        review(result, preview, valid, 100);
+        status.textContent = "Revisa los datos y la identidad del cliente antes de continuar.";
+      } catch (error) {
+        if (valid()) {
+          preview.replaceChildren();
+          retry.hidden = false;
+          status.textContent = error?.name === "PasswordException"
+            ? "El PDF está protegido con contraseña. Usa una copia accesible."
+            : "No se ha podido leer este proyecto. Utiliza un PDF con texto o importa una captura.";
+        }
+      } finally {
+        await task?.destroy().catch(() => {});
+        if (valid()) {
+          pdfTask = null;
+          progress.hidden = cancel.hidden = true;
+          file.disabled = false;
+          file.value = "";
+        }
+      }
+    }
     function review(result, preview, valid, confidence) {
       const { draft, source } = result;
       const grid = el("dl", null, "capture-summary");
@@ -253,7 +321,7 @@
         ["Cliente detectado", source.holder],
         ["Compañía", draft.company],
         ["Producto", draft.product],
-        ["Código de origen", source.code],
+        [source.project ? "Documento" : "Código de origen", source.code],
         ["Cartera propuesta", draft.portfolio],
         ["Aportación", draft.amount == null ? "" : draft.amount + " €"],
         [
@@ -273,7 +341,7 @@
               source.units +
               " U · Redondeo hacia arriba",
         ],
-        ["Fecha de efecto (no es la firma)", source.effective],
+        ["Fecha de firma", draft.signed_on],
         ["Póliza (referencia de lectura)", source.policy],
       ];
       for (const [name, value] of data) {
@@ -284,12 +352,27 @@
       preview.append(grid);
       const name = [client.first_name, client.last_name].filter(Boolean).join(" ");
       const notes = [];
-      if (!window.ProductCaptureParser.samePerson(source.holder, name))
-        notes.push(
-          "El nombre no coincide exactamente o no se ha podido leer. Comprueba que la captura corresponde a " +
-            name +
-            ".",
+      const identityMatches = window.ProductCaptureParser.samePerson(source.holder, name);
+      let identityCheck = null;
+      if (!identityMatches) {
+        const warning = el("div", null, "capture-identity-warning");
+        warning.setAttribute("role", "alert");
+        warning.append(
+          el("strong", source.holder ? "El documento parece corresponder a otro cliente." : "No se ha podido identificar al cliente del documento."),
+          el("p", "Documento: " + (source.holder || "Nombre no detectado")),
+          el("p", "Ficha actual: " + name),
         );
+        const label = el("label");
+        identityCheck = el("input");
+        identityCheck.type = "checkbox";
+        label.append(identityCheck, document.createTextNode("He verificado que el documento corresponde a " + name + " y quiero continuar."));
+        warning.append(label);
+        preview.prepend(warning);
+      }
+      if (source.project) {
+        notes.push("Las unidades y el multiplicador quedan pendientes de completar. Comprueba la fecha de firma.");
+        if (source.total) notes.push("El proyecto indica un total invertido de " + source.total + " €. Revisa su significado antes de registrar una aportación inicial o APEX.");
+      }
       if (!source.portfolioConfirmed && draft.portfolio)
         notes.push(
           "Cartera propuesta por la abreviatura: confirma que «" +
@@ -299,7 +382,7 @@
             ".",
         );
       if (!draft.portfolio)
-        notes.push("No se reconoce la cartera. Deberás seleccionar una.");
+        notes.push("No se reconoce la cartera o cesta. Podrás completarla en el formulario.");
       if (source.state && !/^activo$/i.test(source.state.trim()))
         notes.push(
           "Estado detectado: " +
@@ -322,9 +405,8 @@
         notes.push(
           "Ya existe un producto parecido en esta ficha. Comprueba que no lo estás duplicando antes de continuar.",
         );
-      notes.push(
-        "La fecha de firma y el multiplicador histórico quedan pendientes. La póliza y la fecha de efecto se muestran solo como referencia; todavía no se guardan en el contrato.",
-      );
+      if (!draft.signed_on) notes.push("Completa la fecha de firma en el formulario.");
+      if (!draft.company || !draft.product) notes.push("Podrás completar la compañía y el producto en el formulario.");
       for (const note of notes) preview.append(el("p", note, "capture-note"));
       const checkLabel = el("label", null, "capture-confirm");
       const check = el("input");
@@ -336,7 +418,7 @@
         ),
       );
       const apply = button("Revisar en el formulario →", async () => {
-        if (!valid() || !check.checked) return;
+        if (!valid() || !check.checked || (identityCheck && !identityCheck.checked)) return;
         const manual = [...new FormData(form)].some(
           ([key, value]) =>
             ["amount", "units", "company", "product"].includes(key) && String(value),
@@ -344,17 +426,19 @@
         if (
           manual &&
           !(await window.SiteConfirm.ask(
-            "¿Sustituir el borrador actual por los datos de la captura?",
+            source.project ? "¿Sustituir el borrador actual por los datos del proyecto?" : "¿Sustituir el borrador actual por los datos de la captura?",
             { title: "Revisar captura", accept: "Usar captura" },
           ))
         )
           return;
-        if (valid()) onDraft({ ...draft, _capture: true });
+        if (valid()) onDraft({ ...draft, _capture: true, _project: !!source.project });
       });
       apply.disabled = true;
-      check.onchange = () => {
-        apply.disabled = !check.checked;
+      const updateConfirmation = () => {
+        apply.disabled = !check.checked || !!(identityCheck && !identityCheck.checked);
       };
+      check.onchange = updateConfirmation;
+      if (identityCheck) identityCheck.onchange = updateConfirmation;
       preview.append(checkLabel, apply);
     }
     const paste = (event) => {

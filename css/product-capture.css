@@ -86,3 +86,15 @@
     white-space: normal;
   }
 }
+
+.capture-identity-warning {
+  padding: 18px;
+  margin-bottom: 18px;
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+  color: var(--ink);
+}
+.capture-identity-warning p { margin: 8px 0; overflow-wrap: anywhere; }
+.capture-identity-warning label { display: flex; gap: 10px; align-items: flex-start; }
+.capture-identity-warning input { flex: none; width: 20px; height: 20px; }

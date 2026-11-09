@@ -192,9 +192,8 @@
     add.disabled = client.is_active === false;
     if (add.disabled) add.title = "Reactiva el contacto antes de añadir productos";
     controls.append(add);
-    const capture = button("Importar captura", async () => {
-      await startNew();
-      host.querySelector(".capture-import > button")?.click();
+    const capture = button("Importar captura o proyecto", async () => {
+      await startNew({ importOnly: true });
     });
     capture.disabled = add.disabled;
     controls.append(capture);
@@ -597,7 +596,7 @@
             : "Añadir APEX"
           : editing.id
             ? "Editar producto contratado"
-            : "Nuevo producto contratado",
+            : editing._importOnly ? "Importar producto desde documento" : "Nuevo producto contratado",
       ),
     );
     if (!editing.id && !editing.is_apex && window.ProductCapture) {
@@ -611,11 +610,23 @@
         },
       });
     }
+    if (editing._importOnly) {
+      form.append(button("Completar manualmente", () => startNew()));
+      form.append(button("Cancelar", () => {
+        editing = null;
+        render();
+      }));
+      box.append(form);
+      form.querySelector(".capture-import > button")?.click();
+      return;
+    }
     if (editing._capture) {
       form.append(
         node(
           "p",
-          "Borrador desde captura · Revisa todos los campos. Completa la fecha de firma y el multiplicador que correspondía entonces.",
+          editing._project
+            ? "Borrador desde proyecto · Revisa los datos. Completa los campos pendientes y comprueba la fecha de firma."
+            : "Borrador desde captura · Revisa todos los campos. Completa los campos pendientes y comprueba la fecha de firma.",
           "capture-note",
         ),
       );
@@ -700,7 +711,7 @@
       signature,
       "Fecha de firma",
       "signed_on",
-      editing._capture ? "" : editing.id ? editing.signed_on : today,
+      editing._capture ? editing.signed_on || "" : editing.id ? editing.signed_on : today,
       { type: "date" },
     );
     signed.required = apex || !!editing._capture;
@@ -918,8 +929,12 @@
           render();
           announceCompanies();
         } else {
-          await backend.saveClientProduct(target, fields, id);
-          if (ticket === epoch) await reload();
+          const savedId = await backend.saveClientProduct(target, fields, id);
+          if (ticket === epoch) {
+            await reload();
+            if (ticket === epoch && savedId)
+              void window.PanelInsights?.showProductPromotion(savedId);
+          }
         }
       } catch {
         if (ticket === epoch)
@@ -934,9 +949,9 @@
       }
     });
   }
-  function startNew() {
+  function startNew({ importOnly = false } = {}) {
     if (!client || busy || client.is_active === false) return;
-    editing = {};
+    editing = importOnly ? { _importOnly: true } : {};
     return editor();
   }
   window.ClientProducts = { open, reset, startNew, isBusy: () => busy };

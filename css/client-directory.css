@@ -16,11 +16,13 @@ html[data-theme="dark"] .panel-nav-icon {
   filter: invert(88%);
 }
 #panel-navigation button {
+  --nav-inset: 12px;
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
   gap: 14px;
   align-items: center;
-  padding: 13px 12px;
+  padding: 13px 12px 13px var(--nav-inset);
+  border-left-width: 4px;
   min-height: 52px;
 }
 #panel-navigation .panel-nav-label {
@@ -1642,8 +1644,8 @@ html[data-theme="dark"] #client-detail-dialog .contract-chevron {
     margin-right: -12px;
   }
   #panel-navigation button {
-    padding-left: 28px;
-    border-left: 4px solid transparent;
+    --nav-inset: 28px;
+    border-left-color: transparent;
     border-radius: 0 10px 10px 0;
   }
   #panel-navigation button[aria-current] {
@@ -2002,4 +2004,97 @@ html[data-theme="dark"]
 }
 #clients-table-wrap[data-view="cards"] .client-portfolio {
   margin-top: 0;
+}
+
+
+/* Iconos trazados y acento cobre al explorar el menú. */
+#panel-navigation button {
+  position: relative;
+  isolation: isolate;
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+#panel-navigation button::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--nav-inset) + 11px - 18px);
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  opacity: 0;
+  transform: translateY(-50%) scale(.7) rotate(-12deg);
+  transition: transform 260ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease;
+  pointer-events: none;
+  z-index: -1;
+}
+.panel-sidebar svg.panel-nav-icon {
+  filter: none;
+  color: currentColor;
+  transform-origin: center;
+  transition: color 180ms ease, transform 260ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease;
+}
+#panel-navigation button:focus-visible::before {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+#panel-navigation button:focus-visible .panel-nav-icon {
+  color: var(--accent);
+  opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  #panel-navigation button:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  #panel-navigation button:hover .panel-nav-icon {
+    color: var(--accent);
+    opacity: 1;
+    animation: nav-arrive 460ms cubic-bezier(.2,.8,.2,1);
+  }
+  #panel-navigation button:hover .panel-nav-icon path {
+    stroke-dasharray: 1;
+    animation: nav-draw 620ms ease both;
+  }
+  #panel-navigation button:hover .panel-nav-icon path:nth-child(2) { animation-delay: 60ms; }
+  #panel-navigation button:hover .panel-nav-icon path:nth-child(3) { animation-delay: 120ms; }
+  #panel-navigation button[data-view="resources"]:hover .panel-nav-icon {
+    animation-name: nav-folder;
+  }
+  #panel-navigation button:is([data-view="clients"], [data-view="team"], [data-view="consultants"]):hover .panel-nav-icon {
+    animation-name: nav-people;
+  }
+}
+#panel-navigation button:active .panel-nav-icon { transform: scale(.9); }
+@keyframes nav-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes nav-arrive {
+  0% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-3px) scale(1.13); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes nav-folder {
+  0% { transform: rotate(0); }
+  35% { transform: rotate(-12deg) translateY(-2px); }
+  70% { transform: rotate(4deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes nav-people {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  75% { transform: scale(.96); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #panel-navigation button,
+  #panel-navigation button::before,
+  .panel-sidebar svg.panel-nav-icon { transition: none; }
+  #panel-navigation button:is(:hover, :focus-visible, :active) .panel-nav-icon,
+  #panel-navigation button:hover .panel-nav-icon path {
+    animation: none;
+    transform: none;
+  }
 }

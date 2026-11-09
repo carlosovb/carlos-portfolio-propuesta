@@ -10,6 +10,7 @@
     product = null,
     account = null,
     busy = false,
+    editingResource = null,
     selection = new Set();
   const blobs = new Set();
   const node = (tag, text, cls) => {
@@ -35,7 +36,7 @@
     rows = [];
     selection.clear();
     get("resources-browser").replaceChildren();
-    get("resource-form").reset();
+    resetResourceEditor();
     get("resource-admin").hidden = true;
     syncKind();
     get("resource-delete-selected").disabled = true;
@@ -100,6 +101,7 @@
     }
     const change = () => {
       if (!active || ticket !== version) return;
+      resetResourceEditor();
       company = next;
       product = null;
       render();
@@ -120,7 +122,15 @@
       !matchMedia("(prefers-reduced-motion: reduce)").matches
     )
       document.startViewTransition(change);
-    else change();
+    else {
+      change();
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        get("resources-browser").animate(
+          [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }],
+          { duration: 280, easing: "ease-out" },
+        );
+      }
+    }
   }
   function render() {
     document.querySelector(".resource-personal").hidden = !!company;
@@ -177,8 +187,19 @@
           const count = list.filter((r) => r[key] === name).length;
           const card = button(
             "",
-            () => {
-              navigateCompany(name);
+            async () => {
+              if (card.disabled) return;
+              const ticket = version;
+              card.disabled = true;
+              card.classList.add("is-opening");
+              if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                await card.animate(
+                  [{ transform: "scale(1)" }, { transform: "scale(.96)" }],
+                  { duration: 180, easing: "ease-in", fill: "forwards" },
+                ).finished.catch(() => {});
+              }
+              if (active && ticket === version) navigateCompany(name);
+              card.disabled = false;
             },
             company ? "resource-folder" : "resource-company",
           );
@@ -193,7 +214,14 @@
             img.style.viewTransitionName = "company-logo-" + brand.id;
             img.width = brand.id === "axa" ? 160 : 280;
             img.height = 80;
-            card.append(img);
+            const art = node("span", undefined, "company-art");
+            for (const layer of ["company-paper-back", "company-paper-front", "company-folder"]) {
+              const sheet = node("span", undefined, layer);
+              sheet.setAttribute("aria-hidden", "true");
+              art.append(sheet);
+            }
+            art.append(img);
+            card.append(art);
             card.dataset.company = brand.id;
           }
           card.append(
@@ -232,6 +260,8 @@
         .forEach((row) => {
           const card = node("article", undefined, "resource-document");
           card.dataset.archived = String(archived);
+          const brand = window.PortfolioCompanies.find(row.company);
+          if (brand) card.dataset.company = brand.id;
           if (account.role === "admin") {
             const check = node("input");
             check.type = "checkbox";
@@ -281,23 +311,9 @@
             if (!event.target.closest("button,input,label,a") && !open.disabled)
               openResource(row, open);
           });
-          if (account.role === "admin")
-            card.append(
-              button(
-                archived ? "Restaurar" : "Archivar",
-                async () => {
-                  const ticket = version;
-                  try {
-                    await backend.archiveResource(row.id, !archived);
-                    if (active && ticket === version) await load(account);
-                  } catch {
-                    if (active && ticket === version)
-                      say("No se ha podido cambiar el archivo.");
-                  }
-                },
-                "panel-text-button",
-              ),
-            );
+          if (account.role === "admin") {
+            card.append(button("Editar", () => editResource(row), "panel-secondary resource-edit-link"));
+          }
           host.append(card);
         });
     });
@@ -362,6 +378,42 @@
       button.disabled = false;
     }
   }
+  function resetResourceEditor() {
+    editingResource = null;
+    get("resource-form").reset();
+    get("resource-kind").disabled = false;
+    get("resource-edit-cancel").hidden = true;
+    get("resource-save").textContent = "Publicar para el equipo ↗";
+    get("resource-admin").querySelector("summary").textContent = "Añadir documentación o enlace +";
+    syncKind();
+  }
+  function editResource(row) {
+    if (busy || !active || account?.role !== "admin") return;
+    resetResourceEditor();
+    editingResource = row.id;
+    const form = get("resource-form");
+    for (const key of ["company", "product", "title", "kind", "url"]) {
+      form.elements.namedItem(key).value = row[key] || "";
+    }
+    get("resource-kind").disabled = true;
+    get("resource-edit-cancel").hidden = false;
+    get("resource-save").textContent = "Guardar cambios";
+    get("resource-admin").querySelector("summary").textContent = ["link", "web"].includes(row.kind) ? "Editar enlace" : "Editar recurso";
+    syncKind();
+    get("resource-admin").open = true;
+    say("");
+    get("resource-admin").scrollIntoView({
+      block: "start",
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+    (["link", "web"].includes(row.kind) ? get("resource-url") : form.elements.namedItem("title")).focus({ preventScroll: true });
+  }
+  get("resource-edit-cancel").addEventListener("click", () => {
+    if (busy) return;
+    resetResourceEditor();
+    get("resource-form").elements.namedItem("company").value = company || "";
+    get("resource-admin").open = false;
+  });
   function syncKind() {
     const html = get("resource-kind").value === "html";
     const file = ["file", "html"].includes(get("resource-kind").value);
@@ -369,9 +421,9 @@
       ? "HTML · máximo 10 MB"
       : "PDF · máximo 10 MB";
     get("resource-file").accept = html ? "text/html,.html,.htm" : "application/pdf,.pdf";
-    get("resource-file-label").hidden = !file;
+    get("resource-file-label").hidden = !file || !!editingResource;
     get("resource-url-label").hidden = file;
-    get("resource-file").required = file;
+    get("resource-file").required = file && !editingResource;
     get("resource-url").required = !file;
   }
   get("resource-kind").addEventListener("change", () => {
@@ -383,6 +435,7 @@
     if (busy || account?.role !== "admin" || !active || !company) return;
     const fields = Object.fromEntries(new FormData(event.currentTarget));
     fields.company = company;
+    fields.kind = get("resource-kind").value;
     fields.product = fields.product.trim();
     fields.title = fields.title.trim();
     fields.url = fields.url.trim();
@@ -402,7 +455,8 @@
     get("resource-save").disabled = true;
     say("Guardando recurso…");
     try {
-      await backend.addResource(fields, file);
+      if (editingResource) await backend.updateResource(editingResource, fields);
+      else await backend.addResource(fields, file);
       if (active && ticket === version) {
         get("resource-form").reset();
         get("resource-admin").open = false;
@@ -413,7 +467,9 @@
     } catch {
       if (active && ticket === version)
         say(
-          "No se ha podido guardar. Comprueba los datos y utiliza un PDF o HTML válido de hasta 10 MB.",
+          editingResource
+            ? "No se ha podido actualizar el recurso. Comprueba los datos y vuelve a intentarlo."
+            : "No se ha podido guardar. Comprueba los datos y utiliza un PDF o HTML válido de hasta 10 MB.",
         );
     } finally {
       busy = false;

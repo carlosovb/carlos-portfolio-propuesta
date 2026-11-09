@@ -76,10 +76,16 @@ assert.equal(actual.incomplete, true);
 const fc={user_id:'leader',position_code:'financial_consultant'};
 const branch=[fc,{user_id:'ft1',manager_id:'leader',position_code:'financial_trainee'},{user_id:'ft2',manager_id:'ft1',position_code:'financial_trainee'},{user_id:'fc1',manager_id:'leader',position_code:'financial_consultant'},{user_id:'external',manager_id:null,position_code:'financial_trainee'}];
 const managerGoal=P.calculate(fc,branch).find(goal=>goal.level.code==='team_manager');
-assert.deepEqual(managerGoal.base.team.map(row=>[row.role,row.count,row.observed,row.missing]),[['FT',3,2,1]],'GE requires three FT from the whole branch; FC and outsiders do not count');
+assert.deepEqual(managerGoal.base.team.map(row=>[row.roles,row.count,row.observed,row.missing]),[[['FT','FC'],3,2,1]],'GE combina FT y FC directos');
 assert.equal(managerGoal.base.units[0].required,4000);
-const complete=P.calculate(fc,[...branch,{user_id:'ft3',manager_id:'fc1',position_code:'financial_trainee'}]).find(goal=>goal.level.code==='team_manager');
+const complete=P.calculate(fc,[...branch,{user_id:'fc2',manager_id:'leader',position_code:'financial_consultant'},{user_id:'fc3',manager_id:'leader',position_code:'financial_consultant'}]).find(goal=>goal.level.code==='team_manager');
 assert.equal(complete.base.team[0].missing,0);
 const authorized=P.calculate(fc,[],{financial_trainee:1,financial_consultant:99}).find(goal=>goal.level.code==='team_manager');
-assert.equal(authorized.base.team[0].observed,1);assert.equal(authorized.base.team[0].missing,2);
-console.log('Gestor de Equipo: tres FT, descendientes indirectos y recuentos autorizados comprobados.');
+assert.equal(authorized.base.team[0].observed,null);assert.equal(authorized.base.team[0].missing,null);
+for (let trainees=0; trainees<=3; trainees++) {
+  const direct=Array.from({length:3},(_,i)=>({user_id:'direct'+i,manager_id:'leader',
+    position_code:i<trainees?'financial_trainee':'financial_consultant'}));
+  const goal=P.calculate(fc,direct).find(goal=>goal.level.code==='team_manager');
+  assert.equal(goal.base.team[0].missing,0);
+}
+console.log('Gestor de Equipo: las cuatro combinaciones de tres FT y FC directos comprobadas.');

@@ -45,10 +45,14 @@
                 incomplete: !!production?.incomplete,
               })),
             team: (rule.team || []).map((requirement) => {
-              const code = levels.find((l) => l.short === requirement.role).code;
+              const codes = (requirement.roles || [requirement.role])
+                .map((role) => levels.find((l) => l.short === role).code);
+              if (requirement.direct && authorizedCounts)
+                return { ...requirement, observed: null, missing: null };
               const observed = authorizedCounts
-                ? Number(authorizedCounts[code] || 0)
-                : people.filter((p) => p.position_code === code).length;
+                ? codes.reduce((total, code) => total + Number(authorizedCounts[code] || 0), 0)
+                : people.filter((p) => codes.includes(p.position_code) &&
+                    (!requirement.direct || p.manager_id === member.user_id)).length;
               return {
                 ...requirement,
                 observed,

@@ -79,6 +79,7 @@
     activityOffset = 0;
     activityTotal = 0;
     get("notifications-dialog").close();
+    get("career-promotion-dialog").close();
     get("insight-resource-dialog").close();
     closePreview();
     closeHistory();
@@ -150,6 +151,7 @@
       );
       get("notifications-open").title = "Notificaciones";
       renderNotifications();
+      if (!document.querySelector("dialog[open]") && presentUnreadPromotion()) return;
       if (initial && !unread) startup = false;
       else if (initial || startup) tryStartup();
     } catch {
@@ -558,12 +560,46 @@
     host.append(frame);
     return true;
   }
+  function showCareerPromotion(row) {
+    const level = window.CareerLevels.find((item) => row.detail.startsWith("Has ascendido a " + item.name + "."));
+    const profile = backend.panelAccess?.profile;
+    window.CareerTrophies.showCelebration({
+      position_code: level?.code,
+      position: level?.name || "Nuevo puesto",
+      name: [profile?.first_name, profile?.last_name].filter(Boolean).join(" "),
+    }, row.detail, !row.read_at);
+    return true;
+  }
+  function presentUnreadPromotion(targetId) {
+    const notice = notifications.find((row) =>
+      row.target_type === "career_promotion" && !row.read_at &&
+      (!targetId || row.target_id === targetId)
+    );
+    const dialog = get("career-promotion-dialog");
+    if (!notice || dialog.open) return false;
+    const ticket = revision;
+    showCareerPromotion(notice);
+    dialog.addEventListener("close", () => {
+      if (canUse(ticket)) void markRead(notice.id);
+    }, { once: true });
+    return true;
+  }
+  async function showProductPromotion(productId) {
+    const ticket = revision;
+    await refreshNotifications();
+    if (canUse(ticket)) presentUnreadPromotion(productId);
+  }
   async function openTarget(row, source) {
     if (!active) return false;
     const ticket = revision,
       request = ++openTicket;
     if (source) source.disabled = true;
     try {
+      if (row.target_type === "career_promotion") return showCareerPromotion(row);
+      if (row.target_type === "career_request") {
+        await window.CareerPlan.showRequests();
+        return canUse(ticket);
+      }
       if (row.target_type === "resource")
         return await previewResource(row.target_id, ticket, request);
       const section = { client: "clients", form: "premeeting", team: "team" }[
@@ -667,7 +703,9 @@
   document.addEventListener("panel-view-changed", () => {
     if (active && startup) setTimeout(tryStartup, 0);
   });
-  get("login-loading").addEventListener("close", tryStartup);
+  get("login-loading").addEventListener("close", () => {
+    if (!active || document.querySelector("dialog[open]") || !presentUnreadPromotion()) tryStartup();
+  });
   window.PanelInsights = {
     start,
     reset,
@@ -677,5 +715,6 @@
     closeHistory,
     showHistory,
     refreshNotifications,
+    showProductPromotion,
   };
 })();

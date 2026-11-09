@@ -18,7 +18,7 @@ const assert = require("node:assert/strict");
       blocked ? r.fulfill({ status: 503, body: "Unavailable" }) : r.continue(),
     );
     await page.goto(`http://127.0.0.1:${server.address().port}/pruebas-capturas/`);
-    await page.getByRole("button", { name: "Importar captura", exact: true }).click();
+    await page.getByRole("button", { name: "Importar captura o proyecto", exact: true }).click();
     const png = await page.evaluate(() => {
       const c = document.createElement("canvas");
       c.width = 900;

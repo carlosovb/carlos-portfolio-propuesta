@@ -1171,3 +1171,210 @@ body.team-workspace .team-career-summary .career-chip span {
   font-size: 12px;
   font-weight: 600;
 }
+
+/* Felicitación privada por un ascenso confirmado. */
+#career-promotion-dialog {
+  width: min(530px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: clamp(26px, 6vw, 52px);
+  color: #f7efe5;
+  background: radial-gradient(ellipse at 50% 0%, #34455c, #172638 65%);
+  border: 1px solid #b48663;
+  border-radius: 24px;
+  text-align: center;
+}
+#career-promotion-dialog::backdrop { background: #0b1626b3; }
+.career-promotion-emblem {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 24px;
+  border: 1px solid #b48663;
+  border-radius: 24px;
+  background: #e4b28b16;
+  color: #e4b28b;
+}
+#career-promotion-dialog .eyebrow { color: #e4b28b; }
+#career-promotion-dialog h2 {
+  color: inherit;
+  font-size: clamp(28px, 6vw, 42px);
+  line-height: 1.1;
+  margin: 12px 0 16px;
+}
+#career-promotion-detail { color: #d6dce5; margin: 0 0 26px; }
+#career-promotion-dialog .btn { background: #e4b28b; color: #162638; }
+@media (prefers-reduced-motion: no-preference) {
+  #career-promotion-dialog[open][data-animate="true"] { animation: promotion-enter 330ms ease-out both; }
+}
+@keyframes promotion-enter {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.career-requests { display: grid; gap: 16px; }
+.career-request-form, .career-request-card {
+  padding: clamp(16px, 4vw, 26px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+}
+.career-request-form, .career-request-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.career-request-form label { display: grid; gap: 6px; }
+.career-request-quarter {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+.career-request-quarter p { margin: 4px 0; color: var(--muted); }
+
+.career-map-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px 24px;
+  margin-bottom: 30px;
+}
+.career-map-heading .career-map-intro { flex: 1 1 340px; margin: 0; }
+.career-map-heading > button { flex: none; }
+@media (max-width: 560px) {
+  .career-map-heading > button { width: 100%; }
+}
+
+
+.career-trophy-shelf[hidden] { display: none; }
+.career-trophy-shelf {
+  width: 100%;
+  margin: 18px 0;
+  padding: clamp(16px, 3vw, 30px);
+  border: 1px solid #495a72;
+  border-radius: 22px;
+  background: linear-gradient(160deg,#1b2d45,#0e1c2f);
+  color: #f4eee5;
+}
+.career-trophy-shelf h3 { margin: 4px 0 18px; }
+.career-trophy-shelf .eyebrow { color: #e4b28b; }
+.career-trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%, 175px),1fr));
+  gap: 20px;
+  align-items: end;
+}
+.career-trophy-item { display: grid; justify-items: center; gap: 10px; min-width: 0; }
+.career-glass { width: min(100%, 265px); margin: 0; color: #bfe2fa; text-align: center; }
+.career-glass[data-variant="ge"] { color: #6adfd8; }
+.career-glass[data-variant="cz"] { color: #edb38d; }
+.career-glass-face { position: relative; container-type: inline-size; }
+.career-glass-face > svg { display: block; width: 100%; }
+.career-glass-engraving {
+  position: absolute;
+  inset: 25% 17% 11%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.7cqw;
+  color: #f2f7fc;
+  text-shadow: 0 1px 4px #0e1c2f;
+  line-height: 1.16;
+  overflow-wrap: anywhere;
+}
+.career-glass[data-variant="cz"] .career-glass-engraving { inset-block-start: 35%; }
+.career-glass-brand { display: grid; justify-items: center; gap: 1px; font: 700 clamp(10px, 7cqw, 16px)/1 Georgia, serif; }
+.career-glass-brand svg { width: 12cqw; height: 8cqw; }
+.career-glass-engraving small { font-size: clamp(6px, 3.7cqw, 9px); text-transform: uppercase; letter-spacing: .11em; }
+.career-glass-engraving strong { font-size: clamp(10px, 7.3cqw, 19px); }
+.career-glass-engraving b { font-size: clamp(8px, 5.4cqw, 14px); font-weight: 600; }
+.career-glass-base {
+  width: 94%;
+  height: 23px;
+  margin: -7px auto 0;
+  position: relative;
+  background: linear-gradient(#2e4059,#0c1728);
+  border: 1px solid #50637b;
+  border-bottom: 3px solid #bb8865;
+  border-radius: 3px 3px 6px 6px;
+  box-shadow: 0 6px 14px #0006;
+}
+#career-promotion-trophy { display: grid; justify-items: center; margin: 0 0 20px; }
+@media (prefers-reduced-motion: no-preference) {
+  #career-promotion-dialog[open][data-animate="true"] .career-glass-face { animation: career-glass-arrive .72s cubic-bezier(.2,.75,.3,1) both; }
+  #career-promotion-dialog[open][data-animate="true"] .career-glass-engraving { animation: career-engrave .6s .32s ease both; }
+}
+@keyframes career-glass-arrive {
+  from { opacity: 0; transform: perspective(540px) rotateY(-35deg) translateY(-24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes career-engrave { from { opacity: 0; filter: blur(3px); } to { opacity: 1; filter: none; } }
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .career-trophy-shelf .career-glass-face {
+    transition: transform .32s cubic-bezier(.2,.75,.3,1), filter .32s ease;
+  }
+  .career-trophy-shelf .career-glass:hover .career-glass-face {
+    transform: perspective(540px) rotateY(-9deg) translateY(-5px);
+    filter: brightness(1.16);
+  }
+}
+
+.career-glass[data-variant="fcs-i"] { color: #b5c5ff; }
+.career-glass[data-variant="fcs-ii"] { color: #d2baf3; }
+.career-glass[data-variant="da"] { color: #a7d7e8; }
+.career-glass[data-variant="dr"] { color: #f0c1a1; }
+.career-glass[data-variant="dn"] { color: #f2d38a; }
+.career-glass[data-variant="dn"] .career-glass-base { border-bottom-color: #dcb66c; }
+
+.career-glass[data-variant="ft"] { color: #c6d7e2; }
+.career-glass-insignia {
+  position: absolute;
+  top: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 17cqw;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: #122238b8;
+  font: 700 clamp(8px, 5.8cqw, 14px)/1.25 Georgia, serif;
+  letter-spacing: .08em;
+}
+.career-glass[data-variant="ft"] .career-glass-base { border-bottom-color: #91a5b8; }
+.career-glass:is([data-variant="fcs-i"], [data-variant="fcs-ii"]) .career-glass-base::after {
+  content: "";
+  position: absolute;
+  inset: 4px 14% auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+}
+.career-glass[data-variant="fcs-ii"] .career-glass-base::after {
+  box-shadow: 0 5px 0 #d2baf3aa;
+}
+
+.career-glass[data-variant="dn"] .career-glass-face > svg > path:first-of-type { stroke-width: 5; }
+.career-glass[data-variant="dn"] .career-glass-engraving { inset: 52% 21% 12%; }
+.career-glass[data-variant="dn"] .career-glass-brand {
+  position: absolute;
+  bottom: calc(100% + 8cqw);
+  left: 4cqw;
+}
+.career-glass[data-variant="dn"] .career-glass-insignia {
+  top: 9%;
+  left: auto;
+  right: 22%;
+  min-width: 0;
+  padding: 0;
+  transform: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #e3edf7a6;
+  text-shadow: 1px 1px #f7f0df8c;
+  font-size: clamp(31px, 33cqw, 85px);
+  line-height: 1;
+}
+.career-glass[data-variant="dn"] .career-glass-base {
+  width: 80%;
+  background: linear-gradient(#223046,#080e19);
+  border-top-color: #dcb66c;
+}

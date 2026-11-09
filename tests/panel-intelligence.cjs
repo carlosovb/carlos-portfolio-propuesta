@@ -328,6 +328,155 @@ const assert = require("node:assert/strict");
     await db.exec("reset role;set role anon");
     await assert.rejects(() => search("Nombre"));
     await assert.rejects(() => db.query("select public.get_panel_activity()"));
+    await db.exec("reset role");
+    for (const file of ["client-trash.sql", "automatic-signature-rates.sql", "career-auto-promotion.sql"]) {
+      await db.exec(fs.readFileSync("database/" + file, "utf8").split("-- Limpieza al vencer el plazo")[0]);
+    }
+    await as(owner);
+    await db.query("select public.save_team_assignment($1,'financial_trainee',$2)", [joined, member]);
+    await as(joined);
+    await db.query("select public.import_my_clients($1::jsonb,false)", [
+      JSON.stringify([{ first_name: "Prueba", last_name: "Ascenso", client_type: "Cliente" }]),
+    ]);
+    const promotionClient = (await db.query("select id from public.portfolio_clients")).rows[0].id;
+    const addSigned = async (units, multiplier, date = null) => (await db.query(
+      "insert into public.client_products(client_id,company,product,payment_type,amount,units,signed_on,signed_multiplier) values($1,'AXA','Prueba de ascenso','monthly',50,$2,coalesce($4::date,(now() at time zone 'Atlantic/Canary')::date),$3) returning id",
+      [promotionClient, units, multiplier, date],
+    )).rows[0].id;
+    const later = await addSigned(990, 2);
+    assert.equal((await db.query("select public.get_my_team_profile() p")).rows[0].p.position_code, "financial_trainee");
+    await db.exec("begin");
+    const yesterday = (await db.query("select ((now() at time zone 'Atlantic/Canary')::date-1)::text as previous_date")).rows[0].previous_date;
+    const earlier = await addSigned(100, 2, yesterday);
+    const retroNotice = (await db.query("select public.get_panel_notifications() n")).rows[0].n.rows
+      .find((row) => row.target_id === earlier);
+    assert.match(retroNotice.detail, /conservan sus multiplicadores/);
+    assert.equal((await db.query("select public.get_my_team_profile() p")).rows[0].p.multiplier, 2.5);
+    await db.exec("reset role");
+    const retroCommissions = (await db.query(
+      "select product_id,euros::float8 euros from private.signature_commissions() where beneficiary=$1 and product_id in ($2,$3)",
+      [joined,earlier,later],
+    )).rows;
+    assert.deepEqual(Object.fromEntries(retroCommissions.map((r) => [r.product_id,r.euros])),
+      { [earlier]: 200, [later]: 1980 });
+    await db.exec("rollback");
+    const signed = await addSigned(100, 2);
+    const promoted = (await db.query("select public.get_my_team_profile() p")).rows[0].p;
+    assert.equal(promoted.position_code, "financial_consultant");
+    assert.equal(promoted.multiplier, 2.5);
+    const congratulations = (await db.query("select public.get_panel_notifications() n")).rows[0].n.rows
+      .filter((row) => row.target_type === "career_promotion");
+    assert.equal(congratulations.length, 1);
+    assert.equal(congratulations[0].target_id, signed);
+    assert.match(congratulations[0].detail, /10 U ×2 \+ 90 U ×2,5/);
+    await assert.rejects(db.query("update public.client_products set units=101 where id=$1", [signed]));
+    await db.query("update public.client_products set product='Nombre corregido' where id=$1", [signed]);
+    await addSigned(3100, 2.5);
+    assert.equal((await db.query("select public.get_my_team_profile() p")).rows[0].p.position_code, "financial_consultant", "No asciende a GE sin colaboradores");
+    await as(member);
+    assert.equal((await db.query("select public.get_panel_notifications() n")).rows[0].n.rows.filter((row) => row.target_id === signed).length, 0);
+    await db.exec("reset role");
+    const commissions = async () => (await db.query(
+      "select beneficiary,units::float8 units,euros::float8 euros from private.signature_commissions() where product_id=$1 order by beneficiary",
+      [signed],
+    )).rows;
+    const expected = [
+      { beneficiary: owner, units: 100, euros: 105 },
+      { beneficiary: member, units: 100, euros: 5 },
+      { beneficiary: joined, units: 100, euros: 245 },
+    ];
+    assert.deepEqual(await commissions(), expected);
+    await db.query("delete from public.client_products where id=$1", [signed]);
+    assert.deepEqual(await commissions(), expected, "El reparto sobrevive al borrado del producto");
+    await db.exec(fs.readFileSync("database/career-requests.sql", "utf8"));
+    const quarterChecks = (await db.query(`select private.career_quarter_checks(
+      $1,'zone_coordinator',date_trunc('quarter',now() at time zone 'Atlantic/Canary')::date,2) data`, [member])).rows[0].data;
+    assert.equal(quarterChecks.length, 2);
+    assert.deepEqual(quarterChecks.map((q) => [q.minimum,q.alternative,q.own_only]),
+      [[9000,11250,false],[9000,11250,false]]);
+    assert(quarterChecks[0].recorded > 0, "Las firmas de equipo cuentan para producción total");
+    assert(quarterChecks[0].collaborators.some((person) => person.position === "financial_consultant" &&
+      person.own_only && person.minimum === 300 && person.recorded >= 300));
+    assert.equal(quarterChecks[1].recorded,0);
+    assert.equal(quarterChecks[1].historical.minimum,6000);
+    await db.exec("begin");
+    await db.query("update private.panel_members set enabled=true,password_set_at=now() where user_id=$1", [other]);
+    await db.query("update private.team_assignments set position_code='team_manager',manager_id=$1 where user_id in ($2,$3)",
+      [member,joined,other]);
+    await db.query("update private.team_assignments set position_code='team_manager' where user_id=$1", [member]);
+    await as(member);
+    const beforePeriod = (await db.query("select public.list_career_requests() data")).rows[0].data;
+    assert(beforePeriod.targets.includes("zone_coordinator"),
+      "La entrada a CZ puede solicitarse con el equipo exigido antes de alcanzar la producción del periodo");
+    await db.exec("rollback");
+    const periods = (await db.query(`select
+      private.career_period_start('2026-03-15',1) quarterly,
+      private.career_period_start('2026-03-15',2) half_year,
+      private.career_period_start('2026-10-15',2) next_year`)).rows[0];
+    assert.deepEqual(Object.values(periods).map((date) => date.toISOString().slice(0,10)),
+      ["2026-04-01", "2026-07-01", "2027-01-01"]);
+    await as(joined);
+    await addSigned(2100, 2.5);
+    assert.equal((await db.query("select public.get_my_team_profile() p")).rows[0].p.position_code, "financial_consultant");
+    await assert.rejects(db.query("select public.request_career_promotion('regional_director')"));
+    await assert.rejects(db.query("select public.request_career_promotion('financial_consultant_senior_i')"),
+      "La producción del trimestre abierto no sustituye dos trimestres cerrados");
+    const prior = (await db.query(`select
+      (date_trunc('quarter',now() at time zone 'Atlantic/Canary')-interval '3 months')::date::text latest,
+      (date_trunc('quarter',now() at time zone 'Atlantic/Canary')-interval '6 months')::date::text earlier`)).rows[0];
+    await addSigned(2000, 2.5, prior.latest);
+    await assert.rejects(db.query("select public.request_career_promotion('financial_consultant_senior_i')"),
+      "Un trimestre con el doble de unidades no compensa el otro");
+    await addSigned(1000, 2.5, prior.earlier);
+    const request = (await db.query("select public.request_career_promotion('financial_consultant_senior_i') id")).rows[0].id;
+    await assert.rejects(db.query("select public.request_career_promotion('team_manager')"));
+    await assert.rejects(db.query("select public.review_career_request($1,'approve')", [request]));
+    assert.equal((await db.query("select public.list_career_requests() data")).rows[0].data.rows[0].progress.length, 0);
+    await as(owner);
+    assert.equal((await db.query("select public.list_career_requests() data")).rows[0].data.rows.length, 0);
+    assert.deepEqual((await db.query("select public.list_career_requests() data")).rows[0].data.targets, []);
+    await assert.rejects(db.query("select public.review_career_request($1,'approve')", [request]));
+    await as(member);
+    assert((await db.query("select public.get_panel_notifications() n")).rows[0].n.rows.some((row) => row.target_id === request));
+    assert.equal((await db.query("select public.list_career_requests() data")).rows[0].data.rows[0].can_review, true);
+    await db.query("select public.review_career_request($1,'approve')", [request]);
+    const scheduled = (await db.query("select public.list_career_requests() data")).rows[0].data.rows[0];
+    assert.match(scheduled.quarter_start, /-(01|07)-01$/);
+    assert.equal(scheduled.progress.length, 6);
+    await assert.rejects(db.query("select public.review_career_request($1,'complete')", [request]));
+    await db.exec("reset role");
+    await db.query("update private.career_requests set quarter_start=private.career_period_start(current_date,2)-interval '12 months' where id=$1", [request]);
+    await as(member);
+    await db.query("select public.list_career_requests()");
+    assert((await db.query("select public.get_panel_notifications() n")).rows[0].n.rows.some((row) => row.title === "Promoción pendiente de resolución"));
+    await assert.rejects(db.query("select public.review_career_request($1,'reject')", [request]));
+    await db.exec("begin");
+    await db.query("select public.review_career_request($1,'reject','Revisar el objetivo de producción')", [request]);
+    const rejected = (await db.query("select public.list_career_requests() data")).rows[0].data.rows[0];
+    assert.equal(rejected.status, "unsuccessful");
+    assert.equal(rejected.decision_note, "Revisar el objetivo de producción");
+    await db.exec("rollback");
+    await db.query("select public.review_career_request($1,'complete')", [request]);
+    await as(joined);
+    assert.equal((await db.query("select public.get_my_team_profile() p")).rows[0].p.position_code, "financial_consultant_senior_i");
+    assert((await db.query("select public.get_panel_notifications() n")).rows[0].n.rows.some((row) => row.target_id === request));
+    const trophies = (await db.query("select public.list_career_trophies($1) data", [joined])).rows[0].data;
+    assert.deepEqual(trophies.map((t) => t.position_code),
+      ["financial_trainee", "financial_consultant", "financial_consultant_senior_i"]);
+    assert(trophies.every((t) => t.name === "Nueva Incorporación" && !("units" in t)));
+    await assert.rejects(db.query("select public.list_career_trophies($1)", [other]));
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/resources-edit-links.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/rollback-v0.7.0.sql", "utf8"));
+    assert.deepEqual(await commissions(), expected, "La pausa conserva los tramos históricos y sus importes");
+    await db.query("update private.team_assignments set position_code='financial_trainee' where user_id=$1", [joined]);
+    await as(joined);
+    await assert.rejects(db.query("select public.list_career_requests()"));
+    await addSigned(1000, 2);
+    assert.equal((await db.query("select public.get_my_team_profile() p")).rows[0].p.position_code, "financial_trainee");
+    assert.equal((await db.query("select public.list_career_trophies($1) data", [joined])).rows[0].data.length, 3);
+    console.log("Solicitudes trimestrales: permisos, revisión, cierre y confirmación del ascenso comprobados.");
+    console.log("Ascenso automático: tramos, unidades, comisiones, requisitos de equipo, aviso privado e historial comprobados.");
     console.log(
       "v0.6: historial, notas idempotentes, actividad, avisos persistentes, búsqueda privada, caducidad y revocación verificados.",
     );

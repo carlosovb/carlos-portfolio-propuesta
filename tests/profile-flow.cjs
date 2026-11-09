@@ -11,6 +11,7 @@ const types = {
   ".html": "text/html",
   ".css": "text/css",
   ".js": "text/javascript",
+  ".mjs": "text/javascript",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".webp": "image/webp",
@@ -64,6 +65,7 @@ async function mock(context, state) {
       user: { id: "test-user", email: "consultor@example.invalid" },
     };
 
+    if (url.pathname.endsWith("/rpc/list_career_trophies")) return json([]);
     if (url.pathname.endsWith("/rpc/get_panel_activity")) {
       const events = state.insights?.events || [];
       const rows = body.p_client
@@ -201,6 +203,9 @@ async function mock(context, state) {
       };
       return json(access());
     }
+    if (url.pathname.endsWith("/rpc/list_career_requests"))
+      return json({ today: "2026-11-09", targets: [], rows: [] });
+    if (url.pathname.endsWith("/rpc/list_career_trophies")) return json([]);
     if (url.pathname.endsWith("/rpc/get_team_client_counts"))
       return json({ total: 0, by_consultant: [], consultants_with_clients: 0 });
     if (url.pathname.endsWith("/rpc/get_my_team_profile")) {
@@ -431,7 +436,7 @@ if (require.main === module) (async () => {
           .evaluate((el) => el.readOnly),
         true,
       );
-      assert.equal(await page.locator(".panel-version").textContent(), "v0.6.2");
+      assert.equal(await page.locator(".panel-version").textContent(), "v" + require("../package.json").version);
       await page.locator("#my-office").selectOption("__add__", { force: true });
       await page.locator("#new-office-code").fill("LPA2");
       await page.locator("#create-office").click();
@@ -908,7 +913,7 @@ if (require.main === module) (async () => {
       .click();
     assert.match(
       await treePage.locator("#team-member-progress").textContent(),
-      /Faltan 2 FT/,
+      /3 FT o FC directos/,
     );
     await treePage.screenshot({
       path: path.join(process.env.TEMP, "career-progress-mobile.png"),
@@ -1020,6 +1025,9 @@ if (require.main === module) (async () => {
     );
     await treePage.locator('#panel-navigation [data-view="team"]').click();
     await treePage.locator(".team-node-self").click();
+    assert.equal(await treePage.locator("#team-assignment-form").isVisible(), false);
+    await treePage.locator("#team-member-close").click();
+    await treePage.locator('.team-node[data-user-id="22222222-2222-4222-8222-222222222222"]').click();
     await treePage.locator("#team-assignment-form").waitFor();
     await treePage
       .locator('#team-assignment-form [name="consultant_since"]')
@@ -1077,18 +1085,18 @@ if (require.main === module) (async () => {
     );
     await treePage.evaluate(() =>
       window.CareerPlan.renderProgress(
-        { user_id: "sample", position_code: "financial_consultant" },
+        { user_id: "sample", position_code: "team_manager" },
         [],
-        { financial_trainee: 1 },
+        { team_manager: 1 },
         { historical: 0, quarter: 0, totalQuarter: 0 },
       ),
     );
     await treePage.locator("#team-progress-details").evaluate((el) => (el.open = true));
     await treePage
       .locator("#team-member-progress")
-      .getByRole("button", { name: "Gestor de Equipo", exact: true })
+      .getByRole("button", { name: "Coordinador de Zona", exact: true })
       .click();
-    const careerBar = treePage.locator(".career-team-progress progress");
+    const careerBar = treePage.locator(".career-team-progress progress").first();
     assert.equal(await careerBar.evaluate((el) => el.max), 3);
     assert.equal(await careerBar.evaluate((el) => el.value), 1);
     assert.equal(
@@ -1096,11 +1104,12 @@ if (require.main === module) (async () => {
       "none",
     );
     assert.match(
-      await treePage.locator(".career-progress-caption").textContent(),
+      await treePage.locator(".career-progress-caption").first().textContent(),
       /1 de 3 registrados33 %/,
     );
     await treePage
       .locator(".career-team-progress")
+      .first()
       .screenshot({ path: path.join(process.env.TEMP, "career-copper-progress.png") });
     await treePage.locator("#team-member-close").click();
     await treePage.evaluate(() => window.CareerPlan.markCurrent("team_manager"));

@@ -1305,3 +1305,142 @@ html[data-theme="dark"] .product-choice-copy img[data-company="axa"],
 html[data-theme="dark"] .contract-company-heading img[data-company="axa"] {
   filter: none;
 }
+
+/* Compañías: entrada del logo y trazo cobre, sin destellos. */
+.resource-company::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 70%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 350ms cubic-bezier(.2,.8,.2,1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .resource-company:hover { transform: translateY(-3px); }
+  .resource-company:hover img {
+    animation: company-lift 580ms cubic-bezier(.2,.8,.2,1) both;
+  }
+  .resource-company:hover::after { transform: scaleX(1); }
+}
+.resource-company:focus-visible::after { transform: scaleX(1); }
+.resource-company:active img { transform: scale(.96); }
+.resource-company:active { transform: translateY(0) scale(.985); }
+@keyframes company-lift {
+  0% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-9px) scale(1.1); }
+  75% { transform: translateY(-4px) scale(1.06); }
+  100% { transform: translateY(-5px) scale(1.07); }
+}
+::view-transition-group(company-logo-axa),
+::view-transition-group(company-logo-intesa) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(.22,.8,.2,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .resource-company::after { transition: none; }
+  .resource-company:hover img { animation: none; }
+  .resource-company:is(:hover, :active),
+  .resource-company:is(:hover, :active) img { transform: none; }
+}
+
+/* La compañía se presenta como una carpeta que se abre. */
+.resource-company { border-radius: 20px 20px 0 0; }
+.company-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(310px, 100%);
+  height: 130px;
+  perspective: 600px;
+}
+.company-art > span {
+  position: absolute;
+  width: 155px;
+  height: 88px;
+  left: calc(50% - 77.5px);
+  bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  opacity: 0;
+  transform: translateY(18px) scale(.8);
+  transition: transform 450ms cubic-bezier(.2,.8,.2,1), opacity 250ms ease;
+  pointer-events: none;
+}
+.company-art .company-folder {
+  height: 40px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+  transform-origin: bottom;
+  z-index: 1;
+}
+.resource-company .company-art img {
+  position: relative;
+  z-index: 2;
+  max-width: 90%;
+  animation: none;
+  transition: transform 450ms cubic-bezier(.2,.8,.2,1);
+}
+.resource-company:is(:hover, :focus-visible, .is-opening) .company-paper-back {
+  opacity: 1;
+  transform: translate(-14px, -18px) rotate(-13deg);
+}
+.resource-company:is(:hover, :focus-visible, .is-opening) .company-paper-front {
+  opacity: 1;
+  transform: translate(12px, -12px) rotate(10deg);
+}
+.resource-company:is(:hover, :focus-visible, .is-opening) .company-folder {
+  opacity: 1;
+  transform: translateY(5px) rotateX(-28deg) scaleX(1.12);
+}
+.resource-company:is(:hover, :focus-visible, .is-opening) .company-art img {
+  animation: none;
+  transform: translateY(-18px) scale(1.1);
+}
+.resource-company:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.resource-company:is(:hover, :focus-visible) small {
+  background: var(--accent);
+  color: var(--bg);
+  transform: translateY(0);
+}
+.resource-company.is-opening .company-art img {
+  transform: translateY(-28px) scale(1.16);
+}
+@media (prefers-reduced-motion: reduce) {
+  .company-art > span,
+  .resource-company .company-art img { transition: none; }
+  .resource-company:is(:hover, :focus-visible, .is-opening) .company-art img {
+    transform: none;
+  }
+}
+
+/* Identidad de la compañía en cada recurso, para todos sus formatos. */
+.resource-document[data-company="axa"] { --resource-brand: #2755b8; }
+.resource-document[data-company="intesa"] { --resource-brand: #00704a; }
+html[data-theme="dark"] .resource-document[data-company="axa"] { --resource-brand: #8fb6ff; }
+html[data-theme="dark"] .resource-document[data-company="intesa"] { --resource-brand: #87d8b5; }
+.resource-document[data-company] {
+  border-left-color: var(--resource-brand);
+  background: color-mix(in srgb, var(--resource-brand) 12%, var(--panel));
+}
+.resource-document[data-company]:hover { border-color: var(--resource-brand); }
+.resource-document[data-company] .resource-document-icon {
+  color: var(--resource-brand);
+  border-color: color-mix(in srgb, var(--resource-brand) 45%, var(--line));
+  background: color-mix(in srgb, var(--resource-brand) 8%, var(--panel));
+}
+.resource-edit-link { white-space: nowrap; }
+.resource-document[data-company] :is(.resource-product, .resource-format) {
+  color: var(--resource-brand);
+}
+.resource-document { flex-wrap: wrap; }
+.resource-document > .resource-document-content { flex: 1 1 220px; }
+@media (max-width: 700px) {
+  .resource-document > .resource-document-content { flex-basis: calc(100% - 100px); }
+}

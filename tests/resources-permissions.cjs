@@ -251,6 +251,39 @@ const fs = require("fs"),
       (await db.query("select count(*)::int n from public.team_resources")).rows[0].n,
       0,
     );
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/resources-edit-links.sql", "utf8"));
+    await as(owner);
+    const linkId = "66666666-6666-4666-8666-666666666666";
+    await db.query(
+      "insert into public.team_resources(id,company,product,title,kind,url) values($1,'AXA','PIAS','Enlace','link','https://example.invalid/original')",
+      [linkId],
+    );
+    const edit = (id, url) => db.query(
+      "select public.update_resource($1,'PIAS actualizado','Título actualizado',$2) id",
+      [id, url],
+    );
+    assert.equal((await edit(linkId, "https://example.invalid/nuevo")).rows[0].id, linkId);
+    await assert.rejects(edit(linkId, "javascript:alert(1)"));
+    await assert.rejects(edit(linkId, "https://usuario:clave@example.invalid"));
+    await as(other);
+    await assert.rejects(edit(linkId, "https://example.invalid/prohibido"));
+    await as(member);
+    await assert.rejects(edit(linkId, "https://example.invalid/desactivado"));
+    await as("", "anon");
+    await assert.rejects(edit(linkId, "https://example.invalid/anonimo"));
+    await as(owner);
+    assert.equal((await db.query("select url from public.team_resources where id=$1", [linkId])).rows[0].url, "https://example.invalid/nuevo");
+    await assert.rejects(edit(rid, "https://example.invalid/no-existe"));
+    await db.query(
+      "insert into public.team_resources(id,company,product,title,kind,storage_path) values($1,'AXA','PIAS','PDF','file',$2)",
+      [rid, rid + ".pdf"],
+    );
+    await edit(rid, null);
+    const updatedFile = (await db.query("select title,storage_path,url from public.team_resources where id=$1", [rid])).rows[0];
+    assert.equal(updatedFile.title, "Título actualizado");
+    assert.equal(updatedFile.storage_path, rid + ".pdf");
+    assert.equal(updatedFile.url, null);
     console.log(
       "Recursos: respuestas propias, migración histórica, revocación, PDF privados y gestión exclusiva del administrador verificados.",
     );

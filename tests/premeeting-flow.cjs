@@ -69,6 +69,8 @@ const root = path.resolve(__dirname, ".."),
     if (r.method() === "OPTIONS") return json(null);
     if (url.pathname.endsWith("/rpc/get_panel_activity"))
       return json({ rows: [], total: 0 });
+    if (url.pathname.endsWith("/rpc/list_career_requests"))
+      return json({ today: "2026-11-09", targets: [], rows: [] });
     if (url.pathname.endsWith("/rpc/get_panel_notifications"))
       return json({ rows: [], unread: 0 });
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");

@@ -58,6 +58,8 @@ const server = http.createServer((req, res) => {
       });
     if (url.pathname.endsWith("/rpc/get_panel_activity"))
       return json({ rows: [], total: 0 });
+    if (url.pathname.endsWith("/rpc/list_career_requests"))
+      return json({ today: "2026-11-09", targets: [], rows: [] });
     if (url.pathname.endsWith("/rpc/get_panel_notifications"))
       return json({ rows: [], unread: 0 });
     if (url.pathname.endsWith("/rpc/get_client_view_preference")) return json("list");
@@ -116,6 +118,13 @@ const server = http.createServer((req, res) => {
             },
           })
         : json([]);
+    if (url.pathname.endsWith("/rpc/update_resource")) {
+      assert.equal(role, "admin");
+      const row = resources.find((r) => r.id === body.p_id);
+      assert(row);
+      Object.assign(row, { title: body.p_title, product: body.p_product, url: body.p_url });
+      return json(row.id);
+    }
     if (url.pathname.includes("/team_resources")) {
       if (req.method() === "POST") {
         assert.equal(role, "admin");
@@ -220,6 +229,7 @@ const server = http.createServer((req, res) => {
       "El inicio y los recursos comparten la misma consulta",
     );
     assert.equal(await page.locator("#resource-admin").isVisible(), false);
+    assert.equal(await page.locator(".resource-edit-link").count(), 0);
     assert(
       await page
         .locator(".resource-company img")
@@ -307,16 +317,26 @@ const server = http.createServer((req, res) => {
     await page.locator("#resource-save").click();
     await page.getByText("Guía de ejemplo", { exact: true }).waitFor();
     assert.equal(resources.length, 1);
-    await page
-      .locator(".resource-document")
-      .getByRole("button", { name: "Archivar", exact: true })
-      .click();
-    await page.getByRole("heading", { name: "Archivo · versiones anteriores" }).waitFor();
-    await page
-      .locator(".resource-document")
-      .getByRole("button", { name: "Restaurar", exact: true })
-      .click();
-    await page.getByRole("heading", { name: "Documentación disponible" }).waitFor();
+    assert.equal(await page.locator(".resource-document img").count(), 0);
+    assert.equal(await page.getByRole("button", { name: "Archivar", exact: true }).count(), 0);
+    await page.getByRole("button", { name: "Editar", exact: true }).click();
+    await page.locator("#resource-url").fill("https://docs.example.invalid/cancelado");
+    await page.locator("#resource-edit-cancel").click();
+    assert.equal(resources[0].url, "https://docs.example.invalid/recurso");
+    await page.getByRole("button", { name: "Editar", exact: true }).click();
+    await page.locator("#resource-url").fill("https://docs.example.invalid/actualizado");
+    await page.locator('#resource-form [name="title"]').fill("Guía actualizada");
+    await page.locator("#resource-save").click();
+    await page.getByRole("heading", { name: "Guía actualizada", exact: true }).waitFor();
+    assert.equal(resources.length, 1);
+    assert.equal(resources[0].url, "https://docs.example.invalid/actualizado");
+    assert.equal(await page.locator("#resource-kind").isEnabled(), true);
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const card = page.locator(".resource-document").first();
+      assert(await card.evaluate((el) => el.scrollWidth <= el.clientWidth + 1));
+      await card.screenshot({ path: path.join(process.env.TEMP, "resource-brand-" + width + ".png") });
+    }
     await page.locator("#resource-admin summary").click();
     assert.equal(
       await page.locator('#resource-form [name="company"]').inputValue(),
@@ -332,6 +352,13 @@ const server = http.createServer((req, res) => {
     await page.locator("#resource-save").click();
     await page.getByText("PDF de ejemplo", { exact: true }).waitFor();
     assert.equal(uploads, 1);
+    await page.locator(".resource-document").filter({ hasText: "PDF de ejemplo" }).getByRole("button", { name: "Editar", exact: true }).click();
+    assert.equal(await page.locator("#resource-file-label").isVisible(), false);
+    await page.locator('#resource-form [name="product"]').fill("Producto de ejemplo actualizado");
+    await page.locator("#resource-save").click();
+    await page.locator(".resource-document").filter({ hasText: "PDF de ejemplo" }).waitFor();
+    assert.equal(uploads, 1);
+    assert.equal(resources.find((r) => r.kind === "file").product, "Producto de ejemplo actualizado");
     const popupPromise = page.waitForEvent("popup");
     await page
       .locator(".resource-document")
@@ -447,6 +474,7 @@ const server = http.createServer((req, res) => {
       document.getElementById("resource-personal-link").value.includes("22222222"),
     );
     assert.equal(await page.locator("#resource-admin").isVisible(), false);
+    assert.equal(await page.locator(".resource-edit-link").count(), 0);
     assert.equal(await page.locator("#resource-bulk").isVisible(), false);
     await page.getByRole("button", { name: "AXA", exact: false }).click();
     await page.locator(".resource-document").first().waitFor();

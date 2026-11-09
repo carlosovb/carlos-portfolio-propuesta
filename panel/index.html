@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../css/panel-insights.css?v=insights1" />
     <link rel="stylesheet" href="../css/panel.css?v=sidebarlogocenter1" />
     <link rel="stylesheet" href="../css/presence.css?v=connections1" />
-    <link rel="stylesheet" href="../css/career.css?v=copperprogress1" />
+    <link rel="stylesheet" href="../css/career.css?v=career-confirmed1" />
     <link rel="stylesheet" href="../css/team.css?v=officeright1" />
     <link rel="stylesheet" href="../css/requests.css?v=requests8" />
     <link rel="stylesheet" href="../css/clients.css?v=presence1" />
@@ -22,13 +22,13 @@
     <link rel="stylesheet" href="../css/premeeting-summary.css?v=hub1" />
     <link rel="stylesheet" href="../css/workspace.css?v=products1" />
     <link rel="stylesheet" href="../css/clipboard.css?v=products1" />
-    <link rel="stylesheet" href="../css/client-products.css?v=connections1" />
-    <link rel="stylesheet" href="../css/product-capture.css?v=capture1" />
+    <link rel="stylesheet" href="../css/client-products.css?v=resource-edit2" />
+    <link rel="stylesheet" href="../css/product-capture.css?v=project-intesa1" />
     <link rel="stylesheet" href="../css/statistics.css?v=closecenter1" />
     <link rel="stylesheet" href="../css/confirm.css?v=apex1" />
     <link rel="stylesheet" href="../css/contract-controls.css?v=0.6.2" />
     <link rel="stylesheet" href="../css/devices.css?v=devices1" />
-    <link rel="stylesheet" href="../css/client-directory.css?v=0.6.2" />
+    <link rel="stylesheet" href="../css/client-directory.css?v=nav-align1" />
     <link rel="stylesheet" href="../css/login.css?v=0.6.2" />
     <link rel="stylesheet" href="../css/login-transition.css?v=cc4" />
     <link rel="stylesheet" href="../css/light-theme.css?v=0.6.2" />
@@ -92,10 +92,10 @@
 
     <div class="panel-shell" id="panel-screen" hidden>
       <aside class="panel-sidebar">
-        <a href="../" class="panel-mark" aria-label="Abrir portfolio">
+        <div class="panel-mark" role="img" aria-label="CC">
           CC
           <span>·</span>
-        </a>
+        </div>
         <p>
           <span id="consultant-display-name">Mi cuenta</span>
           <small id="consultant-display-role">Mi panel privado</small>
@@ -128,93 +128,86 @@
         </label>
         <nav id="panel-navigation" aria-label="Secciones del panel">
           <button type="button" data-view="home" aria-current="page">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/home.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M5 12l-2 0l9 -9l9 9l-2 0" />
+  <path pathLength="1" d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path pathLength="1" d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
             <span class="panel-nav-label">Inicio</span>
           </button>
           <button type="button" data-view="resources">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/folder.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" />
+</svg>
+
             <span class="panel-nav-label">Herramientas y recursos</span>
           </button>
           <button type="button" data-view="requests" data-admin-only>
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/inbox.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12" />
+  <path pathLength="1" d="M4 13h3l3 3h4l3 -3h3" />
+</svg>
+
             <span class="panel-nav-label">Solicitudes</span>
           </button>
           <button type="button" data-view="premeeting">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/clipboard-text.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+  <path pathLength="1" d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" />
+  <path pathLength="1" d="M9 12h6" />
+  <path pathLength="1" d="M9 16h6" />
+</svg>
+
             <span class="panel-nav-label">Formularios</span>
           </button>
           <button type="button" data-view="clients">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/users.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path pathLength="1" d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+  <path pathLength="1" d="M16 3.13a4 4 0 0 1 0 7.75" />
+  <path pathLength="1" d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+</svg>
+
             <span class="panel-nav-label">Clientes</span>
           </button>
           <button type="button" data-view="team">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/users.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path pathLength="1" d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+  <path pathLength="1" d="M16 3.13a4 4 0 0 1 0 7.75" />
+  <path pathLength="1" d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+</svg>
+
             <span class="panel-nav-label">Equipo</span>
           </button>
           <button type="button" data-view="consultants">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/user-plus.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+  <path pathLength="1" d="M16 19h6" />
+  <path pathLength="1" d="M19 16v6" />
+  <path pathLength="1" d="M6 21v-2a4 4 0 0 1 4 -4h4" />
+</svg>
+
             <span class="panel-nav-label">Consultores</span>
           </button>
           <button type="button" data-view="statistics">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/chart-bar.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6" />
+  <path pathLength="1" d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10" />
+  <path pathLength="1" d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14" />
+  <path pathLength="1" d="M4 20h14" />
+</svg>
+
             <span class="panel-nav-label">Estadísticas</span>
           </button>
           <button type="button" data-view="profile">
-            <img
-              class="panel-nav-icon"
-              src="../assets/icons/user-circle.svg"
-              alt=""
-              width="21"
-              height="21"
-            />
+            <svg class="panel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path pathLength="1" d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+  <path pathLength="1" d="M9 10a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+  <path pathLength="1" d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />
+</svg>
+
             <span class="panel-nav-label">Mi perfil</span>
           </button>
         </nav>
@@ -224,7 +217,7 @@
         <small class="session-note">
           La sesión se cierra tras 30 minutos sin actividad.
         </small>
-        <small class="panel-version" aria-label="Versión de la web">v0.6.2</small>
+        <small class="panel-version" aria-label="Versión de la web">v0.7.0</small>
       </aside>
       <main class="panel-main">
         <div class="panel-heading">
@@ -289,6 +282,7 @@
               </button>
             </div>
           </div>
+          <button type="button" id="career-entry-notice" class="panel-secondary" hidden></button>
           <p id="dashboard-load-note" class="panel-notice" hidden>
             Hay apartados que no se han podido actualizar. Pulsa Actualizar para
             reintentarlo.
@@ -594,6 +588,9 @@
               </label>
               <button type="submit" class="btn" id="resource-save">
                 Publicar para el equipo ↗
+              </button>
+              <button type="button" id="resource-edit-cancel" class="panel-secondary" hidden>
+                Cancelar edición
               </button>
               <p class="resource-upload-help">
                 Para HTML, sube un archivo autónomo con sus imágenes y estilos incluidos,
@@ -1305,7 +1302,7 @@
                   <input name="consultant_since" type="date" min="1900-01-01" />
                 </label>
                 <small class="panel-muted">
-                  Una vez guardada, solo un administrador puede corregir esta fecha desde
+                  Una vez guardada, solo otro administrador puede corregir esta fecha desde
                   Equipo.
                 </small>
                 <label>
@@ -1481,6 +1478,7 @@
             </dl>
           </div>
         </div>
+        <section id="team-member-trophies" class="career-trophy-shelf" aria-label="Logros de carrera" hidden></section>
         <details id="team-progress-details" class="team-progress-details">
           <summary>
             Su siguiente paso
@@ -1725,20 +1723,20 @@
     </dialog>
 
     <script src="../js/clipboard.js?v=products1" defer></script>
-    <script src="../js/companies.js?v=connections1" defer></script>
+    <script src="../js/companies.js?v=project-intesa1" defer></script>
     <script src="../js/confirm.js?v=profileguard1" defer></script>
     <script src="../js/backend-config.js?v=panel1" defer></script>
-    <script src="../js/backend.js?v=connections1" defer></script>
+    <script src="../js/backend.js?v=glass1" defer></script>
     <script src="../vendor/xlsx-0.20.3.min.js" defer></script>
     <script src="../js/client-import.js?v=clients2" defer></script>
     <script src="../js/axa-portfolios-data.js?v=clientdesign1" defer></script>
     <script src="../js/axa-portfolios.js?v=clientdesign1" defer></script>
     <script src="../js/contract-controls.js?v=apex2" defer></script>
     <script src="../js/date-picker.js?v=safarimonth1" defer></script>
-    <script src="../js/product-picker.js?v=apex1" defer></script>
-    <script src="../js/product-capture-parser.js?v=capture1" defer></script>
-    <script src="../js/product-capture.js?v=capture1" defer></script>
-    <script src="../js/client-products.js?v=capture1" defer></script>
+    <script src="../js/product-picker.js?v=project-intesa1" defer></script>
+    <script src="../js/product-capture-parser.js?v=project-intesa1" defer></script>
+    <script src="../js/product-capture.js?v=project-intesa1" defer></script>
+    <script src="../js/client-products.js?v=promotion1" defer></script>
     <script src="../js/clients-workspace.js?v=controls4" defer></script>
     <dialog id="clients-trash-dialog" aria-labelledby="clients-trash-title">
       <div class="trash-heading">
@@ -1774,22 +1772,32 @@
     <script src="../js/client-trash.js?v=apex1" defer></script>
     <script src="../js/theme-transition.js?v=20261021-theme2" defer></script>
     <script src="../js/photo-crop.js?v=team2" defer></script>
-    <script src="../js/career-data.js?v=ge-3ft1" defer></script>
-    <script src="../js/career-progress.js?v=units1" defer></script>
-    <script src="../js/career.js?v=copperprogress1" defer></script>
+    <script src="../js/career-data.js?v=ge-mixed1" defer></script>
+    <script src="../js/career-progress.js?v=ge-mixed1" defer></script>
+    <script src="../js/career.js?v=quarter-checks2" defer></script>
     <script src="../js/panel-selects.js?v=office1-progress1" defer></script>
     <script src="../js/presence.js?v=connections1" defer></script>
-    <script src="../js/team.js?v=connections1" defer></script>
+    <script src="../js/career-trophies.js?v=career-confirmed1" defer></script>
+    <script src="../js/team.js?v=profile-edit1" defer></script>
     <script src="../js/premeeting-model.js?v=previo1" defer></script>
     <script src="../js/premeeting-summary.js?v=hub1" defer></script>
     <script src="../js/premeeting-panel.js?v=controls4" defer></script>
-    <script src="../js/resources.js?v=connections1" defer></script>
+    <script src="../js/resources.js?v=resource-edit2" defer></script>
     <script src="../js/statistics.js?v=devices1-closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
-    <script src="../js/panel-insights.js?v=login-close1" defer></script>
+    <script src="../js/panel-insights.js?v=promotion-cycle1" defer></script>
     <script src="../js/login-transition.js?v=cc3" defer></script>
-    <script src="../js/panel.js?v=login-transition2" defer></script>
+    <script src="../js/panel.js?v=promotion-cycle1" defer></script>
     <script src="../js/login-visibility.js?v=1" defer></script>
+    <dialog id="career-promotion-dialog" class="career-promotion-dialog"
+      aria-labelledby="career-promotion-title" aria-describedby="career-promotion-detail">
+      <div id="career-promotion-trophy"></div>
+      <p class="eyebrow">Plan de carrera · Nuevo puesto</p>
+      <h2 id="career-promotion-title"></h2>
+      <p id="career-promotion-detail"></p>
+      <form method="dialog"><button class="btn" type="submit">Continuar</button></form>
+    </dialog>
+
     <dialog id="career-dialog" aria-labelledby="career-title">
       <button
         type="button"

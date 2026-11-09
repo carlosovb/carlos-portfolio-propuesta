@@ -305,6 +305,7 @@
     get("team-member-clients").textContent = totals?.clients ?? "—";
     get("team-member-interested").textContent = totals?.interested ?? "—";
     avatar(get("team-member-photo"), member, true);
+    void window.CareerTrophies.showMember(member.user_id, () => selected === member);
     get("team-progress-details").open = false;
     const progressHost = get("team-member-progress");
     progressHost.replaceChildren();
@@ -344,7 +345,7 @@
       progressHost.textContent =
         "El progreso de promoción es privado para este consultor y los responsables de su rama.";
     const form = get("team-assignment-form");
-    form.hidden = account?.role !== "admin";
+    form.hidden = account?.role !== "admin" || member.user_id === me?.user_id;
     form.elements.consultant_since.value = member.consultant_since || "";
     form.elements.consultant_since.max = new Intl.DateTimeFormat("sv-SE", {
       timeZone: "Atlantic/Canary",
@@ -563,7 +564,7 @@
     }
   }
   get("team-save-start-date").addEventListener("click", async () => {
-    if (saving || account?.role !== "admin" || !selected) return;
+    if (saving || account?.role !== "admin" || !selected || selected.user_id === me?.user_id) return;
     const input = get("team-assignment-form").elements.consultant_since;
     if (!input.value || !input.reportValidity()) {
       notice("team-member-notice", "Selecciona una fecha de inicio válida.");
@@ -634,7 +635,7 @@
   });
   get("team-assignment-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (saving || account?.role !== "admin" || !selected) return;
+    if (saving || account?.role !== "admin" || !selected || selected.user_id === me?.user_id) return;
     saving = true;
     get("team-save-assignment").disabled = true;
     const snapshot = revision;

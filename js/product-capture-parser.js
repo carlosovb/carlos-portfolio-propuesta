@@ -138,7 +138,10 @@
       "";
     const selected = portfolio(code);
     const company = read(/^compania$/);
-    const axa = /axa/i.test(company) || !!code;
+    const identity = identify(company + "\n" + text, code || read(/^producto$/));
+    const basket = read(/^(?:cesta|cestadeinversion|cartera|carteradeinversion|fondovinculado)$/) || basketName(text);
+    const signature = signatureDate(read(/^(?:fechadefirma|fechafirma|ffirma)$/)) ||
+      documentSignature(text);
     const amount = number(read(/^primaaportacionbruta$/));
     const units = number(read(/^unidades$/));
     const frequency = read(/^fracc(?:ionamiento)?$/);
@@ -149,13 +152,12 @@
         : "";
     return {
       draft: {
-        company: axa ? "AXA" : "",
-        product: axa && code ? "PIAS Proyecto Futuro" : "",
-        portfolio: selected?.name || "",
+        ...identity,
+        portfolio: identity.company === "AXA" ? selected?.name || "" : identity.company ? basket : "",
         payment_type,
         amount,
         units: units == null ? null : Math.ceil(units),
-        signed_on: "",
+        signed_on: signature,
         signed_multiplier: "",
       },
       source: {
@@ -164,12 +166,97 @@
         holder:
           read(/^tomador$/) || text.match(/Contrato:\s*([^\n]+)/i)?.[1]?.trim() || "",
         policy: read(/^npoliza$/),
-        effective: read(/^fefecto$/),
+        signature,
         state: read(/^estado$/),
         abbreviation: selected?.abbreviation || "",
-        portfolioConfirmed: !!selected?.confirmed,
+        portfolioConfirmed: !!selected?.confirmed || !!basket,
       },
     };
   }
-  return { parse, portfolio, number, samePerson, fragments };
+  function signatureDate(text) {
+    const value = norm(text);
+    const numeric = value.match(/\b(?:(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})|(\d{1,2})[-/.](\d{1,2})[-/.](\d{4}))\b/);
+    let year, month, day;
+    if (numeric) {
+      [year, month, day] = numeric[1] ? numeric.slice(1, 4) : [numeric[6], numeric[5], numeric[4]];
+    } else {
+      const written = value.match(/\b(\d{1,2}) de ([a-z]+) de (\d{4})\b/);
+      if (!written) return "";
+      const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+      [, day, month, year] = written;
+      month = String(months.indexOf(month) + 1);
+    }
+    const iso = [year, month.padStart(2, "0"), day.padStart(2, "0")].join("-");
+    const parsed = new Date(iso + "T00:00:00Z");
+    return Number.isFinite(+parsed) && parsed.toISOString().slice(0, 10) === iso ? iso : "";
+  }
+
+  function documentSignature(text) {
+    const signatures = [...norm(text).matchAll(/\b(?:fecha (?:de )?firma|f\.\s*(?:de )?firma|firmado el)\s*:?\s*([^\n]+)/g)]
+      .map((match) => signatureDate(match[1])).filter(Boolean);
+    return new Set(signatures).size === 1 ? signatures[0] : "";
+  }
+
+  function basketName(text) {
+    const match = text.match(/^[ \t]*(?:Cesta(?: de inversi[oó]n| elegida| seleccionada)?|Cartera(?: de inversi[oó]n)?|Fondo vinculado)[ \t]*(?:[:–-]\s*|\r?\n[ \t]*)([^\r\n]+)/im);
+    const value = match?.[1].trim() || "";
+    return value.length <= 160 ? value : "";
+  }
+
+  function identify(text, productField = "") {
+    const normalized = norm(text);
+    const productText = norm(productField || text);
+    const topProducts = [
+      [/\btop[\s-]*plan\b/, "TOP Plan"],
+      [/\btop[\s-]*premium\b/, "TOP Premium"],
+      [/\btop[\s-]*pias\b/, "TOP PIAS"],
+      [/\btop[\s-]*10\b/, "TOP10"],
+    ];
+    const matches = topProducts.filter(([pattern]) => pattern.test(productText));
+    const axaProduct = /\bpias\s+proyecto\s+futuro\b|\bpias\s*pf\s*perf/.test(productText);
+    const axa = /\baxa\b/.test(normalized) || axaProduct;
+    const intesa = /\bintesa\b/.test(normalized) || matches.length > 0;
+    if (axa && intesa) return { company: "", product: "" };
+    if (axa) return { company: "AXA", product: axaProduct ? "PIAS Proyecto Futuro" : "" };
+    if (intesa) return {
+      company: "Intesa Sanpaolo Assicurazioni",
+      product: matches.length === 1 ? matches[0][1] : "",
+    };
+    return { company: "", product: "" };
+  }
+
+  function parseProject(text) {
+    text = String(text || "").replace(/[^\S\r\n]+/g, " ").trim();
+    if (!text) throw Error("project-format");
+    const normalized = norm(text);
+    const productField = text.match(/^[ \t]*(?:Producto|Denominaci[oó]n del producto)[ \t]*(?::\s*|\r?\n[ \t]*)([^\r\n]+)/im)?.[1];
+    const identity = identify(text, productField);
+    const holder = text.match(/^\s*(?:Documento preparado para|Tomador(?: del seguro)?|Nombre del cliente|Cliente)\s*:\s*([^\n]+)/im)?.[1]?.trim() || "";
+    const selected = normalized.match(/cartera\s+(conservadora|moderada|equilibrada|dinamica|responsable|global)\s*\+/)?.[1];
+    const basket = basketName(text);
+    const monthly = text.match(/\bMensual\s+([\d.,]+)\s*€/i)?.[1] ||
+      normalized.match(/(?:aportacion|prima) mensual\s*:\s*([\d.,]+)/)?.[1];
+    const single = normalized.match(/(?:aportacion|prima) unica(?: inicial)?\s*:\s*([\d.,]+)/)?.[1];
+    const signature = documentSignature(text);
+    const chosenPortfolio = identity.company === "AXA"
+      ? portfolios.find(([key]) => key === selected)?.[1] || ""
+      : identity.company && basket && basket.length <= 160 ? basket : "";
+    return {
+      draft: {
+        ...identity,
+        portfolio: chosenPortfolio,
+        payment_type: monthly && !single ? "monthly" : single && !monthly ? "single" : "",
+        amount: monthly && single ? null : number(monthly || single),
+        units: null, signed_on: signature, signed_multiplier: "",
+      },
+      source: {
+        project: true, holder, code: "Proyecto PDF", signature,
+        total: text.match(/TOTAL INVERTIDO\s+([\d.,]+)\s*€/i)?.[1] || "",
+        units: null, policy: "", state: "",
+        portfolioConfirmed: !!chosenPortfolio,
+      },
+    };
+  }
+  return { parse, parseProject, portfolio, number, samePerson, fragments };
 });

@@ -1,4 +1,4 @@
-const { chromium, webkit, devices } = require("playwright");
+const { chromium, firefox, webkit, devices } = require("playwright");
 const { server, mock, state, login } = require("./profile-flow.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -7,10 +7,11 @@ const path = require("node:path");
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}/`;
   const safari = process.env.MOBILE_BROWSER === "webkit";
+  const gecko = process.env.MOBILE_BROWSER === "firefox";
   const mobile = safari || process.env.MOBILE_BROWSER === "android";
-  const browser = await (safari ? webkit : chromium).launch({
+  const browser = await (safari ? webkit : gecko ? firefox : chromium).launch({
     headless: true,
-    ...(!safari && { executablePath: process.env.CHROME_EXECUTABLE }),
+    ...(!safari && !gecko && { executablePath: process.env.CHROME_EXECUTABLE }),
   });
   const failures = [];
   try {
@@ -20,12 +21,13 @@ const path = require("node:path");
       [768, 1024],
       [1024, 768],
       [844, 390],
+      [1440, 1000],
     ]) {
       const context = await browser.newContext({
         ...(mobile ? devices[safari ? "iPhone 13" : "Pixel 7"] : {}),
         viewport: { width, height },
         hasTouch: true,
-        isMobile: true,
+        ...(!gecko && { isMobile: width < 1200 }),
         reducedMotion: "reduce",
       });
       await mock(context, state());
@@ -163,7 +165,7 @@ const path = require("node:path");
           await page.locator("#client-detail-close").tap();
         }
         if (view === "statistics") {
-          assert.equal(
+          if (width <= 1024) assert.equal(
             await page
               .locator(".stats-bars > div")
               .first()
@@ -238,7 +240,7 @@ const path = require("node:path");
     console.log(JSON.stringify(failures, null, 2));
     assert.equal(failures.length, 0, "Contenido fuera de la pantalla");
     console.log(
-      `${safari ? "WebKit (motor de Safari)" : mobile ? "Chromium con perfil Android" : "Chromium"}: web pública, cuenta, formulario y nueve secciones del panel; cinco tamaños táctiles sin desbordamientos.`,
+      `${process.env.MOBILE_BROWSER || "Chromium"}: web pública, cuenta, formulario y nueve secciones del panel; seis tamaños sin desbordamientos.`,
     );
   } finally {
     await browser.close();

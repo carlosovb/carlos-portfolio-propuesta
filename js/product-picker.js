@@ -208,15 +208,18 @@
       const known = available.find((p) => p.name === savedProduct);
       const isManual = !!savedProduct && !known;
       manual.input.value = isManual ? savedProduct : "";
-      function select(value, portfolio = "") {
+      let suggestedPortfolio = savedProduct ? "" : savedPortfolio;
+      function select(value, portfolio = suggestedPortfolio) {
         collapseProduct(value);
         product = available.find((p) => p.name === value) || null;
         manual.label.hidden = value !== custom;
         manual.input.disabled = value !== custom;
         manual.input.required = value === custom;
         conditions.hidden = !value;
-        if (value) renderPortfolios(portfolio);
-        else portfolios.hidden = true;
+        if (value) {
+          renderPortfolios(portfolio);
+          suggestedPortfolio = "";
+        } else portfolios.hidden = true;
       }
       available.forEach((p) =>
         choice(

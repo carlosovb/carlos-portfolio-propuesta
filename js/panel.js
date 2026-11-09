@@ -595,6 +595,7 @@
         await window.PanelInsights.search();
       } else if (view === "home") {
         window.PanelInsights?.loadActivity();
+        void window.CareerPlan?.loadNotice();
         await window.DashboardPanel.load(account);
         if (!valid()) return;
         if (account?.role !== "admin") {
