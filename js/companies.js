@@ -1,5 +1,17 @@
 // Catálogo visual y normalización de nombres. No contiene información de clientes.
 (() => {
+  const globalEquity = "Global Equity DB - Clase E";
+  const planBaskets = [
+    "Perfil Conservador ESG", "Perfil Moderado ESG", "Perfil Dinámico ESG",
+    globalEquity, "Renta Variable Multitemática", "Renta Fija Global",
+  ];
+  function intesaBaskets(levels) {
+    return ["", " ESG"].flatMap((suffix) =>
+      ["Perfil", "Capital Activo"].flatMap((family) =>
+        levels.map((level) => family + " " + level + suffix),
+      ),
+    ).concat(globalEquity);
+  }
   const companies = [
     {
       id: "axa",
@@ -27,10 +39,10 @@
       name: "Intesa Sanpaolo Assicurazioni",
       logo: "intesa-sanpaolo-assicurazioni.png",
       products: [
-        { name: "TOP Plan", type: "Ahorro periódico" },
-        { name: "TOP Premium", type: "Prima única" },
-        { name: "TOP PIAS", type: "Seguro de ahorro · PIAS" },
-        { name: "TOP10", type: "Ahorro periódico" },
+        { name: "TOP Plan", type: "Ahorro periódico", portfolios: planBaskets },
+        { name: "TOP Premium", type: "Prima única", portfolios: intesaBaskets(["Base", "Standard", "Plus"]) },
+        { name: "TOP PIAS", type: "Seguro de ahorro · PIAS", portfolios: planBaskets },
+        { name: "TOP10", type: "Ahorro periódico", portfolios: intesaBaskets(["Conservador", "Moderado", "Dinámico"]) },
       ],
     },
   ];
@@ -51,6 +63,7 @@
   window.PortfolioCompanies = {
     list: companies,
     find,
+    matchPortfolio: (names, value) => names.find((name) => norm(name) === norm(value)),
     label: (value) => find(value)?.name || String(value || "").trim(),
   };
 })();

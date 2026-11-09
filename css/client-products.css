@@ -1065,6 +1065,45 @@ html[data-theme="dark"] .product-choice-copy img {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
+.intesa-basket-allocation {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.intesa-basket-total {
+  margin: 10px 0 4px;
+  color: var(--muted);
+  font-size: .875rem;
+  font-weight: 600;
+}
+.intesa-basket-total[data-complete="true"] {
+  color: var(--ink);
+}
+.intesa-basket-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 105px;
+  gap: 12px;
+  align-items: center;
+  min-height: 42px;
+}
+.intesa-basket-row label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.intesa-basket-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  flex: none;
+}
+.intesa-basket-weight:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.intesa-basket-weight input {
+  min-width: 0;
+}
 .product-portfolio-options .axa-choice .product-choice-copy {
   display: grid;
   grid-template-columns: 1fr auto;

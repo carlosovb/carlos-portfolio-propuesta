@@ -2,6 +2,7 @@
 (() => {
   const catalog = window.PortfolioCompanies;
   const custom = "__manual__";
+  const mix = "__mix__";
   function node(tag, text, cls) {
     const element = document.createElement(tag);
     if (text !== undefined) element.textContent = text;
@@ -66,7 +67,7 @@
     change.type = "button";
     change.setAttribute(
       "aria-label",
-      "Cambiar " + (key === "company" ? "compañía" : "producto"),
+      "Cambiar " + { company: "compañía", product: "producto", portfolio: "cesta" }[key],
     );
     change.addEventListener("click", () => {
       summary.hidden = true;
@@ -107,7 +108,7 @@
     root.append(companies, status, products, portfolios);
     form.append(root);
     let company = catalog.find(original.company),
-      product = null;
+      product = null, readMix = () => "";
     const knownCompany = company?.name || (original.company ? custom : "");
     companyManual.input.value = company ? "" : original.company || "";
     companyManual.label.hidden = knownCompany !== custom;
@@ -116,6 +117,7 @@
 
     function renderPortfolios(saved = "") {
       portfolios.replaceChildren();
+      readMix = () => "";
       const legend = node("legend");
       legend.append(
         node("span", "03", "product-picker-step"),
@@ -125,6 +127,11 @@
       const options = node("div", undefined, "product-portfolio-options");
       portfolios.append(options);
       const names = product?.portfolios || [];
+      if (company?.id === "intesa" && names.length) {
+        renderIntesaPortfolios(options, names, saved);
+        portfolios.hidden = false;
+        return;
+      }
       const isManual = !!saved && !names.includes(saved);
       const manual = manualInput(
         portfolios,
@@ -178,6 +185,78 @@
         manual.input.value = saved;
       }
       portfolios.hidden = false;
+    }
+    function renderIntesaPortfolios(options, names, saved) {
+      saved = String(saved || "");
+      const single = catalog.matchPortfolio(names, saved);
+      const previous = saved.split(/\s+\+\s+/).map((part) => {
+        const match = part.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*%$/);
+        return match && [catalog.matchPortfolio(names, match[1]), Number(match[2].replace(",", "."))];
+      });
+      const previousMix = previous.length > 1 && previous.every((part) => part?.[0])
+        ? new Map(previous) : new Map();
+      const registered = saved && !single && !previousMix.size ? saved : "";
+      const group = node("div", undefined, "intesa-basket-allocation");
+      group.hidden = !previousMix.size;
+      const summary = node("p", "", "intesa-basket-total");
+      summary.setAttribute("aria-live", "polite");
+      group.append(summary);
+      portfolios.append(group);
+      const rows = names.map((name) => {
+        const row = node("div", undefined, "intesa-basket-row");
+        const label = node("label");
+        const check = node("input");
+        check.type = "checkbox";
+        check.checked = previousMix.has(name);
+        label.append(check, document.createTextNode(name));
+        const weight = node("input");
+        weight.type = "number";
+        weight.min = "0.01";
+        weight.max = "100";
+        weight.step = "0.01";
+        weight.value = previousMix.get(name) ?? "";
+        weight.setAttribute("aria-label", "Porcentaje de " + name);
+        const percentage = node("span", undefined, "intesa-basket-weight");
+        const unit = node("span", "%");
+        unit.setAttribute("aria-hidden", "true");
+        percentage.append(weight, unit);
+        row.append(label, percentage);
+        group.append(row);
+        return { name, check, weight, percentage };
+      });
+      const update = () => {
+        group.hidden = !mixRadio.checked;
+        const selected = rows.filter(({ check }) => check.checked);
+        let cents = 0;
+        let valid = selected.length >= 2;
+        for (const { check, weight, percentage } of rows) {
+          check.disabled = group.hidden;
+          weight.disabled = group.hidden || !check.checked;
+          weight.required = !weight.disabled;
+          percentage.hidden = !check.checked;
+          if (check.checked) {
+            cents += Math.round(Number(weight.value) * 100);
+            if (!weight.value || !weight.validity.valid) valid = false;
+          }
+        }
+        summary.textContent = "Total asignado · " + (cents / 100).toLocaleString("es-ES") + " % de 100 %";
+        summary.dataset.complete = String(valid && cents === 10000);
+        mixRadio.setCustomValidity(!group.hidden && (!valid || cents !== 10000)
+          ? "Selecciona al menos dos cestas y reparte exactamente el 100 %." : "");
+      };
+      const select = (value) => {
+        update();
+        collapse(value === mix ? "Reparto entre cestas" : value);
+      };
+      const collapse = compactSelection(portfolios, options, "portfolio");
+      for (const name of names) choice(options, "portfolio", name, name, "100 %", name === single, select);
+      if (registered) choice(options, "portfolio", registered, registered, "Cesta registrada", true, select);
+      const mixRadio = choice(options, "portfolio", mix, "Repartir entre cestas", "Asigna un porcentaje a cada una", !!previousMix.size, select);
+      group.addEventListener("input", update);
+      group.addEventListener("change", update);
+      readMix = () => rows.filter(({ check, weight }) => check.checked && weight.value)
+        .map(({ name, weight }) => name + " " + Number(weight.value) + " %").join(" + ");
+      select(previousMix.size ? mix : single || registered || "");
     }
     function renderProducts(selectedCompany, savedProduct = "", savedPortfolio = "") {
       collapseCompany(selectedCompany);
@@ -283,7 +362,7 @@
             values.product === custom
               ? String(values.manual_product || "").trim()
               : values.product || "",
-          portfolio: (values.portfolio || values.manual_portfolio || "").trim(),
+          portfolio: (values.portfolio === mix ? readMix() : values.portfolio || values.manual_portfolio || "").trim(),
         };
       },
     };

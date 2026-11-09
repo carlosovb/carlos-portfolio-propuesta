@@ -312,7 +312,7 @@
     const signature = documentSignature(text);
     const chosenPortfolio = identity.company === "AXA"
       ? portfolios.find(([key]) => key === selected)?.[1] || ""
-      : identity.company && basket && basket.length <= 160 ? basket : "";
+      : identity.company && basket && basket.length <= 640 ? basket : "";
     return {
       draft: {
         ...identity,
