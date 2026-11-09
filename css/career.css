@@ -1204,6 +1204,10 @@ body.team-workspace .team-career-summary .career-chip span {
   margin: 12px 0 16px;
 }
 #career-promotion-detail { color: #d6dce5; margin: 0 0 26px; }
+#career-promotion-dialog form {
+  display: flex;
+  justify-content: center;
+}
 #career-promotion-dialog .btn { background: #e4b28b; color: #162638; }
 @media (prefers-reduced-motion: no-preference) {
   #career-promotion-dialog[open][data-animate="true"] { animation: promotion-enter 330ms ease-out both; }
