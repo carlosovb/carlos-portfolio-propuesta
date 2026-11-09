@@ -91,6 +91,7 @@ function fixture(withName = true) {
     await mock(context, state());
     const page = await context.newPage();
     await page.goto("http://127.0.0.1:" + server.address().port + "/panel/");
+    await page.addScriptTag({ url: "/js/product-capture.js" });
     const holder = process.env.PROJECT_HOLDER || "Ana Prueba";
     const document = process.env.PROJECT_REFERENCE ? fs.readFileSync(process.env.PROJECT_REFERENCE) : fixture();
     for (const [name, matches, buffer] of [[holder, true, document], ["Otro Cliente", false, document], [holder, false, fixture(false)]]) {

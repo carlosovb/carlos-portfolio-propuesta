@@ -571,9 +571,10 @@
     return true;
   }
   function presentUnreadPromotion(targetId) {
+    const targets = Array.isArray(targetId) ? targetId : [targetId];
     const notice = notifications.find((row) =>
       row.target_type === "career_promotion" && !row.read_at &&
-      (!targetId || row.target_id === targetId)
+      (!targetId || targets.includes(row.target_id))
     );
     const dialog = get("career-promotion-dialog");
     if (!notice || dialog.open) return false;

@@ -477,7 +477,7 @@
         })
       ).json();
     },
-    async saveClientProduct(clientId, fields, id = null) {
+    async saveClientProduct(clientId, fields, id = null, newId = null) {
       if (!/^[0-9a-f-]{36}$/i.test(clientId) || (id && !/^[0-9a-f-]{36}$/i.test(id)))
         throw Error("Cliente o producto no válido.");
       const body = {
@@ -497,7 +497,7 @@
         query.set("id", "eq." + id);
         query.set("client_id", "eq." + clientId);
       } else {
-        body.id = crypto.randomUUID();
+        body.id = newId || crypto.randomUUID();
         body.client_id = clientId;
         body.is_apex = !!fields.is_apex;
         body.parent_product_id = fields.parent_product_id || null;

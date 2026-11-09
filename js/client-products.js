@@ -10,7 +10,8 @@
     busy = false,
     selected = new Set(),
     scope = "current",
-    captureCleanup = null;
+    importQueue = [],
+    importReviewOpen = false;
   const node = (tag, text, cls) => {
     const n = document.createElement(tag);
     if (text !== undefined) n.textContent = text;
@@ -85,8 +86,8 @@
     return b;
   };
   function reset() {
-    captureCleanup?.();
-    captureCleanup = null;
+    importQueue = [];
+    importReviewOpen = false;
     epoch++;
     client = null;
     rows = [];
@@ -158,8 +159,6 @@
     return input;
   }
   function render() {
-    captureCleanup?.();
-    captureCleanup = null;
     host.dataset.editing = "false";
     host.replaceChildren();
     if (!client) return;
@@ -253,11 +252,28 @@
     add.disabled = client.is_active === false;
     if (add.disabled) add.title = "Reactiva el contacto antes de añadir productos";
     controls.append(add);
-    const capture = button("Importar captura o proyecto", async () => {
-      await startNew({ importOnly: true });
+    const files = node("input");
+    files.type = "file";
+    files.accept = ".pdf,application/pdf";
+    files.multiple = true;
+    files.hidden = true;
+    files.addEventListener("change", () => {
+      const picked = Array.from(files.files);
+      files.value = "";
+      queueProjects(picked);
     });
-    capture.disabled = add.disabled;
-    controls.append(capture);
+    const importButton = button("Importar productos", () => {
+      if (!busy && !editing) files.click();
+    });
+    importButton.disabled = add.disabled;
+    controls.append(importButton, files);
+    const resumeImport = button("Retomar revisión de PDF", () => {
+      importReviewOpen = true;
+      renderQueue();
+    });
+    resumeImport.classList.add("product-project-resume");
+    resumeImport.hidden = true;
+    controls.append(resumeImport);
     const remove = button(
       "Eliminar seleccionados",
       async () => {
@@ -600,7 +616,12 @@
       );
     const editorHost = node("div");
     editorHost.id = "client-product-editor";
-    host.append(editorHost);
+    const importHost = node("section", undefined, "product-project-queue");
+    importHost.setAttribute("aria-label", "Revisión de productos importados");
+    const workspace = node("div", undefined, "product-project-workspace");
+    workspace.append(importHost, editorHost);
+    host.append(workspace);
+    renderQueue();
     if (editing) editor();
     if (demo) say("Datos de ejemplo: los productos añadidos aquí no se guardan.");
   }
@@ -633,12 +654,158 @@
     render();
     announceCompanies();
   }
+  async function queueProjects(files) {
+    if (!client || client.is_active === false || busy || !files.length) return;
+    const ticket = epoch;
+    const current = () => ticket === epoch;
+    const added = [];
+    for (const file of files) {
+      const key = JSON.stringify([file.name, file.size, file.lastModified]);
+      if (importQueue.some((entry) => entry.key === key)) continue;
+      const entry = { key, name: file.name, id: crypto.randomUUID(), status: "reading" };
+      importQueue.push(entry);
+      added.push({ entry, file });
+    }
+    if (!added.length) return;
+    importReviewOpen = true;
+    renderQueue();
+    const name = [client.first_name, client.last_name].filter(Boolean).join(" ");
+    for (const { entry, file } of added) {
+      if (!current()) return;
+      try {
+        const result = await window.ProductProject.read(file, current);
+        if (!current()) return;
+        entry.draft = result.draft;
+        entry.holder = result.source.holder;
+        entry.status = entry.holder && !window.ProductCaptureParser.samePerson(entry.holder, name)
+          ? "mismatch" : "pending";
+      } catch (error) {
+        entry.status = "unreadable";
+        entry.message = error.name === "PasswordException"
+          ? "PDF protegido con contraseña." : "No se pudo leer. Usa un PDF con texto, de hasta 10 MB y 200 páginas.";
+      }
+      if (current()) renderQueue();
+    }
+  }
+  function renderQueue() {
+    const queue = host.querySelector(".product-project-queue");
+    if (!queue) return;
+    const hasPending = importQueue.some((entry) => entry.status !== "saved");
+    queue.hidden = !importReviewOpen || !importQueue.length;
+    const resume = host.querySelector(".product-project-resume");
+    if (resume) resume.hidden = importReviewOpen || !hasPending;
+    queue.parentElement.classList.toggle("is-reviewing", Boolean(editing?._entry));
+    queue.replaceChildren();
+    if (!importQueue.length) return;
+    const ready = importQueue.filter((entry) => entry.status === "ready").length;
+    const heading = node("div", undefined, "product-project-heading");
+    heading.append(
+      node("h4", "Revisar documentos"),
+      node("small", importQueue.length + " PDF · " + ready + " listos"),
+    );
+    const list = node("ul", undefined, "product-project-list");
+    const labels = {
+      reading: "Leyendo PDF…", pending: "Por revisar", mismatch: "El titular no coincide",
+      unreadable: "PDF ilegible", ready: "Listo para guardar", saved: "Guardado",
+    };
+    for (const entry of importQueue) {
+      const item = node("li");
+      item.dataset.status = entry.status;
+      const description = node("div");
+      const draft = entry.fields || entry.draft;
+      description.append(node("strong", draft?.product || entry.name));
+      if (draft?.product) description.append(node("small", entry.name));
+      if (draft && entry.status !== "mismatch") {
+        const amount = draft.amount == null ? "" : euro(draft.amount) + (periods[draft.payment_type]?.suffix || "");
+        const summary = [draft.company, amount].filter(Boolean).join(" · ");
+        if (summary) description.append(node("small", summary));
+      }
+      description.append(node("span", labels[entry.status], "product-project-status"));
+      if (entry.status === "pending" && !entry.holder)
+        description.append(node("small", "Titular sin identificar"));
+      if (entry.status === "pending" && draft?.units == null)
+        description.append(node("small", "Faltan unidades"));
+      if (entry.status === "mismatch") description.append(node("small", "Titular del PDF: " + entry.holder));
+      if (entry.message) description.append(node("small", entry.message));
+      item.append(description);
+      if (["pending", "ready"].includes(entry.status)) {
+        const review = button(entry.status === "ready" ? "Volver a revisar" : "Revisar", () => {
+          if (editing || busy) return;
+          editing = { ...draft, _capture: true, _entry: entry };
+          renderQueue();
+          editor();
+        });
+        review.disabled = !!editing || busy;
+        item.append(review);
+      }
+      list.append(item);
+    }
+    const save = button("Guardar productos listos (" + ready + ")", saveProjects, "btn");
+    save.disabled = !ready || busy || !!editing;
+    const close = button("Cerrar revisión", () => {
+      importQueue = [];
+      importReviewOpen = false;
+      renderQueue();
+    }, "panel-text-button");
+    close.disabled = busy || !!editing || importQueue.some((entry) => entry.status === "reading");
+    const actions = node("div", undefined, "contract-actions");
+    actions.append(save, close);
+    queue.append(heading, list, actions);
+  }
+  async function saveProjects() {
+    if (!client || client.is_active === false || busy || editing) return;
+    const ready = importQueue.filter((entry) => entry.status === "ready");
+    if (!ready.length) return;
+    const ticket = epoch, target = client.id;
+    const saved = [];
+    busy = true;
+    renderQueue();
+    try {
+      for (const entry of ready) {
+        if (ticket !== epoch) return;
+        try {
+          if (demo) rows.unshift({ ...entry.fields, id: entry.id, client_id: target });
+          else await backend.saveClientProduct(target, entry.fields, null, entry.id);
+        } catch {
+          const list = await backend.listClientProducts(target).catch(() => []);
+          if (ticket !== epoch) return;
+          if (!list.some((row) => row.id === entry.id)) {
+            entry.message = "No se pudo guardar. Revisa el importe y el margen disponible antes de reintentar.";
+            continue;
+          }
+        }
+        entry.status = "saved";
+        entry.message = "";
+        saved.push(entry.id);
+      }
+      if (ticket !== epoch) return;
+      if (!demo && saved.length) {
+        try { await reload(); } catch { /* El guardado ya se confirmó. */ }
+      } else if (demo) {
+        render();
+        announceCompanies();
+      }
+      if (ticket !== epoch) return;
+      if (saved.length === ready.length) {
+        importReviewOpen = false;
+        importQueue = importQueue.filter((entry) => entry.status !== "saved");
+        renderQueue();
+      }
+      say(saved.length + " productos guardados. " +
+        (ready.length > saved.length ? "Los documentos con error siguen en la revisión." : ""));
+      if (!demo && saved.length) void window.PanelInsights?.showProductPromotion(saved);
+    } finally {
+      if (ticket === epoch) {
+        busy = false;
+        renderQueue();
+      }
+    }
+  }
   async function editor() {
-    captureCleanup?.();
-    captureCleanup = null;
     const box = document.getElementById("client-product-editor");
     box.replaceChildren();
     if (!editing) return;
+    renderQueue();
     host.dataset.editing = "true";
     const selectedProduct = editing,
       ticket = epoch;
@@ -648,9 +815,11 @@
       me = demo ? { user_id: "demo" } : await backend.getMyTeamProfile();
     } catch {
       if (ticket === epoch && selectedProduct === editing) {
+        editing = null;
         host.dataset.editing = "false";
         box.textContent =
-          "No se ha podido preparar la firma. Pulsa Editar o Añadir producto para reintentar.";
+          "No se ha podido preparar la firma. Vuelve a abrir el formulario para reintentar.";
+        renderQueue();
       }
       return;
     }
@@ -667,40 +836,22 @@
             : "Añadir APEX"
           : editing.id
             ? "Editar producto contratado"
-            : editing._importOnly ? "Importar producto desde documento" : "Nuevo producto contratado",
+            : editing._entry ? "Revisar producto del PDF" : "Nuevo producto contratado",
       ),
     );
-    if (!editing.id && !editing.is_apex && window.ProductCapture) {
-      captureCleanup = window.ProductCapture.mount(form, {
-        client,
-        existing: rows,
-        current: () => ticket === epoch && selectedProduct === editing,
-        onDraft: (draft) => {
-          editing = draft;
-          editor();
-        },
-      });
-    }
-    if (editing._importOnly) {
-      form.append(button("Completar manualmente", () => startNew()));
-      form.append(button("Cancelar", () => {
-        editing = null;
-        render();
-      }));
-      box.append(form);
-      form.querySelector(".capture-import > button")?.click();
-      return;
-    }
     if (editing._capture) {
       form.append(
         node(
           "p",
-          editing._project
-            ? "Borrador desde proyecto · Revisa los datos. Completa los campos pendientes y comprueba la fecha de firma."
-            : "Borrador desde captura · Revisa todos los campos. Completa los campos pendientes y comprueba la fecha de firma.",
+          editing._entry.name + " · Revisa los datos y completa los campos pendientes.",
           "capture-note",
         ),
       );
+      if (!editing._entry.holder)
+        form.append(node("p", "No se ha podido identificar al titular. Verifica que el PDF pertenece a este cliente.", "capture-identity-warning"));
+      if (rows.some((row) => !row.is_apex && row.company === editing.company &&
+          row.product === editing.product && row.portfolio === editing.portfolio && Number(row.amount) === editing.amount))
+        form.append(node("p", "Ya hay un producto parecido en esta ficha. Comprueba si está duplicado.", "capture-note"));
     }
     const conditions = node("section", undefined, "product-conditions");
     const apex = !!editing.is_apex;
@@ -828,7 +979,7 @@
       signature,
       "Tu multiplicador al firmar",
       "signed_multiplier",
-      editing._capture ? "" : editing.id ? editing.signed_multiplier : me.multiplier,
+      editing._capture || editing.id ? editing.signed_multiplier : me.multiplier,
       { options: multipliers },
     );
     multiplier.required = apex || !!editing._capture;
@@ -850,22 +1001,23 @@
       confirmation.append(
         checkbox,
         document.createTextNode(
-          "He revisado los datos importados, la fecha de firma y el multiplicador histórico.",
+          editing._entry.holder
+            ? "He revisado los datos importados, la fecha de firma y el multiplicador histórico."
+            : "He comprobado que el PDF pertenece a este cliente y he revisado los datos de firma.",
         ),
       );
       form.append(confirmation);
     }
     const actions = node("div", undefined, "contract-actions"),
-      save = node("button", apex ? "Guardar APEX" : "Guardar producto", "btn");
+      save = node("button", editing._entry ? "Marcar como listo" : apex ? "Guardar APEX" : "Guardar producto", "btn");
     save.type = "submit";
     actions.append(
       save,
       button("Cancelar", () => {
-        captureCleanup?.();
-        captureCleanup = null;
         editing = null;
         host.dataset.editing = "false";
         box.replaceChildren();
+        renderQueue();
       }),
     );
     form.append(actions);
@@ -1052,7 +1204,7 @@
         form.reportValidity();
         return;
       }
-      if (selectedProduct !== editing || !client || !form.isConnected) return;
+      if (selectedProduct !== editing || !client || !form.isConnected || !form.reportValidity()) return;
       const values = Object.fromEntries(new FormData(form));
       const selection = picker.read(values);
       const fields = {
@@ -1069,6 +1221,16 @@
           values.signed_multiplier === "" ? null : Number(values.signed_multiplier),
       };
       if (withEntry || editing.top_pias_with_initial) fields.top_pias_with_initial = withEntry;
+      if (editing._entry) {
+        editing._entry.fields = fields;
+        editing._entry.status = "ready";
+        editing._entry.message = "";
+        editing = null;
+        host.dataset.editing = "false";
+        box.replaceChildren();
+        renderQueue();
+        return;
+      }
       const ticket = epoch,
         target = client.id,
         id = editing.id || null;
@@ -1102,9 +1264,9 @@
       }
     });
   }
-  function startNew({ importOnly = false } = {}) {
+  function startNew() {
     if (!client || busy || client.is_active === false) return;
-    editing = importOnly ? { _importOnly: true } : {};
+    editing = {};
     return editor();
   }
   window.ClientProducts = { open, reset, startNew, isBusy: () => busy };
