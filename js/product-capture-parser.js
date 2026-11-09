@@ -226,18 +226,89 @@
     return { company: "", product: "" };
   }
 
-  function parseProject(text) {
+  function projectRows(items) {
+    const rows = [];
+    for (const item of items) {
+      if (!item.str?.trim() || !item.transform) continue;
+      const [, , , , x, y] = item.transform;
+      let row = rows.find((candidate) => Math.abs(candidate.y - y) < 2.4);
+      if (!row) rows.push((row = { y, items: [] }));
+      row.items.push({ x, width: item.width, text: item.str });
+    }
+    return rows.sort((a, b) => b.y - a.y).map((row) => {
+      let text = "";
+      let right = 0;
+      for (const item of row.items.sort((a, b) => a.x - b.x)) {
+        if (text && item.x - right > 1.25 && !text.endsWith(" ")) text += " ";
+        text += item.text;
+        right = item.x + item.width;
+      }
+      return { y: row.y, text: text.trim().replace(/\s+/g, " ") };
+    });
+  }
+
+  function intesaCover(items) {
+    const rows = projectRows(items);
+    const find = (pattern) => rows.map((row) => row.text.match(pattern)).find(Boolean);
+    const holder = find(/^Nombre y Apellidos del Tomador\s*:\s*(\p{L}[\p{L}\p{M} ,.'’\-]+)$/iu)?.[1]?.trim() || "";
+    const periodicity = find(/^Forma de pago prima peri[oó]dica\s*:?\s*(MENSUAL)\b/i)?.[1];
+    const money = (value) => number(/^\d{1,3}(?:\.\d{3})+$/.test(value || "") ? value.replace(/\./g, "") : value);
+    const annual = money(find(/^Prima peri[oó]dica anual total\s*:?\s*([\d.,]+)\s*(?:euros?\b|€)/i)?.[1]);
+    const single = money(find(/^Prima (?:[uú]nica(?: inicial)?|inicial [uú]nica)\s*:?\s*([\d.,]+)\s*(?:euros?\b|€)/i)?.[1]);
+    const allocation = rows.findIndex((row) => /^Asignaci[oó]n de la prima\b/i.test(row.text));
+    const funds = [];
+    if (allocation >= 0) {
+      const percentageOnly = /^[\d.,]+\s*%$/;
+      const labelOnly = /^\p{L}[^%]+$/u;
+      for (let i = allocation + 1; i < rows.length; i++) {
+        const row = rows[i];
+        const next = rows[i + 1];
+        let value = row.text;
+        // En algunas portadas el porcentaje tiene una línea base distinta a la del fondo.
+        if (next && row.y - next.y <= 6) {
+          if (percentageOnly.test(value) && labelOnly.test(next.text)) {
+            value = next.text + " " + value;
+            i++;
+          } else if (labelOnly.test(value) && percentageOnly.test(next.text)) {
+            value += " " + next.text;
+            i++;
+          }
+        }
+        if (/^total\b/i.test(value)) break;
+        const match = value.match(/^(\p{L}.*?)\s+([\d.,]+)\s*%$/u);
+        if (!match) break;
+        const weight = number(match[2]);
+        if (weight === null || weight > 100) break;
+        if (weight > 0) funds.push({ name: match[1], weight });
+      }
+    }
+    const total = funds.reduce((sum, fund) => sum + fund.weight, 0);
+    const basket = Math.abs(total - 100) < 0.001
+      ? funds.map(({ name, weight }) => funds.length === 1 ? name : name + " " + weight + " %").join(" + ")
+      : "";
+    return {
+      holder,
+      basket,
+      monthly: periodicity && annual > 0 ? Math.round(annual * 100 / 12) / 100 : null,
+      single: single > 0 ? single : null,
+    };
+  }
+
+  function parseProject(text, coverItems = []) {
     text = String(text || "").replace(/[^\S\r\n]+/g, " ").trim();
     if (!text) throw Error("project-format");
     const normalized = norm(text);
     const productField = text.match(/^[ \t]*(?:Producto|Denominaci[oó]n del producto)[ \t]*(?::\s*|\r?\n[ \t]*)([^\r\n]+)/im)?.[1];
     const identity = identify(text, productField);
-    const holder = text.match(/^\s*(?:Documento preparado para|Tomador(?: del seguro)?|Nombre del cliente|Cliente)\s*:\s*([^\n]+)/im)?.[1]?.trim() || "";
+    const cover = identity.company === "Intesa Sanpaolo Assicurazioni" ? intesaCover(coverItems) : {};
+    const holder = cover.holder || text.match(/^\s*(?:Documento preparado para|Tomador(?: del seguro)?|Nombre del cliente|Cliente)\s*:\s*([^\n]+)/im)?.[1]?.trim() || "";
     const selected = normalized.match(/cartera\s+(conservadora|moderada|equilibrada|dinamica|responsable|global)\s*\+/)?.[1];
-    const basket = basketName(text);
-    const monthly = text.match(/\bMensual\s+([\d.,]+)\s*€/i)?.[1] ||
-      normalized.match(/(?:aportacion|prima) mensual\s*:\s*([\d.,]+)/)?.[1];
-    const single = normalized.match(/(?:aportacion|prima) unica(?: inicial)?\s*:\s*([\d.,]+)/)?.[1];
+    const basket = cover.basket || basketName(text);
+    const monthly = cover.monthly ?? number(text.match(/\bMensual\s+([\d.,]+)\s*€/i)?.[1] ||
+      normalized.match(/(?:aportacion|prima) mensual\s*:\s*([\d.,]+)/)?.[1]);
+    const single = cover.single ?? number(normalized.match(/(?:aportacion|prima) unica(?: inicial)?\s*:\s*([\d.,]+)/)?.[1]);
+    const paymentType = monthly !== null && single === null ? "monthly"
+      : single !== null && monthly === null ? "single" : "";
     const signature = documentSignature(text);
     const chosenPortfolio = identity.company === "AXA"
       ? portfolios.find(([key]) => key === selected)?.[1] || ""
@@ -246,8 +317,8 @@
       draft: {
         ...identity,
         portfolio: chosenPortfolio,
-        payment_type: monthly && !single ? "monthly" : single && !monthly ? "single" : "",
-        amount: monthly && single ? null : number(monthly || single),
+        payment_type: paymentType,
+        amount: paymentType === "monthly" ? monthly : paymentType === "single" ? single : null,
         units: null, signed_on: signature, signed_multiplier: "",
       },
       source: {

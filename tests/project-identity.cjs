@@ -24,6 +24,23 @@ assert.equal(incomplete.draft.product, "");
 assert.equal(incomplete.draft.portfolio, "");
 assert.equal(incomplete.draft.signed_on, "");
 assert.equal(parser.parseProject("Intesa TOP Plan y TOP10").draft.product, "");
+const cover = (lines) => lines.map((str, i) => ({
+  str, width: str.length * 5, transform: [1, 0, 0, 1, 50, 650 - i * 15],
+})).reverse();
+const allocation = [
+  "Nombre y Apellidos del Tomador: Ana Prueba",
+  "Prima única: 12.000 Euros",
+  "Asignación de la prima",
+  "Perfil Moderado ESG 60 %",
+  "Global Equity DB - Clase E 40 %",
+  "Total 100 %",
+];
+const premium = parser.parseProject("Intesa TOP Premium", cover(allocation));
+assert.equal(premium.source.holder, "Ana Prueba");
+assert.equal(premium.draft.payment_type, "single");
+assert.equal(premium.draft.amount, 12000);
+assert.equal(premium.draft.portfolio, "Perfil Moderado ESG 60 % + Global Equity DB - Clase E 40 %");
+assert.equal(parser.parseProject("Intesa TOP10", cover(allocation.slice(0, 4))).draft.portfolio, "");
 
 function fixture(withName = true) {
   const lines = [
@@ -88,7 +105,8 @@ function fixture(withName = true) {
     }
     if (process.env.INTESA_PROJECT_REFERENCE) {
       const intesa = fs.readFileSync(process.env.INTESA_PROJECT_REFERENCE);
-      for (const name of [process.env.INTESA_PROJECT_HOLDER, "Otro Cliente"]) {
+      const expectedHolder = process.env.INTESA_PROJECT_HOLDER;
+      for (const name of [expectedHolder, process.env.INTESA_PROJECT_OTHER_HOLDER || "Otro Cliente"]) {
         await page.evaluate((name) => {
           window.projectCleanup?.();
           const form = document.getElementById("project-test-form");
@@ -105,6 +123,7 @@ function fixture(withName = true) {
         await page.locator(".capture-summary").waitFor();
         const warning = page.locator(".capture-identity-warning");
         const needsConfirmation = await warning.count() > 0;
+        assert.equal(needsConfirmation, name !== expectedHolder);
         await page.locator(".capture-confirm input").check();
         const apply = page.getByRole("button", { name: "Revisar en el formulario" });
         if (needsConfirmation) {
@@ -114,13 +133,13 @@ function fixture(withName = true) {
         await apply.click();
         const draft = await page.evaluate(() => window.projectDraft);
         assert.equal(draft.company, "Intesa Sanpaolo Assicurazioni");
-        assert.equal(draft.product, "TOP Plan");
-        if (name === "Otro Cliente") assert(needsConfirmation, "El PDF ajeno requiere confirmación específica");
-        else console.log("Intesa real:", {
-          titularVerificado: !needsConfirmation, fechaFirma: !!draft.signed_on,
-          cesta: !!draft.portfolio, importe: draft.amount != null,
-        });
+        assert.equal(draft.product, process.env.INTESA_PROJECT_PRODUCT || "TOP Plan");
+        assert.equal(draft.portfolio, process.env.INTESA_PROJECT_BASKET);
+        assert.equal(draft.payment_type, process.env.INTESA_PROJECT_PAYMENT || "monthly");
+        assert.equal(draft.amount, Number(process.env.INTESA_PROJECT_AMOUNT));
+        assert.equal(draft.signed_on, process.env.INTESA_PROJECT_DATE);
       }
+      console.log("Intesa: titular, cesta, aportación, firma y aviso de discrepancia comprobados.");
     }
     console.log("PDF: coincidencia, discrepancia y nombre ausente comprobados; confirmación específica obligatoria.");
   } finally {

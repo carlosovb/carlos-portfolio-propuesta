@@ -285,15 +285,17 @@
         if (pdf.numPages > 200) throw Error("project-pages");
         const pages = [...new Set([1, 2, 3, pdf.numPages].filter((n) => n <= pdf.numPages))];
         const text = [];
+        let coverItems = [];
         for (const [index, pageNumber] of pages.entries()) {
           if (!valid()) return;
           const page = await pdf.getPage(pageNumber);
           const content = await page.getTextContent();
+          if (pageNumber === 1) coverItems = content.items;
           text.push(content.items.map((item) => item.str + (item.hasEOL ? "\n" : " ")).join(""));
           progress.value = (index + 1) / pages.length;
         }
         if (!valid()) return;
-        const result = window.ProductCaptureParser.parseProject(text.join("\n"));
+        const result = window.ProductCaptureParser.parseProject(text.join("\n"), coverItems);
         review(result, preview, valid, 100);
         status.textContent = "Revisa los datos y la identidad del cliente antes de continuar.";
       } catch (error) {
