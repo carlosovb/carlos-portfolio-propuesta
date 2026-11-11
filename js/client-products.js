@@ -710,7 +710,8 @@
         entry.holder = result.source.holder;
         entry.offer = result.source.lifeDocument === "offer" ? result.source : null;
         entry.lifeRequest = result.source.lifeDocument === "request";
-        entry.status = entry.holder && !window.ProductCaptureParser.samePerson(entry.holder, name)
+        entry.demoMismatch = !!(demo && entry.holder && !window.ProductCaptureParser.samePerson(entry.holder, name));
+        entry.status = !demo && entry.holder && !window.ProductCaptureParser.samePerson(entry.holder, name)
           ? "mismatch" : entry.offer ? "offer" : "pending";
       } catch (error) {
         entry.status = "unreadable";
@@ -782,6 +783,8 @@
         description.append(details);
       }
       if (entry.status === "mismatch") description.append(node("small", "Titular del PDF: " + entry.holder));
+      if (entry.demoMismatch)
+        description.append(node("small", "El titular del PDF es distinto. Esta ficha es de ejemplo."));
       if (entry.message) description.append(node("small", entry.message));
       item.append(description);
       if (["pending", "ready"].includes(entry.status)) {
