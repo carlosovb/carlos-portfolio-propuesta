@@ -763,7 +763,7 @@
       const offer = entry.lifeRequest && availableLifeOffer(entry);
       if (entry.lifeRequest && entry.status === "pending") {
         description.append(node("small", Object.keys(draft.life_coverages || {}).length + " protecciones detectadas"));
-        if (draft.amount == null) description.append(node("small", "Falta la prima del recibo"));
+        if (draft.amount == null) description.append(node("small", "Confirma la prima neta al revisar"));
         description.append(node("small", offer ? "Oferta vinculada: " + offer.name
           : "Añade una oferta de Vida Protect del mismo titular para revisar la solicitud."));
       }
@@ -791,7 +791,9 @@
         const review = button(entry.status === "ready" ? "Volver a revisar" : "Revisar", () => {
           if (editing || busy || (entry.lifeRequest && !offer)) return;
           if (entry.lifeRequest) entry.pairedOffer = offer;
-          editing = { ...draft, _capture: true, _entry: entry };
+          const estimate = entry.lifeRequest && entry.draft.payment_type === "monthly" && offer.offer.net > 0
+            ? Math.round(offer.offer.net * 100 / 12) / 100 : null;
+          editing = { ...draft, amount: draft.amount ?? estimate, _capture: true, _entry: entry, _netEstimate: estimate };
           renderQueue();
           editor();
         });
@@ -1012,7 +1014,10 @@
     const effective = field(life, "Inicio de cobertura", "life_effective_on", editing.life_effective_on, { type: "date", required: true });
     window.DatePicker.mount(effective);
     life.insertBefore(protections, effective.closest("label"));
-    life.append(node("p", "Introduce la prima del recibo con la periodicidad contratada. La prima de la oferta es orientativa."));
+    const netEstimate = editing._netEstimate == null ? null : node("p",
+      "Prima neta anual de la oferta: " + euro(editing._entry.pairedOffer.offer.net) +
+      ". Estimación mensual: " + euro(editing._netEstimate) + ". Confírmala o corrígela antes de guardar.");
+    if (netEstimate) life.append(netEstimate);
     const amountLimits = node("small", "", "contract-amount-limits");
     amountLimits.id = "contract-amount-limits";
     amount.setAttribute("aria-describedby", amountLimits.id);
@@ -1098,7 +1103,9 @@
         checkbox,
         document.createTextNode(
           editing._entry.holder
-            ? "He revisado los datos importados, la fecha de firma y el multiplicador histórico."
+            ? editing._entry.lifeRequest
+              ? "Confirmo la prima neta y he revisado los datos de la solicitud."
+              : "He revisado los datos importados, la fecha de firma y el multiplicador histórico."
             : "He comprobado que el PDF pertenece a este cliente y he revisado los datos de firma.",
         ),
       );
@@ -1145,7 +1152,7 @@
       life.disabled = !isLife;
       capitals[0][1].setCustomValidity(isLife && !capitals.some(([, input]) => Number(input.value) > 0)
         ? "Indica el capital de al menos una protección contratada." : "");
-      amount.closest("label").firstChild.textContent = isLife ? "Prima del recibo en euros" : "Importe en euros";
+      amount.closest("label").firstChild.textContent = isLife ? "Prima neta por recibo en euros" : "Importe en euros";
       units.closest("label").firstChild.textContent = isLife ? "Unidades totales del primer año" : apex ? "Unidades de la APEX" : "Unidades generadas";
       const top10 = !apex && window.PortfolioCompanies.isTop10(selection.company, selection.product);
       const rules = window.PortfolioCompanies.contribution(selection.company, selection.product);
@@ -1181,6 +1188,11 @@
           payment.value = Array.from(payment.options).find((option) => !option.disabled).value;
         }
         paymentControl.refresh();
+      }
+      if (netEstimate) {
+        if (!netEstimate.hidden && payment.value !== "monthly" && Number(amount.value) === editing._netEstimate)
+          amount.value = "";
+        netEstimate.hidden = payment.value !== "monthly";
       }
       lifeUnits.textContent = isLife ? lifeUnitSchedule(payment.value, units.value, effective.value) : "";
       lifeUnits.hidden = !lifeUnits.textContent;
