@@ -73,7 +73,13 @@
     },
     async playExit() {
       const minimumEnd = startedAt === null ? 0 : startedAt + minimumDuration;
-      await waitUntil(Math.max(minimumEnd, greetedAt + greetingDuration));
+      const shine = loading.getAnimations({ subtree: true }).find(
+        (animation) => animation.animationName === "ecf-login-shine",
+      );
+      await Promise.all([
+        waitUntil(Math.max(minimumEnd, greetedAt + greetingDuration)),
+        shine?.finished.catch(() => {}),
+      ]);
       if (!loading.open) return;
       loading.classList.add("is-leaving");
       const departure = loading.getAnimations().find(

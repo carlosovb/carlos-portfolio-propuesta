@@ -19,6 +19,8 @@
   --ecf-width: 3.5rem;
 }
 
+.ecf-shine-defs { position: absolute; }
+
 @media (min-width: 851px) {
   .panel-sidebar > .ecf-mark {
     --ecf-width: 5rem;
@@ -27,13 +29,24 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .login-loading[open] .ecf-login-shine {
+    animation: ecf-login-shine 1.5s linear both;
+  }
+
+  .login-loading.is-entering .ecf-login-shine { animation-delay: 700ms; }
+
   body:not(:has(#login-loading[open])) #panel-screen:not([hidden]) .ecf-sidebar-shine {
-    animation: ecf-sidebar-shine 15s linear 15s infinite;
+    animation: ecf-sidebar-shine 10s linear 10s infinite;
+  }
+
+  @keyframes ecf-login-shine {
+    from { transform: translateX(0); }
+    to { transform: translateX(368px); }
   }
 
   @keyframes ecf-sidebar-shine {
     0% { transform: translateX(0); }
-    10%, 100% { transform: translateX(368px); }
+    15%, 100% { transform: translateX(368px); }
   }
 }
 

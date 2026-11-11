@@ -32,9 +32,26 @@
     <link rel="stylesheet" href="../css/login.css?v=0.6.2" />
     <link rel="stylesheet" href="../css/login-transition.css?v=ecf1" />
     <link rel="stylesheet" href="../css/light-theme.css?v=0.6.2" />
-    <link rel="stylesheet" href="../css/ecf-brand.css?v=4" />
+    <link rel="stylesheet" href="../css/ecf-brand.css?v=6" />
   </head>
   <body class="panel-page">
+    <svg class="ecf-shine-defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <mask id="ecf-shine-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="128"
+          mask-type="alpha">
+          <use href="../assets/ecf.svg#ecf-mark" width="256" height="128" />
+        </mask>
+        <linearGradient id="ecf-shine-light" x1="0%" y1="70%" x2="100%" y2="30%">
+          <stop stop-color="#e4b28b" stop-opacity="0" />
+          <stop offset="35%" stop-color="#d38c59" stop-opacity=".76" />
+          <stop offset="50%" stop-color="#fff1d8" stop-opacity=".96" />
+          <stop offset="65%" stop-color="#e4b28b" stop-opacity=".68" />
+          <stop offset="100%" stop-color="#e4b28b" stop-opacity="0" />
+        </linearGradient>
+        <rect id="ecf-shine-strip" x="-112" y="0" width="112" height="128"
+          fill="url(#ecf-shine-light)" />
+      </defs>
+    </svg>
     <dialog
       id="login-loading"
       class="login-loading"
@@ -47,6 +64,9 @@
         <svg class="ecf-mark login-loading-mark" viewBox="0 0 256 128" width="256" height="128"
           role="img" aria-label="Equipo de Consultores Financieros">
           <use href="../assets/ecf.svg#ecf-mark" />
+          <g mask="url(#ecf-shine-mask)" aria-hidden="true">
+            <use class="ecf-login-shine" href="#ecf-shine-strip" />
+          </g>
         </svg>
         <div class="login-loading-rule" aria-hidden="true"></div>
         <div id="login-loading-status" class="login-loading-message" role="status" aria-atomic="true">
@@ -98,23 +118,9 @@
       <aside class="panel-sidebar">
         <svg class="ecf-mark" viewBox="0 0 256 128" width="256" height="128"
           role="img" aria-label="Equipo de Consultores Financieros">
-          <defs>
-            <mask id="ecf-sidebar-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="128"
-              mask-type="alpha">
-              <use href="../assets/ecf.svg#ecf-mark" />
-            </mask>
-            <linearGradient id="ecf-sidebar-light" x1="0%" y1="70%" x2="100%" y2="30%">
-              <stop stop-color="#e4b28b" stop-opacity="0" />
-              <stop offset="35%" stop-color="#d38c59" stop-opacity=".76" />
-              <stop offset="50%" stop-color="#fff1d8" stop-opacity=".96" />
-              <stop offset="65%" stop-color="#e4b28b" stop-opacity=".68" />
-              <stop offset="100%" stop-color="#e4b28b" stop-opacity="0" />
-            </linearGradient>
-          </defs>
           <use href="../assets/ecf.svg#ecf-mark" />
-          <g mask="url(#ecf-sidebar-mask)" aria-hidden="true">
-            <rect class="ecf-sidebar-shine" x="-112" y="0" width="112" height="128"
-              fill="url(#ecf-sidebar-light)" />
+          <g mask="url(#ecf-shine-mask)" aria-hidden="true">
+            <use class="ecf-sidebar-shine" href="#ecf-shine-strip" />
           </g>
         </svg>
         <p>
@@ -1808,7 +1814,7 @@
     <script src="../js/statistics.js?v=devices1-closecenter1" defer></script>
     <script src="../js/dashboard.js?v=hub1" defer></script>
     <script src="../js/panel-insights.js?v=pdf-batch1" defer></script>
-    <script src="../js/login-transition.js?v=cc3" defer></script>
+    <script src="../js/login-transition.js?v=ecf-shine1" defer></script>
     <script src="../js/panel.js?v=promotion-cycle1" defer></script>
     <script src="../js/login-visibility.js?v=1" defer></script>
     <dialog id="career-promotion-dialog" class="career-promotion-dialog"
