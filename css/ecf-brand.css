@@ -26,6 +26,17 @@
   }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  body:not(:has(#login-loading[open])) #panel-screen:not([hidden]) .ecf-sidebar-shine {
+    animation: ecf-sidebar-shine 15s linear 15s infinite;
+  }
+
+  @keyframes ecf-sidebar-shine {
+    0% { transform: translateX(0); }
+    10%, 100% { transform: translateX(368px); }
+  }
+}
+
 .ecf-brand-link {
   display: inline-flex;
   flex: none;

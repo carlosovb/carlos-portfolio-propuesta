@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="../css/login.css?v=0.6.2" />
     <link rel="stylesheet" href="../css/login-transition.css?v=ecf1" />
     <link rel="stylesheet" href="../css/light-theme.css?v=0.6.2" />
-    <link rel="stylesheet" href="../css/ecf-brand.css?v=1" />
+    <link rel="stylesheet" href="../css/ecf-brand.css?v=4" />
   </head>
   <body class="panel-page">
     <dialog
@@ -98,7 +98,24 @@
       <aside class="panel-sidebar">
         <svg class="ecf-mark" viewBox="0 0 256 128" width="256" height="128"
           role="img" aria-label="Equipo de Consultores Financieros">
+          <defs>
+            <mask id="ecf-sidebar-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="128"
+              mask-type="alpha">
+              <use href="../assets/ecf.svg#ecf-mark" />
+            </mask>
+            <linearGradient id="ecf-sidebar-light" x1="0%" y1="70%" x2="100%" y2="30%">
+              <stop stop-color="#e4b28b" stop-opacity="0" />
+              <stop offset="35%" stop-color="#d38c59" stop-opacity=".76" />
+              <stop offset="50%" stop-color="#fff1d8" stop-opacity=".96" />
+              <stop offset="65%" stop-color="#e4b28b" stop-opacity=".68" />
+              <stop offset="100%" stop-color="#e4b28b" stop-opacity="0" />
+            </linearGradient>
+          </defs>
           <use href="../assets/ecf.svg#ecf-mark" />
+          <g mask="url(#ecf-sidebar-mask)" aria-hidden="true">
+            <rect class="ecf-sidebar-shine" x="-112" y="0" width="112" height="128"
+              fill="url(#ecf-sidebar-light)" />
+          </g>
         </svg>
         <p>
           <span id="consultant-display-name">Mi cuenta</span>
