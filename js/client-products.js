@@ -26,6 +26,7 @@
     semiannual: { count: 2, suffix: "/semestre", label: "por semestre" },
     annual: { count: 1, suffix: "/año", label: "al año" },
   };
+  const lifeReceipt = (annual, count) => Math.round(Math.round(Number(annual) * 100) / count) / 100;
   function lifeUnitSchedule(payment, units, effectiveOn) {
     const period = periods[payment];
     if (!period || units == null || units === "") return "";
@@ -486,6 +487,12 @@
         const life = node("section", undefined, "life-protect-summary");
         life.append(node("h6", "Protecciones y capital asegurado"));
         const list = node("dl");
+        list.append(
+          node("dt", "Prima neta anual"),
+          node("dd", row.life_annual_net_premium == null ? "Sin confirmar" : euro(row.life_annual_net_premium)),
+          node("dt", "Cuota neta por recibo"),
+          node("dd", euro(row.amount) + (periods[row.payment_type] ? " " + periods[row.payment_type].label : "")),
+        );
         for (const [key, label] of window.LifeProtect.covers) {
           const capital = row.life_coverages?.[key];
           list.append(node("dt", label), node("dd", capital > 0 ? euro(capital) : "Sin capital asignado"));
@@ -791,9 +798,8 @@
         const review = button(entry.status === "ready" ? "Volver a revisar" : "Revisar", () => {
           if (editing || busy || (entry.lifeRequest && !offer)) return;
           if (entry.lifeRequest) entry.pairedOffer = offer;
-          const annualNet = entry.lifeRequest ? entry.annualNet ?? offer.offer.net : null;
-          editing = { ...draft, amount: annualNet ?? draft.amount, _capture: true, _entry: entry,
-            _annualNet: annualNet != null };
+          const annualNet = entry.lifeRequest ? draft.life_annual_net_premium ?? offer.offer.net : null;
+          editing = { ...draft, life_annual_net_premium: annualNet, _capture: true, _entry: entry };
           renderQueue();
           editor();
         });
@@ -994,7 +1000,9 @@
       payment.disabled = true;
       payment.closest("label").hidden = true;
     } else paymentControl = window.ContractControls.payment(payment);
-    const amount = field(grid, "Importe en euros", "amount", editing.amount, {
+    const initialAmount = window.LifeProtect.isProduct(editing.company, editing.product)
+      ? editing.life_annual_net_premium : editing.amount;
+    const amount = field(grid, "Importe en euros", "amount", initialAmount, {
       type: "number",
       required: true,
     });
@@ -1014,8 +1022,11 @@
     const effective = field(life, "Inicio de cobertura", "life_effective_on", editing.life_effective_on, { type: "date", required: true });
     window.DatePicker.mount(effective);
     life.insertBefore(protections, effective.closest("label"));
-    if (editing._annualNet) life.append(node("p",
+    if (editing._entry?.lifeRequest && editing.life_annual_net_premium != null) life.append(node("p",
       "Prima neta anual según la oferta. Confirma el importe o corrígelo antes de guardar."));
+    const receipt = node("small");
+    receipt.hidden = true;
+    amount.closest("label").append(receipt);
     const amountLimits = node("small", "", "contract-amount-limits");
     amountLimits.id = "contract-amount-limits";
     amount.setAttribute("aria-describedby", amountLimits.id);
@@ -1150,9 +1161,7 @@
       life.disabled = !isLife;
       capitals[0][1].setCustomValidity(isLife && !capitals.some(([, input]) => Number(input.value) > 0)
         ? "Indica el capital de al menos una protección contratada." : "");
-      amount.closest("label").firstChild.textContent = isLife
-        ? editing._annualNet ? "Prima neta anual en euros" : "Prima neta por recibo en euros"
-        : "Importe en euros";
+      amount.closest("label").firstChild.textContent = isLife ? "Prima neta anual en euros" : "Importe en euros";
       units.closest("label").firstChild.textContent = isLife ? "Unidades totales del primer año" : apex ? "Unidades de la APEX" : "Unidades generadas";
       const top10 = !apex && window.PortfolioCompanies.isTop10(selection.company, selection.product);
       const rules = window.PortfolioCompanies.contribution(selection.company, selection.product);
@@ -1193,10 +1202,13 @@
       lifeUnits.hidden = !lifeUnits.textContent;
       const pias = /pias/i.test(selection.product || "");
       const count = apex ? 1 : periods[payment.value]?.count ?? 1;
+      receipt.hidden = !isLife || !amount.value || !periods[payment.value];
+      receipt.textContent = receipt.hidden ? "" : "Cuota neta por recibo: " +
+        euro(lifeReceipt(amount.value, count)) + " " + periods[payment.value].label;
       const period = top10 && periods[payment.value];
       signed.required = isLife || withEntry || apex || !!editing._capture || (pias && payment.value === "single");
       const [min, cap] = rules?.[payment.value] ?? [0.01];
-      const minimum = String(withEntry ? 50 : apex ? apexRule?.minimum ?? 600 : editing._annualNet ? count / 100 : min);
+      const minimum = String(withEntry ? 50 : apex ? apexRule?.minimum ?? 600 : isLife ? count / 100 : min);
       const productCap = withEntry ? 50 : apex ? apexRule?.annual : cap;
       const maximum = String(productCap ?? (pias ? 8000 : 100000000));
       amountLimits.textContent = rules || apexRule
@@ -1332,8 +1344,8 @@
         payment_type: apex ? "single" : values.payment_type,
         is_apex: apex,
         parent_product_id: apex ? editing.parent_product_id : null,
-        amount: editing._annualNet
-          ? Math.round(Number(values.amount) * 100 / periods[values.payment_type].count) / 100
+        amount: !life.disabled
+          ? lifeReceipt(values.amount, periods[values.payment_type].count)
           : Number(values.amount),
         units: values.units === "" ? null : Number(values.units),
         signed_on: values.signed_on || null,
@@ -1345,9 +1357,9 @@
         fields.life_coverages = life.disabled ? null : Object.fromEntries(capitals
           .filter(([, input]) => input.value).map(([key, input]) => [key, Number(input.value)]));
         fields.life_effective_on = life.disabled ? null : effective.value || null;
+        fields.life_annual_net_premium = life.disabled ? null : Number(values.amount);
       }
       if (editing._entry) {
-        if (editing._annualNet) editing._entry.annualNet = Number(values.amount);
         editing._entry.fields = fields;
         editing._entry.status = "ready";
         editing._entry.message = "";
