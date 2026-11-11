@@ -1,0 +1,37 @@
+.ecf-mark {
+  --ecf-copper: #98552f;
+  display: block;
+  flex: none;
+  width: var(--ecf-width, 5rem);
+  height: auto;
+  color: #202e40;
+}
+
+[data-theme="dark"] .ecf-mark,
+.login-header .ecf-mark {
+  --ecf-copper: #e4b28b;
+  color: #f3ece1;
+}
+
+.login-brand .ecf-mark { --ecf-width: 3.5rem; }
+
+.panel-sidebar > .ecf-mark {
+  --ecf-width: 3.5rem;
+}
+
+@media (min-width: 851px) {
+  .panel-sidebar > .ecf-mark {
+    --ecf-width: 5rem;
+    align-self: center;
+  }
+}
+
+.ecf-brand-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 44px;
+}
+
+.account-card .ecf-brand-link { margin-bottom: 28px; }
+.premeeting-top .ecf-mark { --ecf-width: 4.25rem; }

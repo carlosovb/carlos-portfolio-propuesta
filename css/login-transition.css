@@ -67,20 +67,8 @@ html:has(.login-loading[open]) { overflow: hidden; }
 }
 
 .login-loading-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
-  font-size: clamp(42px, min(11vw, 14vh), 62px);
-  line-height: 1.65;
-  /* Escalar las medidas del monograma de escritorio, de 80 × 76 px a 31 px de letra. */
-  width: calc(80em / 31);
-  height: calc(76em / 31);
-  letter-spacing: calc(-2em / 31);
+  --ecf-width: clamp(7rem, 26vw, 11rem);
   margin: clamp(14px, 3vh, 28px) 0 0;
-  padding: 0;
-  border-width: calc(1em / 31);
-  border-radius: calc(13em / 31);
 }
 
 .login-loading-rule {
@@ -124,10 +112,6 @@ html:has(.login-loading[open]) { overflow: hidden; }
     animation: login-mark-in 420ms cubic-bezier(.2, .7, .25, 1) 235ms both;
   }
 
-  .login-loading.is-entering .login-loading-mark > span {
-    animation: login-dot 220ms ease-out 600ms both;
-  }
-
   .login-loading.is-greeting .login-loading-message {
     animation: login-content-in 280ms ease-out both;
   }
@@ -164,11 +148,6 @@ html:has(.login-loading[open]) { overflow: hidden; }
 @keyframes login-mark-in {
   from { opacity: 0; transform: scale(.88); }
   to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes login-dot {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 @keyframes login-content-out {

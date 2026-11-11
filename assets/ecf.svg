@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>ECF · Equipo de Consultores Financieros</title>
+  <style>
+    .favicon { color: #202e40; --ecf-copper: #98552f; }
+    @media (prefers-color-scheme: dark) {
+      .favicon { color: #f3ece1; --ecf-copper: #e4b28b; }
+    }
+  </style>
+  <symbol id="ecf-mark" viewBox="0 0 256 128">
+    <g fill="currentColor">
+      <path d="M13 28a8 8 0 0 1 8-8h58v15H30v22h43L62 71H30v22h49v15H13Z"/>
+      <path d="M183 28a8 8 0 0 1 8-8h58v15h-49v22h43l-11 14h-32v37h-17Z"/>
+    </g>
+    <path fill="var(--ecf-copper, #98552f)" d="m172 37-12 10c-6-9-15-14-26-14-17 0-29 12-29 31s12 31 29 31c11 0 20-5 26-14l12 10c-8 12-22 19-39 19-26 0-46-19-46-46s20-46 46-46c17 0 31 7 39 19Z"/>
+  </symbol>
+  <use class="favicon" href="#ecf-mark" y="64" width="256" height="128"/>
+</svg>
