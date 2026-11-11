@@ -791,9 +791,9 @@
         const review = button(entry.status === "ready" ? "Volver a revisar" : "Revisar", () => {
           if (editing || busy || (entry.lifeRequest && !offer)) return;
           if (entry.lifeRequest) entry.pairedOffer = offer;
-          const estimate = entry.lifeRequest && entry.draft.payment_type === "monthly" && offer.offer.net > 0
-            ? Math.round(offer.offer.net * 100 / 12) / 100 : null;
-          editing = { ...draft, amount: draft.amount ?? estimate, _capture: true, _entry: entry, _netEstimate: estimate };
+          const annualNet = entry.lifeRequest ? entry.annualNet ?? offer.offer.net : null;
+          editing = { ...draft, amount: annualNet ?? draft.amount, _capture: true, _entry: entry,
+            _annualNet: annualNet != null };
           renderQueue();
           editor();
         });
@@ -1014,10 +1014,8 @@
     const effective = field(life, "Inicio de cobertura", "life_effective_on", editing.life_effective_on, { type: "date", required: true });
     window.DatePicker.mount(effective);
     life.insertBefore(protections, effective.closest("label"));
-    const netEstimate = editing._netEstimate == null ? null : node("p",
-      "Prima neta anual de la oferta: " + euro(editing._entry.pairedOffer.offer.net) +
-      ". Estimación mensual: " + euro(editing._netEstimate) + ". Confírmala o corrígela antes de guardar.");
-    if (netEstimate) life.append(netEstimate);
+    if (editing._annualNet) life.append(node("p",
+      "Prima neta anual según la oferta. Confirma el importe o corrígelo antes de guardar."));
     const amountLimits = node("small", "", "contract-amount-limits");
     amountLimits.id = "contract-amount-limits";
     amount.setAttribute("aria-describedby", amountLimits.id);
@@ -1152,7 +1150,9 @@
       life.disabled = !isLife;
       capitals[0][1].setCustomValidity(isLife && !capitals.some(([, input]) => Number(input.value) > 0)
         ? "Indica el capital de al menos una protección contratada." : "");
-      amount.closest("label").firstChild.textContent = isLife ? "Prima neta por recibo en euros" : "Importe en euros";
+      amount.closest("label").firstChild.textContent = isLife
+        ? editing._annualNet ? "Prima neta anual en euros" : "Prima neta por recibo en euros"
+        : "Importe en euros";
       units.closest("label").firstChild.textContent = isLife ? "Unidades totales del primer año" : apex ? "Unidades de la APEX" : "Unidades generadas";
       const top10 = !apex && window.PortfolioCompanies.isTop10(selection.company, selection.product);
       const rules = window.PortfolioCompanies.contribution(selection.company, selection.product);
@@ -1189,11 +1189,6 @@
         }
         paymentControl.refresh();
       }
-      if (netEstimate) {
-        if (!netEstimate.hidden && payment.value !== "monthly" && Number(amount.value) === editing._netEstimate)
-          amount.value = "";
-        netEstimate.hidden = payment.value !== "monthly";
-      }
       lifeUnits.textContent = isLife ? lifeUnitSchedule(payment.value, units.value, effective.value) : "";
       lifeUnits.hidden = !lifeUnits.textContent;
       const pias = /pias/i.test(selection.product || "");
@@ -1201,7 +1196,7 @@
       const period = top10 && periods[payment.value];
       signed.required = isLife || withEntry || apex || !!editing._capture || (pias && payment.value === "single");
       const [min, cap] = rules?.[payment.value] ?? [0.01];
-      const minimum = String(withEntry ? 50 : apex ? apexRule?.minimum ?? 600 : min);
+      const minimum = String(withEntry ? 50 : apex ? apexRule?.minimum ?? 600 : editing._annualNet ? count / 100 : min);
       const productCap = withEntry ? 50 : apex ? apexRule?.annual : cap;
       const maximum = String(productCap ?? (pias ? 8000 : 100000000));
       amountLimits.textContent = rules || apexRule
@@ -1337,7 +1332,9 @@
         payment_type: apex ? "single" : values.payment_type,
         is_apex: apex,
         parent_product_id: apex ? editing.parent_product_id : null,
-        amount: Number(values.amount),
+        amount: editing._annualNet
+          ? Math.round(Number(values.amount) * 100 / periods[values.payment_type].count) / 100
+          : Number(values.amount),
         units: values.units === "" ? null : Number(values.units),
         signed_on: values.signed_on || null,
         signed_multiplier:
@@ -1350,6 +1347,7 @@
         fields.life_effective_on = life.disabled ? null : effective.value || null;
       }
       if (editing._entry) {
+        if (editing._annualNet) editing._entry.annualNet = Number(values.amount);
         editing._entry.fields = fields;
         editing._entry.status = "ready";
         editing._entry.message = "";
