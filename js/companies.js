@@ -20,6 +20,8 @@
       logo: "axa-official.svg",
       resourceLogo: "axa.png",
       products: [
+        { name: "Vida Protect", type: "Seguro de vida · Capital y coberturas",
+          contribution: { monthly: [0.01], quarterly: [0.01], semiannual: [0.01], annual: [0.01] } },
         {
           id: "pias-proyecto-futuro",
           name: "PIAS Proyecto Futuro",

@@ -13,16 +13,28 @@
       const pdf = await task.promise;
       if (pdf.numPages > 200) throw Error("El PDF supera las 200 páginas.");
       const text = [];
-      let cover = [], fields = [];
+      let cover = [], fields = [], lifeCover = [];
       for (const number of new Set([1, 2, 3, pdf.numPages].filter((n) => n <= pdf.numPages))) {
         if (!current()) return;
         const page = await pdf.getPage(number);
         const { items } = await page.getTextContent();
+        if (number === 3) lifeCover = items;
         if (number === 1) {
           cover = items;
           fields = await page.getAnnotations({ intent: "display" });
         }
         text.push(items.map((item) => item.str + (item.hasEOL ? "\n" : " ")).join(""));
+      }
+      if (/vida\s+protect/i.test(text.join("\n"))) {
+        if (/cuestionario\s*[-–]\s*solicitud/i.test(text[0])) {
+          const signature = await (await pdf.getPage(pdf.numPages)).getAnnotations({ intent: "display" });
+          return window.LifeProtect.request(fields, signature);
+        }
+        if (pdf.numPages >= 5 && /proyecto\s+de\s+vida\s+protect/i.test(text.join("\n"))) {
+          const table = await (await pdf.getPage(4)).getTextContent();
+          const premium = await (await pdf.getPage(5)).getTextContent();
+          return window.LifeProtect.offer(lifeCover, table.items, premium.items);
+        }
       }
       return window.ProductCaptureParser.parseProject(text.join("\n"), cover, fields);
     } finally {

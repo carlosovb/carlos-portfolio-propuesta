@@ -457,7 +457,7 @@
       if (!/^[0-9a-f-]{36}$/i.test(clientId)) throw Error("Cliente no válido.");
       const query = new URLSearchParams({
         select:
-          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,archived_at,is_apex,parent_product_id,top_pias_with_initial",
+          "id,client_id,company,product,portfolio,payment_type,amount,units,created_at,signed_on,signed_multiplier,archived_at,is_apex,parent_product_id,top_pias_with_initial,life_coverages,life_effective_on",
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });
@@ -465,8 +465,14 @@
         return (await authenticated("/rest/v1/client_products?" + query)).json();
       } catch (error) {
         if (error.status !== 400) throw error;
-        query.set("select", query.get("select").replace(",top_pias_with_initial", ""));
-        return (await authenticated("/rest/v1/client_products?" + query)).json();
+        query.set("select", query.get("select").replace(",life_coverages,life_effective_on", ""));
+        try {
+          return (await authenticated("/rest/v1/client_products?" + query)).json();
+        } catch (fallback) {
+          if (fallback.status !== 400) throw fallback;
+          query.set("select", query.get("select").replace(",top_pias_with_initial", ""));
+          return (await authenticated("/rest/v1/client_products?" + query)).json();
+        }
       }
     },
     async getPiasBudget(clientId, year, exclude = null) {
@@ -492,6 +498,10 @@
       };
       if (fields.top_pias_with_initial !== undefined)
         body.top_pias_with_initial = fields.top_pias_with_initial;
+      if (fields.life_coverages !== undefined) {
+        body.life_coverages = fields.life_coverages;
+        body.life_effective_on = fields.life_effective_on;
+      }
       const query = new URLSearchParams({ select: "id" });
       if (id) {
         query.set("id", "eq." + id);

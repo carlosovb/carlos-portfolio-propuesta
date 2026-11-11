@@ -23,8 +23,26 @@
   const periods = {
     monthly: { count: 12, suffix: "/mes", label: "al mes" },
     quarterly: { count: 4, suffix: "/trimestre", label: "por trimestre" },
+    semiannual: { count: 2, suffix: "/semestre", label: "por semestre" },
     annual: { count: 1, suffix: "/año", label: "al año" },
   };
+  function lifeUnitSchedule(payment, units, effectiveOn) {
+    const period = periods[payment];
+    if (!period || units == null || units === "") return "";
+    const format = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 4 });
+    let firstCharge = "un mes después de la fecha de efecto";
+    if (effectiveOn) {
+      const [year, month, day] = effectiveOn.split("-").map(Number);
+      const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      const charge = new Date(Date.UTC(year, month, Math.min(day, lastDay)));
+      firstCharge = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeZone: "UTC" }).format(charge);
+    }
+    if (period.count === 1) return format.format(units) + " U en el primer cobro previsto (" + firstCharge + ").";
+    const share = Number(units) / period.count;
+    const rounded = Math.round(share * 10000) / 10000;
+    return period.count + " cuotas de " + (share === rounded ? "" : "aprox. ") +
+      format.format(share) + " U " + period.label + ". Primer cobro previsto: " + firstCharge + ".";
+  }
   const topPiasEntry = 3000;
   function renderTopPiasInitial(host) {
     host.replaceChildren(
@@ -178,7 +196,7 @@
     const visibleRows = baseRows.filter((r) =>
       scope === "history" ? !!r.archived_at : !r.archived_at,
     );
-    const recurringLabel = liveRows.some((r) => ["quarterly", "annual"].includes(r.payment_type))
+    const recurringLabel = liveRows.some((r) => ["quarterly", "semiannual", "annual"].includes(r.payment_type))
       ? "Equivalente mensual" : "Aportación mensual";
     const monthly = liveRows
         .filter((r) => periods[r.payment_type])
@@ -433,7 +451,7 @@
             )
           : "Pendiente";
       [
-        ["Cartera de fondos", row.portfolio || "Sin indicar"],
+        ...(window.LifeProtect.isProduct(row.company, row.product) ? [] : [["Cartera de fondos", row.portfolio || "Sin indicar"]]),
         ["Fecha de firma", date(row.signed_on)],
         [
           "Multiplicador al firmar",
@@ -464,6 +482,19 @@
         dl.append(item);
       });
       detail.append(dl);
+      if (window.LifeProtect.isProduct(row.company, row.product)) {
+        const life = node("section", undefined, "life-protect-summary");
+        life.append(node("h6", "Protecciones y capital asegurado"));
+        const list = node("dl");
+        for (const [key, label] of window.LifeProtect.covers) {
+          const capital = row.life_coverages?.[key];
+          list.append(node("dt", label), node("dd", capital > 0 ? euro(capital) : "Sin capital asignado"));
+        }
+        if (row.life_effective_on) list.append(node("dt", "Inicio de cobertura"), node("dd", date(row.life_effective_on)));
+        life.append(list);
+        if (row.life_effective_on) life.append(node("p", lifeUnitSchedule(row.payment_type, row.units, row.life_effective_on)));
+        detail.append(life);
+      }
       if (window.PortfolioCompanies.isTop10(row.company, row.product) && periods[row.payment_type]) {
         const initial = node("div", undefined, "contract-apex-context contract-top10-initial");
         renderTop10Initial(initial, row.payment_type, row.amount);
@@ -677,8 +708,10 @@
         if (!current()) return;
         entry.draft = result.draft;
         entry.holder = result.source.holder;
+        entry.offer = result.source.lifeDocument === "offer" ? result.source : null;
+        entry.lifeRequest = result.source.lifeDocument === "request";
         entry.status = entry.holder && !window.ProductCaptureParser.samePerson(entry.holder, name)
-          ? "mismatch" : "pending";
+          ? "mismatch" : entry.offer ? "offer" : "pending";
       } catch (error) {
         entry.status = "unreadable";
         entry.message = error.name === "PasswordException"
@@ -707,6 +740,7 @@
     const labels = {
       reading: "Leyendo PDF…", pending: "Por revisar", mismatch: "El titular no coincide",
       unreadable: "PDF ilegible", ready: "Listo para guardar", saved: "Guardado",
+      offer: "Oferta · Solo referencia",
     };
     for (const entry of importQueue) {
       const item = node("li");
@@ -725,17 +759,40 @@
         description.append(node("small", "Titular sin identificar"));
       if (entry.status === "pending" && draft?.units == null)
         description.append(node("small", "Faltan unidades"));
+      const offer = entry.lifeRequest && availableLifeOffer(entry);
+      if (entry.lifeRequest && entry.status === "pending") {
+        description.append(node("small", Object.keys(draft.life_coverages || {}).length + " protecciones detectadas"));
+        if (draft.amount == null) description.append(node("small", "Falta la prima del recibo"));
+        description.append(node("small", offer ? "Oferta vinculada: " + offer.name
+          : "Añade una oferta de Vida Protect del mismo titular para revisar la solicitud."));
+      }
+      if (entry.status === "offer") {
+        const details = node("details", undefined, "life-protect-summary");
+        details.append(node("summary", "Ver capitales y prima de la oferta"));
+        const list = node("dl");
+        for (const [key, label] of window.LifeProtect.covers) {
+          const cover = entry.offer.protections[key];
+          if (!cover) continue;
+          list.append(node("dt", label), node("dd", euro(cover.capital) +
+            (cover.net ? " · Prima neta anual " + euro(cover.net) : "")));
+        }
+        if (entry.offer.net) list.append(node("dt", "Prima neta anual"), node("dd", euro(entry.offer.net)));
+        if (entry.offer.total) list.append(node("dt", "Prima total anual con impuestos"), node("dd", euro(entry.offer.total)));
+        details.append(list, node("small", "Usa la solicitud para registrar el contrato."));
+        description.append(details);
+      }
       if (entry.status === "mismatch") description.append(node("small", "Titular del PDF: " + entry.holder));
       if (entry.message) description.append(node("small", entry.message));
       item.append(description);
       if (["pending", "ready"].includes(entry.status)) {
         const review = button(entry.status === "ready" ? "Volver a revisar" : "Revisar", () => {
-          if (editing || busy) return;
+          if (editing || busy || (entry.lifeRequest && !offer)) return;
+          if (entry.lifeRequest) entry.pairedOffer = offer;
           editing = { ...draft, _capture: true, _entry: entry };
           renderQueue();
           editor();
         });
-        review.disabled = !!editing || busy;
+        review.disabled = !!editing || busy || (entry.lifeRequest && !offer);
         item.append(review);
       }
       list.append(item);
@@ -751,6 +808,17 @@
     const actions = node("div", undefined, "contract-actions");
     actions.append(save, close);
     queue.append(heading, list, actions);
+  }
+  function availableLifeOffer(entry) {
+    if (entry.pairedOffer) return entry.pairedOffer;
+    const candidates = importQueue.filter((offer) => offer.status === "offer" &&
+      window.ProductCaptureParser.samePerson(offer.holder, entry.holder) &&
+      !importQueue.some((request) => request.pairedOffer === offer));
+    const capitals = Object.entries(entry.draft.life_coverages || {});
+    return candidates.find((offer) => capitals.length > 0 &&
+      capitals.length === Object.keys(offer.offer.protections).length &&
+      capitals.every(([key, value]) => offer.offer.protections[key]?.capital === value))
+      || (candidates.length === 1 ? candidates[0] : null);
   }
   async function saveProjects() {
     if (!client || client.is_active === false || busy || editing) return;
@@ -775,6 +843,7 @@
           }
         }
         entry.status = "saved";
+        if (entry.pairedOffer) entry.pairedOffer.status = "saved";
         entry.message = "";
         saved.push(entry.id);
       }
@@ -883,6 +952,9 @@
           portfolio: editing.portfolio,
         }),
       };
+    } else if (editing._entry?.lifeRequest) {
+      form.append(node("p", "AXA · Vida Protect · Oferta: " + editing._entry.pairedOffer.name));
+      picker = { read: () => ({ company: "AXA", product: "Vida Protect", portfolio: "" }) };
     } else picker = window.ProductPicker.mount(form, editing, conditions);
     conditions.append(node("h5", "Condiciones del contrato"));
     const mode = node("div");
@@ -904,6 +976,7 @@
           ...(editing._capture ? [["", "Selecciona la periodicidad"]] : []),
           ["monthly", "Mensual · €/mes"],
           ["quarterly", "Trimestral · €/trimestre"],
+          ["semiannual", "Semestral · €/semestre"],
           ["annual", "Anual · €/año"],
           ["single", "Aportación única"],
         ],
@@ -921,6 +994,22 @@
       required: true,
     });
     const amountControl = window.ContractControls.amount(amount, apexRule?.wait ? [300, 500, 1000, 2000, 3000, 5000] : undefined);
+    const life = node("fieldset", undefined, "life-protect-fields");
+    life.hidden = true;
+    life.disabled = true;
+    life.append(node("legend", "Protecciones y capital asegurado"),
+      node("p", "Introduce el capital de cada protección contratada. Deja vacías las demás."));
+    const protections = node("div", undefined, "life-protect-grid");
+    const capitals = window.LifeProtect.covers.map(([key, label]) => {
+      const input = field(protections, label, "life_" + key, editing.life_coverages?.[key], { type: "number" });
+      input.min = "0.01";
+      input.placeholder = "Sin capital asignado";
+      return [key, input];
+    });
+    const effective = field(life, "Inicio de cobertura", "life_effective_on", editing.life_effective_on, { type: "date", required: true });
+    window.DatePicker.mount(effective);
+    life.insertBefore(protections, effective.closest("label"));
+    life.append(node("p", "Introduce la prima del recibo con la periodicidad contratada. La prima de la oferta es orientativa."));
     const amountLimits = node("small", "", "contract-amount-limits");
     amountLimits.id = "contract-amount-limits";
     amount.setAttribute("aria-describedby", amountLimits.id);
@@ -935,7 +1024,11 @@
       },
     );
     units.required = true;
+    const lifeUnits = node("small");
+    lifeUnits.hidden = true;
+    units.closest("label").append(lifeUnits);
     conditions.append(grid);
+    conditions.append(life);
     const initial = node("div", undefined, "contract-apex-context contract-top10-initial");
     initial.hidden = true;
     initial.setAttribute("aria-live", "polite");
@@ -1014,6 +1107,7 @@
     actions.append(
       save,
       button("Cancelar", () => {
+        if (editing._entry?.status === "pending") delete editing._entry.pairedOffer;
         editing = null;
         host.dataset.editing = "false";
         box.replaceChildren();
@@ -1043,6 +1137,13 @@
     let ordinaryAmount = initialMode.checked ? "" : amount.value;
     let withEntry = !!editing.top_pias_with_initial;
     function configureAmount(selection) {
+      const isLife = window.LifeProtect.isProduct(selection.company, selection.product);
+      life.hidden = !isLife;
+      life.disabled = !isLife;
+      capitals[0][1].setCustomValidity(isLife && !capitals.some(([, input]) => Number(input.value) > 0)
+        ? "Indica el capital de al menos una protección contratada." : "");
+      amount.closest("label").firstChild.textContent = isLife ? "Prima del recibo en euros" : "Importe en euros";
+      units.closest("label").firstChild.textContent = isLife ? "Unidades totales del primer año" : apex ? "Unidades de la APEX" : "Unidades generadas";
       const top10 = !apex && window.PortfolioCompanies.isTop10(selection.company, selection.product);
       const rules = window.PortfolioCompanies.contribution(selection.company, selection.product);
       const topPias = !apex && window.PortfolioCompanies.find(selection.company)?.id === "intesa" &&
@@ -1070,7 +1171,7 @@
           const legacy = editing.id && editing.payment_type === option.value &&
             editing.company === selection.company && editing.product === selection.product;
           const hide = withEntry ? option.value !== "annual"
-            : !!option.value && (rules ? !rules[option.value] && !legacy : ["quarterly", "annual"].includes(option.value));
+            : !!option.value && (rules ? !rules[option.value] && !legacy : ["quarterly", "semiannual", "annual"].includes(option.value));
           option.hidden = option.disabled = hide;
         }
         if (payment.selectedOptions[0]?.disabled) {
@@ -1078,10 +1179,12 @@
         }
         paymentControl.refresh();
       }
+      lifeUnits.textContent = isLife ? lifeUnitSchedule(payment.value, units.value, effective.value) : "";
+      lifeUnits.hidden = !lifeUnits.textContent;
       const pias = /pias/i.test(selection.product || "");
       const count = apex ? 1 : periods[payment.value]?.count ?? 1;
       const period = top10 && periods[payment.value];
-      signed.required = withEntry || apex || !!editing._capture || (pias && payment.value === "single");
+      signed.required = isLife || withEntry || apex || !!editing._capture || (pias && payment.value === "single");
       const [min, cap] = rules?.[payment.value] ?? [0.01];
       const minimum = String(withEntry ? 50 : apex ? apexRule?.minimum ?? 600 : min);
       const productCap = withEntry ? 50 : apex ? apexRule?.annual : cap;
@@ -1207,6 +1310,11 @@
       if (selectedProduct !== editing || !client || !form.isConnected || !form.reportValidity()) return;
       const values = Object.fromEntries(new FormData(form));
       const selection = picker.read(values);
+      if (editing._entry && window.LifeProtect.isProduct(selection.company, selection.product) &&
+          !editing._entry.pairedOffer) {
+        say("Para importar Vida Protect, selecciona la oferta y la solicitud del mismo titular.");
+        return;
+      }
       const fields = {
         company: window.PortfolioCompanies.label(selection.company),
         product: selection.product.trim(),
@@ -1221,6 +1329,11 @@
           values.signed_multiplier === "" ? null : Number(values.signed_multiplier),
       };
       if (withEntry || editing.top_pias_with_initial) fields.top_pias_with_initial = withEntry;
+      if (!life.disabled || editing.life_coverages) {
+        fields.life_coverages = life.disabled ? null : Object.fromEntries(capitals
+          .filter(([, input]) => input.value).map(([key, input]) => [key, Number(input.value)]));
+        fields.life_effective_on = life.disabled ? null : effective.value || null;
+      }
       if (editing._entry) {
         editing._entry.fields = fields;
         editing._entry.status = "ready";

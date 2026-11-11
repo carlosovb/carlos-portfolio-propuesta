@@ -175,3 +175,34 @@
     align-items: start;
   }
 }
+.life-protect-fields {
+  margin-block: 16px;
+  padding: 16px;
+  border: 1px solid var(--line, #354657);
+  border-radius: 12px;
+  min-width: 0;
+}
+.life-protect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  margin-block: 12px;
+}
+.life-protect-grid label {
+  display: grid;
+  align-content: space-between;
+  gap: 6px;
+}
+.life-protect-grid input {
+  width: 100%;
+  min-width: 0;
+}
+.life-protect-summary dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+}
+.life-protect-summary dd {
+  margin: 0;
+  text-align: right;
+}

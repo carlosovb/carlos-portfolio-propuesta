@@ -121,6 +121,10 @@
 
     function renderPortfolios(saved = "") {
       portfolios.replaceChildren();
+      if (window.LifeProtect?.isProduct(company?.name, product?.name)) {
+        portfolios.hidden = true;
+        return;
+      }
       readMix = () => "";
       const legend = node("legend");
       legend.append(
