@@ -540,6 +540,11 @@ html[data-theme="dark"] .clients-view-switch button img {
   display: block;
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  box-sizing: border-box;
   margin: 0;
   border-radius: 50%;
   opacity: 0;
@@ -625,7 +630,7 @@ html[data-theme="light"]
 }
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-locality {
   grid-column: 2;
-  margin: 0 16px 0 0;
+  margin: 0 40px 0 0;
   font-size: 11px;
 }
 #clients-table-wrap[data-view="cards"]
