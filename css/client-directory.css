@@ -582,6 +582,10 @@ html[data-theme="dark"] .clients-view-switch button img {
   padding: 10px 16px;
   min-height: 68px;
 }
+#clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-select-cell {
+  top: 50%;
+  transform: translateY(-50%);
+}
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] .client-identity {
   display: flex;
   align-items: center;
