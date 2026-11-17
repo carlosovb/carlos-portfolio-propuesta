@@ -461,23 +461,18 @@
         client_id: "eq." + clientId,
         order: "created_at.desc,id",
       });
-      try {
-        return (await authenticated("/rest/v1/client_products?" + query)).json();
-      } catch (error) {
-        if (error.status !== 400) throw error;
-        query.set("select", query.get("select").replace(",life_annual_net_premium", ""));
+      const optionalColumns = [
+        "",
+        ",life_annual_net_premium",
+        ",life_coverages,life_effective_on",
+        ",top_pias_with_initial",
+      ];
+      for (const columns of optionalColumns) {
+        query.set("select", query.get("select").replace(columns, ""));
         try {
           return (await authenticated("/rest/v1/client_products?" + query)).json();
-        } catch (fallback) {
-          if (fallback.status !== 400) throw fallback;
-        }
-        query.set("select", query.get("select").replace(",life_coverages,life_effective_on", ""));
-        try {
-          return (await authenticated("/rest/v1/client_products?" + query)).json();
-        } catch (fallback) {
-          if (fallback.status !== 400) throw fallback;
-          query.set("select", query.get("select").replace(",top_pias_with_initial", ""));
-          return (await authenticated("/rest/v1/client_products?" + query)).json();
+        } catch (error) {
+          if (error.status !== 400 || columns === optionalColumns.at(-1)) throw error;
         }
       }
     },

@@ -121,11 +121,11 @@
 
     function renderPortfolios(saved = "") {
       portfolios.replaceChildren();
+      readMix = () => "";
       if (window.LifeProtect?.isProduct(company?.name, product?.name)) {
         portfolios.hidden = true;
         return;
       }
-      readMix = () => "";
       const legend = node("legend");
       legend.append(
         node("span", "03", "product-picker-step"),

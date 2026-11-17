@@ -563,6 +563,8 @@
   function showCareerPromotion(row) {
     const level = window.CareerLevels.find((item) => row.detail.startsWith("Has ascendido a " + item.name + "."));
     const profile = backend.panelAccess?.profile;
+    backend.invalidateCache();
+    document.dispatchEvent(new Event("career-position-updated"));
     window.CareerTrophies.showCelebration({
       position_code: level?.code,
       position: level?.name || "Nuevo puesto",

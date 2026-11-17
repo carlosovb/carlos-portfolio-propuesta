@@ -846,11 +846,11 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=units]").fill("10");
     await contract.locator("[name=signed_multiplier]").selectOption("3.5");
     await contract.locator("[name=signed_on]").fill("2024-03-14");
-    await contract.locator(".contract-date-trigger").click();
-    assert.equal(await contract.locator(".contract-calendar").isVisible(), true);
+    await contract.getByRole("button", { name: "Abrir calendario: Fecha de firma", exact: true }).click();
+    assert.equal(await contract.locator(".contract-calendar:visible").isVisible(), true);
     await contract.locator('[data-date="2024-03-15"]').click();
     assert.equal(await contract.locator("[name=signed_on]").inputValue(), "2024-03-15");
-    await contract.locator(".contract-date-trigger").click();
+    await contract.getByRole("button", { name: "Abrir calendario: Fecha de firma", exact: true }).click();
     await contract.locator(".calendar-period").click();
     await contract
       .locator(".contract-calendar-years")
@@ -863,7 +863,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       true,
       "Calendar Escape leaves client file open",
     );
-    await contract.locator(".contract-date-trigger").click();
+    await contract.getByRole("button", { name: "Abrir calendario: Fecha de firma", exact: true }).click();
     for (const width of [320, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(
@@ -950,13 +950,13 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
       .fill("Cartera anterior personalizada");
     await contract.locator("[data-payment=single]").click();
     await contract.locator("[name=amount]").fill("1000");
-    await contract.locator("[name=units]").fill("");
+    await contract.locator("[name=units]").fill("5");
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(() =>
       document.querySelector(".contract-card").textContent.includes("aportación única"),
     );
     assert.equal(products[0].payment_type, "single");
-    assert.equal(products[0].units, null);
+    assert.equal(products[0].units, 5);
     assert.equal(products[0].product, "Producto anterior personalizado");
     assert.equal(products[0].portfolio, "Cartera anterior personalizada");
     if (!(await page.locator(".contract-detail").evaluate((d) => d.open)))
@@ -983,6 +983,7 @@ const excel = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
     await contract.locator("[name=manual_product]").fill("Segundo producto");
     await contract.locator("[name=manual_portfolio]").fill("Cartera Intesa de ejemplo");
     await contract.locator("[name=amount]").fill("30");
+    await contract.locator("[name=units]").fill("0");
     await contract.getByRole("button", { name: "Guardar producto", exact: true }).click();
     await page.waitForFunction(
       () => document.querySelectorAll(".contract-card").length === 2,

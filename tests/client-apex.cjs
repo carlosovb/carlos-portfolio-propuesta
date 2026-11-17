@@ -437,6 +437,45 @@ const assert = require("node:assert/strict");
     await db.query("update public.client_products set amount=650 where id=$1", [legacy]);
     await db.query("update public.client_products set units=0 where id=$1", [legacy]);
     assert.equal(Number((await db.query("select units from public.client_products where id=$1", [legacy])).rows[0].units), 0);
+
+    await db.exec("reset role");
+    await db.exec(fs.readFileSync("database/career-auto-promotion.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/axa-vida-protect.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/axa-vida-annual-net-premium.sql", "utf8"));
+    await db.exec(fs.readFileSync("database/statistics-contract-count.sql", "utf8"));
+    await as(other);
+    const lifeId = (await db.query(
+      "insert into public.client_products(client_id,company,product,portfolio,payment_type,amount,units,signed_on,signed_multiplier,signature_rates,life_coverages,life_effective_on,life_annual_net_premium) values($1,'AXA','Vida Protect','','monthly',10.79,120,'2023-11-06',2,$2,$3,'2023-12-01',129.46) returning id",
+      [intesaClient, rates, { death: 50000, disability: 150000, critical_illness: 100000 }],
+    )).rows[0].id;
+    const lifeSaved = (await db.query("select * from public.client_products where id=$1", [lifeId])).rows[0];
+    assert.equal(Number(lifeSaved.life_annual_net_premium), 129.46);
+    await assert.rejects(() => db.query("update public.client_products set life_annual_net_premium=130 where id=$1", [lifeId]), /annual_net_premium_check/);
+    await db.exec("reset role");
+    const lifeDates = async () => (await db.query(
+      "select signed_on::text,units::float8,euros::float8 from private.signature_commissions() where product_id=$1 and is_own order by signed_on",
+      [lifeId],
+    )).rows;
+    const monthlyRows = await lifeDates();
+    assert.equal(monthlyRows.length, 12);
+    assert.equal(monthlyRows[0].signed_on, "2024-01-01");
+    assert.equal(monthlyRows[11].signed_on, "2024-12-01");
+    assert(monthlyRows.every((r) => r.units === 10 && r.euros === 20));
+    const expectedSignatures = Number((await db.query(
+      "select count(distinct product_id) n from private.signature_commissions() where beneficiary=$1 and producer=$2 and not is_own and signed_on between '2024-01-01' and '2024-12-31'",
+      [owner, other],
+    )).rows[0].n);
+    await as(owner);
+    const summary = (await db.query("select public.get_unit_statistics_range('2024-01-01','2024-12-01') data")).rows[0].data;
+    const generated = summary.team_sources.find((r) => r.user_id === other);
+    assert(generated);
+    assert.equal(Number(generated.signatures), expectedSignatures);
+    await as(other);
+    await db.query("delete from public.client_products where id=$1", [lifeId]);
+    await db.exec("reset role");
+    assert.deepEqual(await lifeDates(), monthlyRows);
+    await require("./life-installment-promotions.cjs")(db, { owner, as });
+
     console.log(
       "APEX: cartera obligatoria, 666 al mes, mínimo 600, límite anual 8000, firmas independientes, aislamiento e historial permanente comprobados.",
     );

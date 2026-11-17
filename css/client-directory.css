@@ -1606,7 +1606,7 @@ html[data-theme="dark"] #client-detail-dialog .contract-chevron {
 #clients-table-wrap[data-view="cards"] .client-action button {
   width: 26px;
   height: 26px;
-  pointer-events: auto;
+  pointer-events: none;
 }
 #clients-table-wrap[data-view="cards"] tr[data-category="interested"] {
   grid-template-rows: auto;

@@ -38,6 +38,7 @@ function project(name, holder, monthly) {
     await mock(context, state());
     const id = "11111111-1111-4111-8111-111111111111";
     const stored = [];
+    let failSecond = true;
     await context.route("**/rpc/search_my_clients", (r) => r.fulfill({ json: {
       rows: [{ id, first_name: "Ana", last_name: "Prueba", status: "active", kind: "client", product_count: 0 }],
       total: 1, stats: { clients: 1 },
@@ -46,6 +47,10 @@ function project(name, holder, monthly) {
     await context.route("**/rest/v1/client_products?*", (r) => {
       if (r.request().method() !== "POST") return r.fulfill({ json: stored });
       const row = r.request().postDataJSON();
+      if (stored.length === 1 && failSecond) {
+        failSecond = false;
+        return r.fulfill({ status: 503, json: { message: "Interrupción simulada" } });
+      }
       stored.push(row);
       return r.fulfill({ json: [{ id: row.id }] });
     });
@@ -69,6 +74,9 @@ function project(name, holder, monthly) {
     const queue = page.locator(".product-project-queue");
     const item = (file) => queue.locator("li").filter({ hasText: file });
     await item("ilegible.pdf").getByText("PDF ilegible", { exact: true }).waitFor();
+    await queue.getByRole("button", { name: "Cerrar revisión", exact: true }).click();
+    await queue.waitFor({ state: "hidden" });
+    await page.getByRole("button", { name: "Retomar revisión de PDF", exact: true }).click();
     assert.match(await item("ajeno.pdf").innerText(), /El titular no coincide/);
     assert.equal(await item("ajeno.pdf").getByRole("button", { name: "Revisar" }).count(), 0);
     for (const [file, monthly] of [["primero.pdf", "50"], ["segundo.pdf", "100"]]) {
@@ -86,6 +94,9 @@ function project(name, holder, monthly) {
     }
     assert.equal(stored.length, 0);
     await queue.getByRole("button", { name: "Guardar productos listos (2)", exact: true }).click();
+    await item("segundo.pdf").getByText(/No se pudo guardar/).waitFor();
+    assert.equal(stored.length, 1);
+    await queue.getByRole("button", { name: "Guardar productos listos (1)", exact: true }).click();
     await queue.waitFor({ state: "hidden" });
     assert.deepEqual(stored.map(({ amount, units }) => [amount, units]), [[50, 41], [100, 41]]);
     await page.getByRole("button", { name: "Retomar revisión de PDF", exact: true }).click();

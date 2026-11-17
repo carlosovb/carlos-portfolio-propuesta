@@ -811,7 +811,6 @@
     const save = button("Guardar productos listos (" + ready + ")", saveProjects, "btn");
     save.disabled = !ready || busy || !!editing;
     const close = button("Cerrar revisión", () => {
-      importQueue = [];
       importReviewOpen = false;
       renderQueue();
     }, "panel-text-button");
@@ -837,6 +836,7 @@
     if (!ready.length) return;
     const ticket = epoch, target = client.id;
     const saved = [];
+    let refreshed = true;
     busy = true;
     renderQueue();
     try {
@@ -860,7 +860,11 @@
       }
       if (ticket !== epoch) return;
       if (!demo && saved.length) {
-        try { await reload(); } catch { /* El guardado ya se confirmó. */ }
+        try {
+          await reload();
+        } catch {
+          refreshed = false;
+        }
       } else if (demo) {
         render();
         announceCompanies();
@@ -872,7 +876,8 @@
         renderQueue();
       }
       say(saved.length + " productos guardados. " +
-        (ready.length > saved.length ? "Los documentos con error siguen en la revisión." : ""));
+        (ready.length > saved.length ? "Los documentos con error siguen en la revisión. " : "") +
+        (refreshed ? "" : "Vuelve a abrir la ficha para actualizar el listado."));
       if (!demo && saved.length) void window.PanelInsights?.showProductPromotion(saved);
     } finally {
       if (ticket === epoch) {
@@ -1061,7 +1066,7 @@
       node("summary", "Cómo se calculan las unidades y comisiones"),
       node(
         "p",
-        "La aportación del cliente no es tu comisión. Las unidades cuentan una vez, en el mes de firma, con los multiplicadores guardados para esa firma. Lo desconocido queda pendiente.",
+        "La aportación del cliente no es tu comisión. Se utilizan los multiplicadores guardados para la firma. En Vida Protect, las unidades se reparten por recibos desde el primer cobro previsto. En los demás productos cuentan en el mes de firma.",
       ),
     );
     const today = new Intl.DateTimeFormat("sv-SE", {
@@ -1128,6 +1133,8 @@
       button("Cancelar", () => {
         if (editing._entry?.status === "pending") delete editing._entry.pairedOffer;
         editing = null;
+        window.DatePicker?.close();
+        window.ContractControls?.close();
         host.dataset.editing = "false";
         box.replaceChildren();
         renderQueue();
@@ -1384,7 +1391,15 @@
         } else {
           const savedId = await backend.saveClientProduct(target, fields, id);
           if (ticket === epoch) {
-            await reload();
+            editing = null;
+            try {
+              await reload();
+            } catch {
+              if (ticket === epoch) {
+                render();
+                say("El producto está guardado. Vuelve a abrir la ficha para actualizar el listado.");
+              }
+            }
             if (ticket === epoch && savedId)
               void window.PanelInsights?.showProductPromotion(savedId);
           }

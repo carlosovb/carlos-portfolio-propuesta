@@ -14,8 +14,13 @@ const contentTypes = {
 };
 http
   .createServer((req, res) => {
-    const url = new URL(req.url, "http://localhost");
-    const pathname = decodeURIComponent(url.pathname);
+    let pathname;
+    try {
+      pathname = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
+    } catch {
+      res.writeHead(400);
+      return res.end("Bad request");
+    }
     const file = pathname.endsWith("/")
       ? pathname.replace(/^\/+/, "") + "index.html"
       : pathname.replace(/^\/+/, "");

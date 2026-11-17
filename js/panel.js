@@ -859,6 +859,29 @@
       button.addEventListener("click", () => setView(button.dataset.view)),
     );
   window.PanelNavigation = { go: setView, current: () => view };
+  document.addEventListener("career-position-updated", async () => {
+    if (!active || !account) return;
+    const snapshot = epoch;
+    try {
+      const mine = await backend.getMyTeamProfile();
+      if (!active || epoch !== snapshot || !mine) return;
+      const position = get("my-team-position");
+      const baseline = profileBaseline && JSON.parse(profileBaseline);
+      if (!baseline || position.value === baseline.at(-1)) {
+        position.value = mine.position_code || "";
+        get("my-team-multiplier").value = mine.multiplier == null ? "Pendiente" : "×" + mine.multiplier;
+        window.PanelSelects.sync();
+        if (baseline) {
+          baseline[baseline.length - 1] = position.value;
+          profileBaseline = JSON.stringify(baseline);
+        }
+      }
+      window.CareerPlan.markCurrent(mine.position_code);
+      if (view === "team") await window.TeamPanel.load(account);
+    } catch {
+      // El aviso sigue disponible y el puesto se vuelve a consultar al abrir el apartado.
+    }
+  });
   get("logout-button").addEventListener("click", () => logout());
   get("profile-form").addEventListener("submit", async (event) => {
     event.preventDefault();

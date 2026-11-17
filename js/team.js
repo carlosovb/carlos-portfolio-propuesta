@@ -412,6 +412,15 @@
       clientCounts = counts;
       members = directory;
       me = mine;
+      if (selected && get("team-member-dialog").open) {
+        const updated = members.find((member) => member.user_id === selected.user_id);
+        if (updated) {
+          selected = updated;
+          get("team-member-position").textContent = updated.position || "Puesto pendiente de asignar";
+          get("team-member-multiplier").textContent = multiplier(updated.multiplier);
+          void window.CareerTrophies.showMember(updated.user_id, () => selected === updated);
+        }
+      }
       window.CareerPlan.markCurrent(mine?.position_code);
       await fetchPhotos(members, snapshot);
       if (snapshot !== revision) return;
